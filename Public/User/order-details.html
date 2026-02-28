@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DripMen | Order Details</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <!-- Content injected by script.js -->
+    </header>
+
+    <main class="order-details-page">
+        <div class="main-container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <a href="account.html">Account</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <span class="current">Order Details</span>
+            </nav>
+
+            <div class="invoice-container" id="invoice-area">
+                <div class="invoice-header">
+                    <div>
+                        <h1 class="invoice-title">Order Invoice</h1>
+                        <p class="invoice-id">Order ID: <span id="od-id">#Loading...</span></p>
+                        <p class="invoice-date">Date: <span id="od-date">...</span></p>
+                    </div>
+                    <div class="invoice-actions">
+                        <button class="btn btn-outline" onclick="window.print()">
+                            <i class="ph ph-download-simple"></i> Download Invoice
+                        </button>
+                    </div>
+                </div>
+
+                <div class="invoice-grid">
+                    <div class="invoice-section">
+                        <h3>Shipping Address</h3>
+                        <div id="od-address" class="text-muted">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                    <div class="invoice-section">
+                        <h3>Payment Method</h3>
+                        <p id="od-payment" class="text-muted">...</p>
+                    </div>
+                </div>
+
+                <div class="invoice-items-table-wrapper">
+                    <table class="invoice-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th class="text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="od-items-body">
+                            <!-- Items injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="invoice-summary" id="od-summary">
+                    <!-- Summary injected via JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="script.js"></script>
+</body>
+</html>

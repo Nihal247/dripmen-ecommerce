@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DripMen | Checkout</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Top Announcement Bar -->
+    <div class="announcement-bar" id="announcement-bar">
+        <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+        <button class="close-announcement" aria-label="Close">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <!-- Content injected by script.js -->
+    </header>
+
+    <main class="checkout-page">
+        <div class="checkout-container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <a href="cart.html">Cart</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <span class="current">Checkout</span>
+            </nav>
+
+            <div class="checkout-layout">
+                <!-- Left Section: Shipping Address -->
+                <div class="checkout-left">
+                    <div class="checkout-address-selection">
+                        <h3 class="checkout-section-title">Select Delivery Address</h3>
+                        <div id="checkout-address-list" class="checkout-address-list">
+                            <!-- Address cards will be injected here -->
+                        </div>
+                    </div>
+
+                    <div class="form-divider-with-text" id="address-form-divider"><span>OR</span></div>
+
+                    <h3 class="checkout-section-title" style="margin-top: 2rem;">Enter a New Address</h3>
+                    <form id="checkout-form" class="checkout-form" novalidate style="display: block; margin-top: 1rem;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="checkout-name">Name*</label>
+                                <input type="text" id="checkout-name" name="name" required placeholder="" />
+                                <span class="error-msg" id="error-name" style="display: none;">Name is required</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkout-mobile">Mobile Number*</label>
+                                <input type="tel" id="checkout-mobile" name="mobile" required placeholder="" />
+                                <span class="error-msg" id="error-mobile" style="display: none;">Valid number required</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="checkout-email">Email address*</label>
+                            <input type="email" id="checkout-email" name="email" required placeholder="" />
+                            <span class="error-msg" id="error-email" style="display: none;">Valid email required</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="checkout-street">Street Address*</label>
+                            <input type="text" id="checkout-street" name="street" required placeholder="" />
+                            <span class="error-msg" id="error-street" style="display: none;">Street Address is required</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="checkout-city">Town/City*</label>
+                                <input type="text" id="checkout-city" name="city" required placeholder="" />
+                                <span class="error-msg" id="error-city" style="display: none;">Town/City is required</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkout-apartment">Apartment (optional)</label>
+                                <input type="text" id="checkout-apartment" name="apartment" placeholder="" />
+                            </div>
+                        </div>
+
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="checkout-save-info" name="save_info" checked />
+                            <label for="checkout-save-info">Save this information for faster check-out next time</label>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Section: Order Summary -->
+                <div class="checkout-right">
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal</span>
+                        <span class="summary-value" id="checkout-subtotal">$0</span>
+                    </div>
+
+                    <div class="summary-row discount-row" id="checkout-discount-row" style="display: none;">
+                        <span class="summary-label">Discount (<span id="checkout-discount-percent">-0%</span>)</span>
+                        <span class="summary-value text-red" id="checkout-discount">-$0</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Shipping</span>
+                        <span class="summary-value" id="checkout-delivery" style="color: #10b981;">$0</span>
+                    </div>
+
+                    <hr class="summary-divider" style="margin: 1.5rem 0;" />
+
+                    <div class="summary-row total-row" style="margin-bottom: 2rem;">
+                        <span class="summary-label" style="font-size: 1.25rem; font-weight: 800;">Total</span>
+                        <span class="summary-value" id="checkout-total"
+                            style="font-size: 1.25rem; font-weight: 800; color: #111;">$0</span>
+                    </div>
+
+                    <div class="promo-code-container">
+                        <div class="promo-input-group">
+                            <i class="ph ph-tag promo-icon"></i>
+                            <input type="text" id="checkout-promo-input" placeholder="Add coupon code">
+                        </div>
+                        <button class="btn btn-primary apply-promo-btn" id="checkout-apply-promo">Apply</button>
+                    </div>
+                    <p class="promo-message" id="checkout-promo-message"></p>
+
+                    <div class="payment-method-title">PAYMENT METHOD</div>
+
+                    <div class="payment-methods-list">
+                        <!-- My Wallet -->
+                        <label class="payment-option-modern">
+                            <div class="payment-label-wrapper">
+                                <input type="radio" name="payment_method" value="wallet" />
+                                <div class="payment-text-group">
+                                    <span class="payment-label-text">My Wallet</span>
+                                    <span class="payment-balance-text">Balance: $0.00 <span class="text-red">(Insufficient)</span></span>
+                                </div>
+                            </div>
+                            <i class="ph-fill ph-wallet payment-icon-modern"></i>
+                        </label>
+
+                        <!-- UPI / Card -->
+                        <label class="payment-option-modern">
+                            <div class="payment-label-wrapper">
+                                <input type="radio" name="payment_method" value="online" />
+                                <span class="payment-label-text">UPI / Card</span>
+                            </div>
+                            <div class="payment-icons-group">
+                                <i class="ph ph-credit-card"></i>
+                                <i class="ph ph-qr-code"></i>
+                            </div>
+                        </label>
+
+                        <!-- Cash on Delivery -->
+                        <label class="payment-option-modern active">
+                            <div class="payment-label-wrapper">
+                                <input type="radio" name="payment_method" value="cod" checked />
+                                <span class="payment-label-text">Cash on Delivery</span>
+                            </div>
+                            <i class="ph ph-money payment-icon-modern"></i>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary full-width" id="place-order-btn-modern" style="margin-top: 1.5rem;">
+                        PLACE ORDER
+                    </button>
+
+                    <!-- Kept hidden so script doesn't completely break if it references old button -->
+                    <button id="place-order-btn" style="display:none;"></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <!-- Content injected by script.js -->
+    </footer>
+
+    <!-- Overlay for mobile menu -->
+    <div class="mobile-menu-overlay"></div>
+
+    <!-- Order Success Modal -->
+    <div class="modal" id="order-success-modal">
+        <div class="modal-body order-success-content">
+            <div class="success-icon-large">
+                <i class="ph-fill ph-check-circle"></i>
+            </div>
+            <h3 class="modal-title">Order Placed Successfully!</h3>
+            <p class="text-muted" style="margin-bottom: 1.5rem;">Thank you for your purchase. Your order has been received.</p>
+            <div class="order-details-box">
+                <p>Order ID: <span id="success-order-id">#000000</span></p>
+                <p>Total Amount: <span id="success-order-total">$0.00</span></p>
+            </div>
+            <div class="modal-actions-col">
+                <button class="btn btn-primary full-width" id="order-success-view-btn">View Order</button>
+                <button class="btn btn-outline full-width" id="order-success-home-btn">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

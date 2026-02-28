@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DripMen | Sign Up</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <!-- Content injected by script.js -->
+    </header>
+
+    <main class="auth-page">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-container">
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <span class="current">Sign Up</span>
+            </nav>
+        </div>
+
+        <div class="auth-split-layout">
+            <div class="auth-image-side">
+                <img src="images/signup-image.png" alt="Sign Up" class="auth-cover-image" onerror="this.style.display='none'">
+                <div class="auth-side-content">
+                    <h2 class="auth-side-heading">Join the Club</h2>
+                    <p class="auth-side-subtext">Create an account to unlock exclusive deals and faster checkout.</p>
+                </div>
+            </div>
+            
+            <div class="auth-form-side">
+                <!-- Step 1: Sign Up Form -->
+                <div id="signup-step-1">
+                    <h1 class="auth-heading">Create Account</h1>
+                    <p class="auth-subheading">Sign up for free to access exclusive features.</p>
+                    
+                    <form id="signup-form" class="auth-form">
+                        <div class="input-group-underlined">
+                            <input type="text" id="signup-name" placeholder="Full Name" required>
+                        </div>
+                        <div class="input-group-underlined">
+                            <input type="email" id="signup-email" placeholder="Email Address" required>
+                        </div>
+                        <div class="input-group-underlined">
+                            <input type="password" id="signup-password" placeholder="Password" required>
+                        </div>
+                        <div class="input-group-underlined">
+                            <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary full-width" style="margin-top: 1rem;">Sign Up</button>
+                    </form>
+                    
+                    <div class="auth-footer-text">
+                        <p>Already have an account? <a href="login.html">Login</a></p>
+                    </div>
+                </div>
+
+                <!-- Step 2: OTP Verification -->
+                <div id="signup-step-otp" style="display: none;">
+                    <h1 class="auth-heading">Verify Email</h1>
+                    <p class="auth-subheading">Enter the 4-digit code sent to your email.</p>
+                    
+                    <form id="signup-otp-form" class="auth-form">
+                        <div class="input-group-underlined">
+                            <input type="text" id="signup-otp" placeholder="Enter Code (Try 1234)" required maxlength="4" style="letter-spacing: 4px; font-weight: 600;">
+                        </div>
+                        <button type="submit" class="btn btn-primary full-width" style="margin-top: 1rem;">Verify & Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="script.js"></script>
+</body>
+</html>

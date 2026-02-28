@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DripMen | Cart</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Top Announcement Bar -->
+    <div class="announcement-bar" id="announcement-bar">
+        <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+        <button class="close-announcement" aria-label="Close">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <!-- Content injected by script.js -->
+    </header>
+
+    <main class="cart-page">
+        <div class="cart-container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <span class="current">Cart</span>
+            </nav>
+
+            <!-- Free Shipping Progress -->
+            <div class="shipping-progress-container" id="shipping-progress-container" style="display: none;">
+                <p class="shipping-message" id="shipping-message">🚚 Add $X more to get FREE shipping</p>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="shipping-progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="cart-layout" id="cart-layout">
+                <!-- Cart Items List -->
+                <div class="cart-items-section">
+                    <div id="cart-items-container" class="cart-items">
+                        <!-- Items injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="cart-summary-section">
+                    <div class="order-summary-card">
+                        <div class="summary-row">
+                            <span class="summary-label">Subtotal</span>
+                            <span class="summary-value" id="summary-subtotal">$0</span>
+                        </div>
+
+                        <div class="summary-row discount-row" id="summary-discount-row" style="display: none;">
+                            <span class="summary-label">Discount (<span id="discount-percent">-0%</span>)</span>
+                            <span class="summary-value text-red" id="summary-discount">-$0</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span class="summary-label">Delivery Fee</span>
+                            <span class="summary-value" id="summary-delivery">$0</span>
+                        </div>
+
+                        <hr class="summary-divider" />
+
+                        <div class="summary-row total-row">
+                            <span class="summary-label">Total</span>
+                            <span class="summary-value" id="summary-total">$0</span>
+                        </div>
+
+                        <div class="promo-code-container">
+                            <div class="promo-input-group">
+                                <i class="ph ph-tag promo-icon"></i>
+                                <input type="text" id="promo-input" placeholder="Add promo code" />
+                            </div>
+                            <button class="btn btn-primary apply-promo-btn" id="apply-promo-btn">Apply</button>
+                        </div>
+                        <p class="promo-message" id="promo-message"></p>
+
+                        <button class="btn btn-primary go-checkout-btn" id="go-checkout-btn">
+                            Go to Checkout <i class="ph ph-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty Cart State -->
+            <div class="empty-cart-state" id="empty-cart-state" style="display: none;">
+                <div class="empty-cart-icon">
+                    <i class="ph ph-shopping-bag"></i>
+                </div>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added anything to your cart yet.</p>
+                <a href="products.html" class="btn btn-primary start-shopping-btn">Start Shopping</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Sticky Checkout Bar -->
+    <div class="mobile-sticky-checkout" id="mobile-sticky-checkout" style="display: none;">
+        <div class="mobile-sticky-content">
+            <div class="mobile-sticky-total">
+                <span>Total</span>
+                <strong id="mobile-summary-total">$0</strong>
+            </div>
+            <button class="btn btn-primary go-checkout-btn-mobile" id="go-checkout-btn-mobile">
+                Go to Checkout <i class="ph ph-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <!-- Content injected by script.js -->
+    </footer>
+
+    <!-- Overlay for mobile menu -->
+    <div class="mobile-menu-overlay"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

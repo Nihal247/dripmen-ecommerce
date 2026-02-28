@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DripMen | Black Tshirt</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="product.css" />
+</head>
+
+<body>
+  <!-- 1. Top Announcement Bar -->
+  <div class="announcement-bar" id="announcement-bar">
+    <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+    <button class="close-announcement" aria-label="Close">
+      <i class="ph ph-x"></i>
+    </button>
+  </div>
+
+  <!-- 2. Navbar -->
+  <header class="navbar">
+    <!-- Content injected by script.js -->
+  </header>
+
+  <main class="product-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-container">
+      <nav class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator"><i class="ph ph-caret-right"></i></span>
+        <a href="products.html">Products</a>
+        <span class="separator"><i class="ph ph-caret-right"></i></span>
+        <span class="current">T-shirts</span>
+      </nav>
+    </div>
+
+    <section class="single-product-section" data-id="black-tshirt" data-name="Black Tshirt" data-price="145"
+      data-image="images/Balck Tshirt.png" data-rating="4.5/5">
+      <div class="product-layout-grid">
+        <!-- Gallery Left -->
+        <div class="product-gallery">
+          <div class="thumbnail-list">
+            <button class="thumb-btn active" data-image="images/Balck Tshirt.png">
+              <img src="images/Balck Tshirt.png" alt="Black Tshirt Front view" />
+            </button>
+            <button class="thumb-btn" data-image="images/Balck tshirts.png">
+              <img src="images/Balck Tshirt.png" alt="Black Tshirt Back view" />
+            </button>
+            <button class="thumb-btn" data-image="images/Black sweatshirts.png">
+              <img src="images/Balck Tshirt.png" alt="Black Tshirt Detail view" />
+            </button>
+          </div>
+
+          <div class="main-image-container" id="main-image-container">
+            <img src="images/Balck Tshirt.png" alt="Black Tshirt Main" class="main-image" id="main-product-image" />
+            <button class="wishlist-btn wishlist-main" aria-label="Add to wishlist">
+              <i class="ph ph-heart"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Product Info Right -->
+        <div class="product-info-details">
+          <h1 class="product-title-main">Black Tshirt</h1>
+
+          <div class="product-rating-box">
+            <div class="stars">
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star-half"></i>
+            </div>
+            <span class="rating-value">4.5/5</span>
+            <span class="review-count">(128 reviews)</span>
+          </div>
+
+          <div class="product-price-box">
+            <span class="current-price-main">$145</span>
+            <span class="original-price-main">$165</span>
+            <span class="discount-badge-main">-12%</span>
+          </div>
+
+          <div class="stock-status in-stock">
+            <span class="status-dot"></span> In Stock — Only 12 left
+          </div>
+
+          <p class="product-desc-short">
+            This graphic t-shirt which is perfect for any occasion. Crafted
+            from a soft and breathable fabric, it offers superior comfort and
+            style.
+          </p>
+
+          <hr class="product-divider" />
+
+          <div class="color-selector-section">
+            <p class="selector-label">Select Colors</p>
+            <div class="color-options-row">
+              <button class="color-swatch-circle bg-black active" aria-label="Black" data-color="Black">
+                <i class="ph ph-check"></i>
+              </button>
+              <button class="color-swatch-circle bg-green" aria-label="Green" data-color="Green">
+                <i class="ph ph-check" style="display: none"></i>
+              </button>
+              <button class="color-swatch-circle bg-blue" aria-label="Blue" data-color="Blue">
+                <i class="ph ph-check" style="display: none"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="size-selector-section">
+            <div class="size-header-row">
+              <p class="selector-label">Choose Size</p>
+            </div>
+            <div class="size-options-row">
+              <button class="size-pill-btn">S</button>
+              <button class="size-pill-btn">M</button>
+              <button class="size-pill-btn active">L</button>
+              <button class="size-pill-btn disabled" disabled aria-label="Out of stock">
+                XL
+              </button>
+            </div>
+          </div>
+
+          <div class="product-actions-row">
+            <div class="quantity-stepper">
+              <button class="qty-btn-large qty-minus-main">
+                <i class="ph ph-minus"></i>
+              </button>
+              <input type="number" class="qty-input-main" value="1" min="1" max="12" readonly />
+              <button class="qty-btn-large qty-plus-main">
+                <i class="ph ph-plus"></i>
+              </button>
+            </div>
+
+            <div class="action-buttons-wrapper">
+              <button class="btn btn-primary add-to-cart-main-btn add-to-cart-btn" id="add-to-cart-btn">
+                Add to Cart
+              </button>
+              <button class="btn btn-primary buy-now-main-btn" id="buy-now-btn">
+                Buy Now
+              </button>
+            </div>
+          </div>
+
+          <div class="trust-info-box">
+            <div class="trust-row">
+              <i class="ph ph-truck"></i>
+              <span>Free delivery above $100</span>
+            </div>
+            <div class="trust-row">
+              <i class="ph ph-arrow-counter-clockwise"></i>
+              <span>Easy 7-day returns</span>
+            </div>
+            <div class="trust-row">
+              <i class="ph ph-lock-key"></i>
+              <span>Secure payment</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Tabs -->
+    <section class="product-tabs-section">
+      <div class="tabs-header">
+        <button class="tab-btn active" data-tab="desc">Description</button>
+        <button class="tab-btn" data-tab="info">Additional Info</button>
+        <button class="tab-btn" data-tab="reviews">Reviews</button>
+      </div>
+      <div class="tabs-content">
+        <div class="tab-pane active" id="tab-desc">
+          <p>
+            Elevate your everyday style with our premium Black Tshirt. Crafted
+            from 100% organic heavy-weight cotton, this tee features a relaxed
+            fit with dropped shoulders for a modern silhouette. The fabric has
+            been pre-shrunk and garment-dyed for a vintage look and super-soft
+            feel that only gets better with time.
+          </p>
+        </div>
+        <div class="tab-pane" id="tab-info">
+          <ul class="info-list">
+            <li><strong>Material:</strong> 100% Organic Cotton (240 GSM)</li>
+            <li><strong>Care:</strong> Machine wash cold, tumble dry low</li>
+            <li>
+              <strong>Fit:</strong> Relaxed fit. We recommend sizing down if
+              you prefer a standard fit.
+            </li>
+            <li><strong>Origin:</strong> Responsibly made in Portugal</li>
+          </ul>
+        </div>
+        <div class="tab-pane" id="tab-reviews">
+          <div class="reviews-summary">
+            <p class="overall-rating">4.5 <i class="ph-fill ph-star"></i></p>
+            <p class="verified-text">From 128 verified buyers.</p>
+          </div>
+          <div class="reviews-list">
+            <div class="review-item">
+              <div class="review-header">
+                <span class="review-author">Alex M.</span>
+                <span class="review-date">Oct 12, 2023</span>
+              </div>
+              <div class="stars review-stars">
+                <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+              </div>
+              <p class="review-body">Absolutely love the fit of this t-shirt. The material is thick but breathable. Definitely buying more colors.</p>
+            </div>
+            <div class="review-item">
+              <div class="review-header">
+                <span class="review-author">Sarah J.</span>
+                <span class="review-date">Sep 28, 2023</span>
+              </div>
+              <div class="stars review-stars"><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star-half"></i></div>
+              <p class="review-body">Great quality for the price. Shipping was super fast too!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- You Might Also Like -->
+    <section class="products-section recommended-section">
+      <h2 class="section-title">You might also like</h2>
+      <div class="product-grid" id="recommended-grid">
+        <div class="product-card" data-id="varsity-jacket" data-name="Varsity Jacket" data-price="120"
+          data-image="images/versity jacket.png" data-rating="4.5/5">
+          <div class="product-image-container">
+            <img src="images/versity jacket.png" alt="Varsity Jacket" class="product-image" />
+            <button class="wishlist-btn" aria-label="Add to wishlist">
+              <i class="ph ph-heart"></i>
+            </button>
+            <div class="card-hover-actions">
+              <button class="btn btn-primary add-to-cart-btn">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">Varsity Jacket</h3>
+            <div class="product-rating">
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star-half"></i>
+              <span class="rating-text">4.5/5</span>
+            </div>
+            <div class="product-price">
+              <span class="current-price">$120</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-id="white-hoodie" data-name="White Hoodie" data-price="240"
+          data-image="images/White hoodie.png" data-rating="3.5/5">
+          <div class="product-image-container">
+            <img src="images/White hoodie.png" alt="White Hoodie" class="product-image" />
+            <button class="wishlist-btn" aria-label="Add to wishlist">
+              <i class="ph ph-heart"></i>
+            </button>
+            <div class="card-hover-actions">
+              <button class="btn btn-primary add-to-cart-btn">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">White Hoodie</h3>
+            <div class="product-rating">
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph ph-star"></i>
+              <span class="rating-text">3.5/5</span>
+            </div>
+            <div class="product-price">
+              <span class="current-price">$240</span>
+              <span class="original-price">$260</span>
+              <span class="discount-badge">-20%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-id="black-tshirts-pack" data-name="Black Tshirts" data-price="180"
+          data-image="images/Balck tshirts.png" data-rating="4.5/5">
+          <div class="product-image-container">
+            <img src="images/Balck tshirts.png" alt="Black Tshirts" class="product-image" />
+            <button class="wishlist-btn" aria-label="Add to wishlist">
+              <i class="ph ph-heart"></i>
+            </button>
+            <div class="card-hover-actions">
+              <button class="btn btn-primary add-to-cart-btn">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">Black Tshirts</h3>
+            <div class="product-rating">
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star-half"></i>
+              <span class="rating-text">4.5/5</span>
+            </div>
+            <div class="product-price">
+              <span class="current-price">$180</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-id="white-tshirts" data-name="White Tshirts" data-price="80"
+          data-image="images/White tshirts.png" data-rating="3.0/5">
+          <div class="product-image-container">
+            <img src="images/White tshirts.png" alt="White Tshirts" class="product-image" />
+            <button class="wishlist-btn" aria-label="Add to wishlist">
+              <i class="ph ph-heart"></i>
+            </button>
+            <div class="card-hover-actions">
+              <button class="btn btn-primary add-to-cart-btn">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">White Tshirts</h3>
+            <div class="product-rating">
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph ph-star"></i>
+              <i class="ph ph-star"></i>
+              <span class="rating-text">3.0/5</span>
+            </div>
+            <div class="product-price">
+              <span class="current-price">$80</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+  </main>
+
+  <!-- 8. Footer -->
+  <footer class="footer" id="footer">
+    <!-- Content injected by script.js -->
+  </footer>
+
+  <!-- Overlay for mobile menu -->
+  <div class="mobile-menu-overlay"></div>
+
+  <!-- Local Modal Overlay (Fallback) -->
+  <div class="modal-overlay" id="modal-overlay"></div>
+
+  <!-- Add to Cart Success Modal -->
+  <div class="modal" id="cart-modal">
+    <button class="close-modal"><i class="ph ph-x"></i></button>
+    <div class="modal-body text-center">
+      <div class="modal-success-icon"><i class="ph-fill ph-check-circle"></i></div>
+      <h3 class="modal-title">Item Added to Cart</h3>
+      <div class="modal-product-inline">
+        <img src="" alt="" id="cart-modal-img" class="modal-product-img-small" />
+        <div class="modal-product-details-small">
+          <h4 class="modal-product-name" id="cart-modal-name">Product Name</h4>
+          <p class="modal-product-price" id="cart-modal-price">$0</p>
+        </div>
+      </div>
+      <div class="modal-actions-row">
+        <button class="btn btn-outline continue-shopping-btn">Continue Shopping</button>
+        <button class="btn btn-primary go-to-cart-btn">Go to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buy Now Modal -->
+  <div class="modal" id="checkout-modal">
+    <button class="close-modal"><i class="ph ph-x"></i></button>
+    <div class="modal-body">
+      <h3 class="modal-title">Quick Checkout</h3>
+
+      <div class="modal-product-summary">
+        <img src="images/Balck Tshirt.png" alt="Product" class="modal-product-img" id="checkout-modal-img" />
+        <div class="modal-product-info">
+          <h4 class="modal-product-name" id="checkout-modal-name">
+            Black Tshirt
+          </h4>
+          <p class="modal-product-details-text">Large / Black</p>
+          <div class="quantity-selector-box">
+            <span class="qty-label">Quantity:</span>
+            <div class="quantity-selector">
+              <span class="qty-display-checkout">1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkout-summary">
+        <div class="summary-row">
+          <span class="text-muted">Subtotal</span>
+          <strong class="modal-subtotal">$145.00</strong>
+        </div>
+        <div class="summary-row">
+          <span class="text-muted">Shipping</span>
+          <strong>$10.00</strong>
+        </div>
+        <hr class="summary-divider" />
+        <div class="summary-row total-row">
+          <span>Total</span>
+          <strong class="modal-total">$155.00</strong>
+        </div>
+      </div>
+      <div class="modal-actions-col">
+        <button class="btn btn-primary proceed-checkout-btn full-width">
+          Proceed to Checkout
+        </button>
+        <button class="btn btn-outline cancel-btn full-width">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Image Lightbox Modal -->
+  <div class="modal lightbox-modal" id="image-lightbox-modal">
+    <button class="close-lightbox"><i class="ph ph-x"></i></button>
+    <div class="lightbox-content">
+      <img src="images/Balck Tshirt.png" alt="Fullscreen Image" id="lightbox-image" />
+    </div>
+    <div class="lightbox-nav">
+      <button class="lightbox-btn" id="lightbox-prev">
+        <i class="ph ph-caret-left"></i>
+      </button>
+      <button class="lightbox-btn" id="lightbox-next">
+        <i class="ph ph-caret-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Sticky Bar -->
+  <div class="mobile-sticky-action-bar">
+    <div class="sticky-price-box">
+      <span class="sticky-price">$145</span>
+    </div>
+    <div class="sticky-actions">
+      <button class="btn btn-primary add-to-cart-main-btn-sticky">
+        Add to Cart
+      </button>
+      <button class="btn btn-primary buy-now-main-btn-sticky">Buy Now</button>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast">Added to wishlist</div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

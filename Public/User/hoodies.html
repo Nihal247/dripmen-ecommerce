@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DripMen | Hoodies</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- 1. Top Announcement Bar -->
+  <div class="announcement-bar" id="announcement-bar">
+    <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+    <button class="close-announcement" aria-label="Close">
+      <i class="ph ph-x"></i>
+    </button>
+  </div>
+
+  <!-- 2. Navbar -->
+  <header class="navbar">
+    <!-- Content injected by script.js -->
+  </header>
+
+  <main class="products-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-container">
+      <nav class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator"><i class="ph ph-caret-right"></i></span>
+        <span class="current">Hoodies</span>
+      </nav>
+    </div>
+
+    <section class="products-main-section">
+      <div class="products-layout">
+        <!-- Mobile Filter Toggle -->
+        <div class="mobile-filter-header">
+          <button class="filter-toggle-btn" id="filter-toggle-btn">
+            <i class="ph ph-sliders"></i> Filters
+          </button>
+        </div>
+
+        <!-- Filters Sidebar -->
+        <aside class="filters-sidebar" id="filters-sidebar">
+          <div class="filter-header-mobile">
+            <h2>Filters</h2>
+            <button class="close-filter-btn" id="close-filter-btn">
+              <i class="ph ph-x"></i>
+            </button>
+          </div>
+
+          <div class="filter-section header-desktop">
+            <h2 class="filter-title">
+              Filters <i class="ph ph-sliders"></i>
+            </h2>
+          </div>
+          <hr class="filter-divider" />
+
+          <!-- Categories -->
+          <div class="filter-section">
+            <ul class="category-list">
+              <li>
+                <a href="tshirts.html">T-shirts <i class="ph ph-caret-right"></i></a>
+              </li>
+              <li>
+                <a href="jackets.html">Jackets <i class="ph ph-caret-right"></i></a>
+              </li>
+              <li>
+                <a href="sweatshirts.html">Sweatshirts <i class="ph ph-caret-right"></i></a>
+              </li>
+              <li>
+                <a href="hoodies.html">Hoodies <i class="ph ph-caret-right"></i></a>
+              </li>
+            </ul>
+          </div>
+          <hr class="filter-divider" />
+
+          <!-- Price -->
+          <div class="filter-section">
+            <div class="filter-title-row">
+              <h3>Price</h3>
+              <i class="ph ph-caret-up"></i>
+            </div>
+            <div class="price-slider-container">
+              <div class="slider-track" id="slider-track"></div>
+              <input type="range" min="50" max="200" value="50" class="price-range min-range" id="min-range" />
+              <input type="range" min="50" max="200" value="200" class="price-range max-range" id="max-range" />
+              <div class="price-values">
+                <span class="min-val" id="min-val">$50</span>
+                <span class="max-val" id="max-val">$200</span>
+              </div>
+            </div>
+          </div>
+          <hr class="filter-divider" />
+
+          <!-- Colors -->
+          <div class="filter-section">
+            <div class="filter-title-row">
+              <h3>Colors</h3>
+              <i class="ph ph-caret-up"></i>
+            </div>
+            <div class="color-options">
+              <button class="color-swatch bg-black" aria-label="Black"></button>
+              <button class="color-swatch bg-white" aria-label="White">
+                <i class="ph ph-check" style="color: black; display: none"></i>
+              </button>
+              <button class="color-swatch bg-blue active" aria-label="Blue">
+                <i class="ph ph-check"></i>
+              </button>
+              <button class="color-swatch bg-gray" aria-label="Grey" style="background-color: gray;"></button>
+            </div>
+          </div>
+          <hr class="filter-divider" />
+
+          <!-- Size -->
+          <div class="filter-section">
+            <div class="filter-title-row">
+              <h3>Size</h3>
+              <i class="ph ph-caret-up"></i>
+            </div>
+            <div class="size-options">
+              <button class="size-pill">S</button>
+              <button class="size-pill">M</button>
+              <button class="size-pill active">L</button>
+              <button class="size-pill">XL</button>
+            </div>
+          </div>
+          <hr class="filter-divider" />
+
+          <!-- Availability -->
+          <div class="filter-section">
+            <div class="filter-title-row">
+              <h3>Availability</h3>
+              <i class="ph ph-caret-up"></i>
+            </div>
+            <div class="checkbox-options">
+              <label class="checkbox-label">
+                <input type="checkbox" checked /> In Stock
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" /> Out of Stock
+              </label>
+            </div>
+          </div>
+
+          <div class="filter-action">
+            <button class="btn btn-primary full-width apply-filter-btn">
+              Apply Filter
+            </button>
+          </div>
+        </aside>
+
+        <!-- Products View -->
+        <div class="products-view">
+          <!-- Top header of grid (Title and sorting) -->
+          <div class="products-header">
+            <div class="products-meta">
+              <div class="sort-by">
+                Sort by: <strong>Most Popular</strong>
+                <i class="ph ph-caret-down"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid -->
+          <div class="products-grid-view">
+
+            <div class="product-card" data-id="black-hoodie" data-name="Black Hoodie" data-price="100"
+              data-image="images/Balck Hoodie.png" data-rating="4.5/5">
+              <div class="product-image-container">
+                <img src="images/Balck Hoodie.png" alt="Black Hoodie" class="product-image"
+                  style="object-fit: contain; width: 100%; height: 100%;" />
+                <button class="wishlist-btn" aria-label="Add to wishlist">
+                  <i class="ph ph-heart"></i>
+                </button>
+                <div class="card-hover-actions">
+                  <button class="btn btn-primary add-to-cart-btn">
+                    <i class="ph ph-shopping-cart"></i> Add to Cart
+                  </button>
+                </div>
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Black Hoodie</h3>
+                <div class="product-rating">
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star-half"></i>
+                  <span class="rating-text">4.5/5</span>
+                </div>
+                <div class="product-price">
+                  <span class="current-price">$100</span>
+                  <span class="original-price">$130</span>
+                  <span class="discount-badge">-20%</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-card" data-id="blue-hoodie" data-name="Blue Hoodie" data-price="115"
+              data-image="images/Blue Hoodie.png" data-rating="4.0/5">
+              <div class="product-image-container">
+                <img src="images/Blue Hoodie.png" alt="Blue Hoodie" class="product-image"
+                  style="object-fit: contain; width: 100%; height: 100%;" />
+                <button class="wishlist-btn" aria-label="Add to wishlist">
+                  <i class="ph ph-heart"></i>
+                </button>
+                <div class="card-hover-actions">
+                  <button class="btn btn-primary add-to-cart-btn">
+                    <i class="ph ph-shopping-cart"></i> Add to Cart
+                  </button>
+                </div>
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Blue Hoodie</h3>
+                <div class="product-rating">
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph ph-star"></i>
+                  <span class="rating-text">4.0/5</span>
+                </div>
+                <div class="product-price">
+                  <span class="current-price">$115</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-card" data-id="saint-hoodie" data-name="Saint Hoodie" data-price="115"
+              data-image="images/Saint Hoodie.png" data-rating="4.0/5">
+              <div class="product-image-container">
+                <img src="images/Saint Hoodie.png" alt="Saint Hoodie" class="product-image"
+                  style="object-fit: contain; width: 100%; height: 100%;" />
+                <button class="wishlist-btn" aria-label="Add to wishlist">
+                  <i class="ph ph-heart"></i>
+                </button>
+                <div class="card-hover-actions">
+                  <button class="btn btn-primary add-to-cart-btn">
+                    <i class="ph ph-shopping-cart"></i> Add to Cart
+                  </button>
+                </div>
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Saint Hoodie</h3>
+                <div class="product-rating">
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph ph-star"></i>
+                  <span class="rating-text">4.0/5</span>
+                </div>
+                <div class="product-price">
+                  <span class="current-price">$115</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-card" data-id="white-hoodie" data-name="White Hoodie" data-price="145"
+              data-image="images/White hoodie.png" data-rating="4.5/5">
+              <div class="product-image-container">
+                <img src="images/White hoodie.png" alt="White Hoodie" class="product-image"
+                  style="object-fit: contain; width: 100%; height: 100%;" />
+                <button class="wishlist-btn" aria-label="Add to wishlist">
+                  <i class="ph ph-heart"></i>
+                </button>
+                <div class="card-hover-actions">
+                  <button class="btn btn-primary add-to-cart-btn">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">White Hoodie</h3>
+                <div class="product-rating">
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star"></i>
+                  <i class="ph-fill ph-star-half"></i>
+                  <span class="rating-text">4.5/5</span>
+                </div>
+                <div class="product-price">
+                  <span class="current-price">$145</span>
+                  <span class="original-price">$175</span>
+                  <span class="discount-badge">-20%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Grid -->
+
+          <hr class="pagination-divider" />
+
+          <!-- Pagination -->
+          <div class="pagination">
+            <button class="pagination-btn prev-btn">
+              <i class="ph ph-arrow-left"></i> Previous
+            </button>
+            <div class="page-numbers">
+              <button class="page-num active">1</button>
+              <button class="page-num">2</button>
+            </div>
+            <button class="pagination-btn next-btn">
+              Next <i class="ph ph-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Global Modal Overlay -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+
+    <!-- Add to Cart Success Modal -->
+    <div class="modal" id="cart-modal">
+      <button class="close-modal"><i class="ph ph-x"></i></button>
+      <div class="modal-body text-center">
+        <div class="modal-success-icon"><i class="ph-fill ph-check-circle"></i></div>
+        <h3 class="modal-title">Item Added to Cart</h3>
+        <div class="modal-product-inline">
+          <img src="" alt="" id="cart-modal-img" class="modal-product-img-small" />
+          <div class="modal-product-details-small">
+            <h4 class="modal-product-name" id="cart-modal-name">Product Name</h4>
+            <p class="modal-product-price" id="cart-modal-price">$0</p>
+          </div>
+        </div>
+        <div class="modal-actions-row">
+          <button class="btn btn-outline continue-shopping-btn">Continue Shopping</button>
+          <button class="btn btn-primary go-to-cart-btn">Go to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Size Selection Modal -->
+    <div class="modal" id="size-selection-modal">
+      <button class="close-modal"><i class="ph ph-x"></i></button>
+      <div class="modal-body">
+        <h3 class="modal-title">Select Size</h3>
+        <div class="modal-product-inline">
+          <img src="" alt="Product" class="modal-product-img-small" id="size-modal-img" />
+          <div class="modal-product-details-small">
+            <h4 class="modal-product-name" id="size-modal-name">Product Name</h4>
+            <p class="modal-product-price" id="size-modal-price">$0</p>
+          </div>
+        </div>
+        <div class="size-selection-container">
+          <p class="selection-label">Choose your size:</p>
+          <div class="size-options-grid">
+            <button class="size-btn" data-size="S">S</button>
+            <button class="size-btn" data-size="M">M</button>
+            <button class="size-btn active" data-size="L">L</button>
+            <button class="size-btn" data-size="XL">XL</button>
+          </div>
+        </div>
+        <button id="confirm-size-btn" class="btn btn-primary full-width">Add to Cart</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 8. Footer -->
+  <footer class="footer" id="footer">
+    <!-- Content injected by script.js -->
+  </footer>
+
+  <!-- Overlay for mobile menu -->
+  <div class="mobile-menu-overlay"></div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
