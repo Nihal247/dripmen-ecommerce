@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DripMen | My Payment Options</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Top Announcement Bar -->
+    <div class="announcement-bar" id="announcement-bar">
+        <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+        <button class="close-announcement" aria-label="Close">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <!-- Content injected by script.js -->
+    </header>
+
+    <main class="account-page payment-page">
+        <div class="account-container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <a href="account.html">My Account</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <span class="current">My Payment Options</span>
+            </nav>
+
+            <div class="account-layout">
+                <!-- Sidebar -->
+                <aside class="account-sidebar">
+                    <div class="account-nav-section">
+                        <h3 class="account-nav-title">Manage My Account</h3>
+                        <div class="account-nav-list">
+                            <a href="account.html">My Profile</a>
+                            <a href="address.html">Address Book</a>
+                            <a href="payment.html" class="active">My Payment Options</a>
+                        </div>
+                    </div>
+                    <div class="account-nav-section">
+                        <h3 class="account-nav-title">My Orders</h3>
+                        <div class="account-nav-list">
+                            <a href="orders.html">My Orders</a>
+                            <a href="returns.html">My Returns</a>
+                            <a href="cancellations.html">My Cancellations</a>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="account-content">
+                    <div class="account-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>My Payment Options</h2>
+                    </div>
+
+                    <!-- Wallet Section -->
+                    <div class="wallet-section">
+                        <div class="wallet-card-display">
+                            <div class="wallet-icon-bg">
+                                <i class="ph-fill ph-wallet"></i>
+                            </div>
+                            <div class="wallet-details">
+                                <span class="wallet-label">DripMen Wallet Balance</span>
+                                <h3 class="wallet-amount">$0.00</h3>
+                            </div>
+                            <button class="btn btn-outline-light">Top Up</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem; margin-bottom: 1rem;">
+                        <h3 class="section-subtitle" style="margin: 0;">Saved Cards</h3>
+                        <button class="btn btn-primary" id="add-card-btn" style="padding: 0.75rem 1.5rem; font-size: 0.9rem;">+ Add New Card</button>
+                    </div>
+                    <div class="payment-grid" id="payment-grid">
+                        <!-- Cards will be injected here by script.js -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <!-- Content injected by script.js -->
+    </footer>
+
+    <!-- Overlay for mobile menu -->
+    <div class="mobile-menu-overlay"></div>
+
+    <!-- Add Card Modal -->
+    <div class="modal" id="add-card-modal">
+        <button class="close-modal"><i class="ph ph-x"></i></button>
+        <div class="modal-body">
+            <h3 class="modal-title">Add New Card</h3>
+            <form id="add-card-form" class="account-form">
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" name="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                </div>
+                <div class="form-group">
+                    <label>Card Holder Name</label>
+                    <input type="text" name="cardHolder" placeholder="Name on Card" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Expiry Date</label>
+                        <input type="text" name="expiry" placeholder="MM/YY" maxlength="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CVV</label>
+                        <input type="password" name="cvv" placeholder="123" maxlength="3" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary full-width">Save Card</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

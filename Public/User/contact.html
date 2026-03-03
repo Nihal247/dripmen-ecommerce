@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DripMen | Contact Us</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Top Announcement Bar -->
+    <div class="announcement-bar" id="announcement-bar">
+        <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+        <button class="close-announcement" aria-label="Close">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <!-- Content injected by script.js -->
+    </header>
+
+    <main class="contact-page">
+        <div class="contact-container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <span class="current">Contact</span>
+            </nav>
+
+            <div class="contact-layout">
+                <!-- Left Panel: Info -->
+                <div class="contact-info-panel">
+                    <div class="contact-section">
+                        <div class="contact-header">
+                            <div class="icon-circle"><i class="ph ph-phone"></i></div>
+                            <h3>Call To Us</h3>
+                        </div>
+                        <p>We are available 24/7, 7 days a week.</p>
+                        <p>Phone: +8801611112222</p>
+                    </div>
+                    <hr class="contact-divider">
+                    <div class="contact-section">
+                        <div class="contact-header">
+                            <div class="icon-circle"><i class="ph ph-envelope"></i></div>
+                            <h3>Write To Us</h3>
+                        </div>
+                        <p>Fill out our form and we will contact you within 24 hours.</p>
+                        <p>Emails: customer@dripmen.com</p>
+                        <p>Emails: support@dripmen.com</p>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Form -->
+                <div class="contact-form-panel">
+                    <form id="contact-form">
+                        <div class="form-row-3">
+                            <input type="text" name="name" placeholder="Your Name *" required class="contact-input">
+                            <input type="email" name="email" placeholder="Your Email *" required class="contact-input">
+                            <input type="tel" name="phone" placeholder="Your Phone *" required class="contact-input">
+                        </div>
+                        <textarea name="message" placeholder="Your Message" rows="8" class="contact-textarea"></textarea>
+                        <div class="form-actions-right">
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <!-- Content injected by script.js -->
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

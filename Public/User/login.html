@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DripMen | Login</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Top Announcement Bar -->
+    <div class="announcement-bar" id="announcement-bar">
+        <span>Sign up and get 20% off to your first order. <a href="signup.html" style="text-decoration: underline;">Sign Up Now</a></span>
+        <button class="close-announcement" aria-label="Close">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <!-- Content injected by script.js -->
+    </header>
+
+    <main class="auth-page">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-container">
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <span class="current">Login</span>
+            </nav>
+        </div>
+
+        <div class="auth-split-layout">
+            <div class="auth-image-side">
+                <img src="images/signup-image.png" alt="Login" class="auth-cover-image" onerror="this.style.display='none'">
+                <div class="auth-side-content">
+                    <h2 class="auth-side-heading">Welcome Back</h2>
+                    <p class="auth-side-subtext">Login to access your exclusive drops and saved items.</p>
+                </div>
+            </div>
+            
+            <div class="auth-form-side">
+                <h1 class="auth-heading">Log in to DripMen</h1>
+                <p class="auth-subheading">Enter your details below</p>
+                
+                <form class="auth-form">
+                    <div class="input-group-underlined">
+                        <input type="email" placeholder="Email or Phone Number" required>
+                    </div>
+                    <div class="input-group-underlined">
+                        <input type="password" placeholder="Password" required>
+                    </div>
+                    
+                    <div class="form-actions-row">
+                        <button type="button" class="btn btn-primary" onclick="window.location.href='account.html'">Log In</button>
+                        <a href="forgot-password.html" class="forgot-password-link">Forget Password?</a>
+                    </div>
+                </form>
+                
+                <div class="auth-footer-text">
+                    <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <!-- Content injected by script.js -->
+    </footer>
+
+    <!-- Overlay for mobile menu -->
+    <div class="mobile-menu-overlay"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

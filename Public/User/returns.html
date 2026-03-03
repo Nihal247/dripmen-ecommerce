@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DripMen | My Returns</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Top Announcement Bar -->
+    <div class="announcement-bar" id="announcement-bar">
+        <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+        <button class="close-announcement" aria-label="Close">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <!-- Content injected by script.js -->
+    </header>
+
+    <main class="account-page returns-page">
+        <div class="account-container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <a href="account.html">My Account</a>
+                <span class="separator"><i class="ph ph-caret-right"></i></span>
+                <span class="current">My Returns</span>
+            </nav>
+
+            <div class="account-layout">
+                <!-- Sidebar -->
+                <aside class="account-sidebar">
+                    <div class="account-nav-section">
+                        <h3 class="account-nav-title">Manage My Account</h3>
+                        <div class="account-nav-list">
+                            <a href="account.html">My Profile</a>
+                            <a href="address.html">Address Book</a>
+                            <a href="payment.html">My Payment Options</a>
+                        </div>
+                    </div>
+                    <div class="account-nav-section">
+                        <h3 class="account-nav-title">My Orders</h3>
+                        <div class="account-nav-list">
+                            <a href="orders.html">My Orders</a>
+                            <a href="returns.html" class="active">My Returns</a>
+                            <a href="cancellations.html">My Cancellations</a>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="account-content">
+                    <div class="account-header">
+                        <h2>My Returns</h2>
+                    </div>
+
+                    <div class="returns-list" id="returns-list">
+                        <!-- Returns will be injected here by script.js -->
+                        <div class="empty-cart-state" style="padding: 2rem 0;">
+                            <div class="empty-cart-icon" style="font-size: 3rem;">
+                                <i class="ph ph-arrow-u-up-left"></i>
+                            </div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">No returns yet</h3>
+                            <p style="margin-bottom: 1.5rem;">You haven't returned any orders yet.</p>
+                            <a href="products.html" class="btn btn-primary">Start Shopping</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <!-- Content injected by script.js -->
+    </footer>
+
+    <!-- Overlay for mobile menu -->
+    <div class="mobile-menu-overlay"></div>
+
+    <!-- Order Details Modal -->
+    <div class="modal" id="order-details-modal">
+        <button class="close-modal"><i class="ph ph-x"></i></button>
+        <div class="modal-body">
+            <div class="modal-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 class="modal-title" style="margin: 0;">Return Details</h3>
+                <span class="order-status-badge" id="modal-order-status"></span>
+            </div>
+            
+            <div class="order-details-box">
+                <p>Return ID: <span id="modal-order-id">#000000</span></p>
+                <p>Date: <span id="modal-order-date">Jan 01, 2024</span></p>
+            </div>
+
+            <div id="modal-order-items" class="modal-product-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 1.5rem;">
+                <!-- Items injected via JS -->
+            </div>
+
+            <div class="order-details-box">
+                <p>Refund Amount: <span id="modal-order-total">$0.00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
