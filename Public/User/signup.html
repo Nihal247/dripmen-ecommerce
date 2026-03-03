@@ -52,16 +52,16 @@
                     
                     <form id="signup-form" class="auth-form">
                         <div class="input-group-underlined">
-                            <input type="text" id="signup-name" placeholder="Full Name" required>
+                            <input type="text" id="signup-name" name="name" placeholder="Full Name" required>
                         </div>
                         <div class="input-group-underlined">
-                            <input type="email" id="signup-email" placeholder="Email Address" required>
+                            <input type="email" id="signup-email" name="email" placeholder="Email Address" required>
                         </div>
                         <div class="input-group-underlined">
-                            <input type="password" id="signup-password" placeholder="Password" required>
+                        <input type="password"id="signup-password" name="Password" placeholder="Password" requiredminlength="6"pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}"title="Must contain at least 6 characters, including uppercase, lowercase, and number">
                         </div>
                         <div class="input-group-underlined">
-                            <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+                            <input type="password" id="signup-confirm-password" name="confirmPassword" placeholder="Confirm Password" required>
                         </div>
                         
                         <button type="submit" class="btn btn-primary full-width" style="margin-top: 1rem;">Sign Up</button>
@@ -79,7 +79,7 @@
                     
                     <form id="signup-otp-form" class="auth-form">
                         <div class="input-group-underlined">
-                            <input type="text" id="signup-otp" placeholder="Enter Code (Try 1234)" required maxlength="4" style="letter-spacing: 4px; font-weight: 600;">
+                            <input type="text" id="signup-otp" name="otp" placeholder="Enter 4-digit code" required maxlength="4">
                         </div>
                         <button type="submit" class="btn btn-primary full-width" style="margin-top: 1rem;">Verify & Create Account</button>
                     </form>
