@@ -23,9 +23,8 @@
                 <a href="admin-orders.html" class="nav-item"><i class="ph ph-shopping-cart"></i> Orders</a>
                 <a href="admin-coupons.html" class="nav-item"><i class="ph ph-ticket"></i> Coupons</a>
                 <a href="admin-banners.html" class="nav-item"><i class="ph ph-image"></i> Banners</a>
-                <a href="admin-wallet.html" class="nav-item"><i class="ph ph-wallet"></i> Wallet</a>
-                <a href="admin-analytics.html" class="nav-item"><i class="ph ph-chart-line-up"></i> Analytics</a>
-                <a href="#" class="nav-item"><i class="ph ph-gear"></i> Settings</a>
+                <a href="admin-transactions.html" class="nav-item"><i class="ph ph-receipt"></i> Transactions</a>
+                <a href="admin-sales-report.html" class="nav-item"><i class="ph ph-chart-bar"></i> Sales Report</a>
             </nav>
             <div class="sidebar-footer"><a href="index.html" class="nav-item"><i class="ph ph-sign-out"></i> Logout</a></div>
         </aside>
@@ -43,14 +42,11 @@
                 <div class="admin-card-item">
                     <img src="images/t shirtCart.png" alt="T-Shirts" class="admin-card-img">
                     <div class="admin-card-body">
-                        <div class="admin-card-header">
-                            <h3 class="admin-card-title">T-Shirts</h3>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
+                        <h3 class="admin-card-title">T-Shirts</h3>
                         <p style="color: var(--text-gray); font-size: 0.9rem;">124 Products</p>
                         <div class="admin-card-actions">
                             <button class="action-btn"><i class="ph ph-pencil-simple"></i></button>
-                            <button class="action-btn delete"><i class="ph ph-trash"></i></button>
+                            <button class="status-btn status-active">Enabled</button>
                         </div>
                     </div>
                 </div>
@@ -58,19 +54,53 @@
                 <div class="admin-card-item">
                     <img src="images/hoodieCAt.png" alt="Hoodies" class="admin-card-img">
                     <div class="admin-card-body">
-                        <div class="admin-card-header">
-                            <h3 class="admin-card-title">Hoodies</h3>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
+                        <h3 class="admin-card-title">Hoodies</h3>
                         <p style="color: var(--text-gray); font-size: 0.9rem;">85 Products</p>
                         <div class="admin-card-actions">
                             <button class="action-btn"><i class="ph ph-pencil-simple"></i></button>
-                            <button class="action-btn delete"><i class="ph ph-trash"></i></button>
+                            <button class="status-btn status-active">Enabled</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category Card 3 -->
+                <div class="admin-card-item">
+                    <img src="images/sweatshitrsCat.png" alt="Sweatshirts" class="admin-card-img">
+                    <div class="admin-card-body">
+                        <h3 class="admin-card-title">Sweatshirts</h3>
+                        <p style="color: var(--text-gray); font-size: 0.9rem;">64 Products</p>
+                        <div class="admin-card-actions">
+                            <button class="action-btn"><i class="ph ph-pencil-simple"></i></button>
+                            <button class="status-btn status-active">Enabled</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category Card 4 -->
+                <div class="admin-card-item">
+                    <img src="images/jacketCat.png" alt="Jackets" class="admin-card-img">
+                    <div class="admin-card-body">
+                        <h3 class="admin-card-title">Jackets</h3>
+                        <p style="color: var(--text-gray); font-size: 0.9rem;">42 Products</p>
+                        <div class="admin-card-actions">
+                            <button class="action-btn"><i class="ph ph-pencil-simple"></i></button>
+                            <button class="status-btn status-active">Enabled</button>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+    <script>
+        document.querySelectorAll('.status-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.classList.contains('status-active')) {
+                    this.classList.replace('status-active', 'status-blocked');
+                    this.textContent = 'Disabled';
+                } else {
+                    this.classList.replace('status-blocked', 'status-active');
+                    this.textContent = 'Enabled';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

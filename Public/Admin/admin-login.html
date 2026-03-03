@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DripMen Admin | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-login-body">
+    <div class="login-card">
+        <div class="logo login-logo">DRIPMEN</div>
+        <p class="login-title">Login to access the admin panel</p>
+        
+        <form class="login-form" action="admin.html">
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <div class="input-wrapper">
+                    <i class="ph ph-envelope"></i>
+                    <input type="email" class="form-input" placeholder="Enter your email" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <i class="ph ph-lock"></i>
+                    <input type="password" class="form-input" placeholder="Enter your password" required>
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <label class="checkbox-label">
+                    <input type="checkbox"> Remember me
+                </label>
+                <a href="admin-forgot-password.html" class="forgot-link">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+    </div>
+</body>
+</html>

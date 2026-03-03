@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DripMen Admin | Sales Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="sidebar-overlay"></div>
+        <aside class="admin-sidebar">
+            <div class="sidebar-header"><div class="logo">DRIPMEN</div></div>
+            <nav class="sidebar-nav">
+                <a href="admin.html" class="nav-item"><i class="ph ph-squares-four"></i> Dashboard</a>
+                <a href="admin-users.html" class="nav-item"><i class="ph ph-users"></i> Users</a>
+                <a href="admin-products.html" class="nav-item"><i class="ph ph-t-shirt"></i> Products</a>
+                <a href="admin-categories.html" class="nav-item"><i class="ph ph-tag"></i> Categories</a>
+                <a href="admin-orders.html" class="nav-item"><i class="ph ph-shopping-cart"></i> Orders</a>
+                <a href="admin-coupons.html" class="nav-item"><i class="ph ph-ticket"></i> Coupons</a>
+                <a href="admin-banners.html" class="nav-item"><i class="ph ph-image"></i> Banners</a>
+                <a href="admin-transactions.html" class="nav-item"><i class="ph ph-receipt"></i> Transactions</a>
+                <a href="admin-sales-report.html" class="nav-item active"><i class="ph ph-chart-bar"></i> Sales Report</a>
+            </nav>
+            <div class="sidebar-footer"><a href="index.html" class="nav-item"><i class="ph ph-sign-out"></i> Logout</a></div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="menu-toggle"><i class="ph ph-list"></i></button>
+                    <h2 class="page-title">Sales Report</h2>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline"><i class="ph ph-download-simple"></i> Download PDF</button>
+                    <button class="btn btn-primary"><i class="ph ph-file-xls"></i> Export Excel</button>
+                </div>
+            </header>
+
+            <div class="products-toolbar" style="flex-wrap: wrap; gap: 1rem; height: auto;">
+                <div class="filters" style="flex-wrap: wrap; align-items: flex-end; width: 100%;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Start Date</label>
+                        <input type="date" class="form-input" style="height: 42px; padding: 0 1rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">End Date</label>
+                        <input type="date" class="form-input" style="height: 42px; padding: 0 1rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                         <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Report Type</label>
+                        <select class="filter-select" style="height: 42px;">
+                            <option>Daily</option>
+                            <option>Weekly</option>
+                            <option>Monthly</option>
+                            <option>Yearly</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="height: 42px;">Generate Report</button>
+                </div>
+            </div>
+
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue-light text-blue"><i class="ph ph-currency-dollar"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Sales</h3>
+                        <p class="stat-value">$12,450</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green-light text-green"><i class="ph ph-shopping-cart"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Orders</h3>
+                        <p class="stat-value">154</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-orange-light text-orange"><i class="ph ph-tag"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Discount</h3>
+                        <p class="stat-value">$1,205</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-orders-section">
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Orders</th>
+                                <th>Gross Sales</th>
+                                <th>Coupon Deductions</th>
+                                <th>Net Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Nov 12, 2023</td>
+                                <td>15</td>
+                                <td>$1,500.00</td>
+                                <td>$150.00</td>
+                                <td><strong>$1,350.00</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Nov 11, 2023</td>
+                                <td>12</td>
+                                <td>$1,200.00</td>
+                                <td>$100.00</td>
+                                <td><strong>$1,100.00</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Nov 10, 2023</td>
+                                <td>20</td>
+                                <td>$2,100.00</td>
+                                <td>$200.00</td>
+                                <td><strong>$1,900.00</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>
