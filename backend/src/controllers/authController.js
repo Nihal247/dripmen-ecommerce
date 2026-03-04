@@ -4,7 +4,8 @@
 import User from "../models/userModel.js";
 import OTP from "../models/otpModel.js";
 import generateToken from "../utils/generateToken.js";
-
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 // ==============================
 // ✅ SEND SIGNUP OTP
 // ==============================
@@ -157,51 +158,81 @@ export const verifySignupOtp = async (req, res) => {
 // ==============================
 export const loginUser = async (req, res) => {
   try {
+
     const { email, password } = req.body;
 
-    // Required validation
     if (!email || !password) {
       return res.status(400).json({
-        status: "error",
-        message: "Email and password are required",
+        success: false,
+        message: "Email and password required"
       });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+const user = await User.findOne({ email }).select("+password");
 
-    if (!user || !(await user.comparePassword(password))) {
+    if (!user) {
       return res.status(401).json({
-        status: "error",
-        error: "INVALID_CREDENTIALS",
-        message: "Invalid email or password",
+        success: false,
+        message: "Invalid credentials"
       });
     }
 
-    if (user.isBlocked) {
-      return res.status(403).json({
-        status: "error",
-        message: "User account is blocked",
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials"
       });
     }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(200).json({
-      status: "success",
-      data: {
-        token: generateToken(user._id),
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-        },
-      },
-      message: "Login successful",
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
     });
 
   } catch (error) {
-    console.error("Login error:", error);
+
     res.status(500).json({
-      status: "error",
-      message: "Server error during login",
+      success: false,
+      message: error.message
     });
+
   }
+};
+
+// ==============================
+// ✅ getCurrentUser
+// ==============================
+export const getCurrentUser = async (req, res) => {
+
+  try {
+
+    const user = await User.findById(req.user.id).select("-password");
+
+    res.json({
+      success: true,
+      user
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
 };
