@@ -346,3 +346,17 @@ main>section:last-child {
     color: var(--text-muted);
 }
 
+/* Mobile Layout Optimization */
+@media (max-width: 768px) {
+    .main-container,
+    .products-main-section,
+    .products-section,
+    .cart-container,
+    .wishlist-container,
+    .checkout-container,
+    .account-container,
+    .single-product-section,
+    .breadcrumb-container {
+        padding: 0 16px;
+    }
+}

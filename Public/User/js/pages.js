@@ -1,3 +1,5 @@
+import { getProductDataFromElement, showCartConfirmModal } from './core.js';
+
 // ==========================================
 export function initProductFilters() {
     // --- 1. Elements ---
@@ -217,10 +219,16 @@ export function initProductFilters() {
 
     // Mobile Buttons
     const applyBtn = document.querySelector('.apply-filter-btn');
+    const overlay = document.querySelector('.mobile-menu-overlay');
+
     if (applyBtn) {
         applyBtn.addEventListener('click', () => {
             const sidebar = document.getElementById('filters-sidebar');
             if (sidebar) sidebar.classList.remove('active');
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.classList.remove('active-filters');
+            }
             document.body.style.overflow = '';
         });
     }
@@ -230,13 +238,32 @@ export function initProductFilters() {
     if (filterToggleBtn && sidebar) {
         filterToggleBtn.addEventListener('click', () => {
             sidebar.classList.add('active');
+            if (overlay) {
+                overlay.classList.add('active');
+                overlay.classList.add('active-filters');
+            }
             document.body.style.overflow = 'hidden';
         });
     }
     if (closeFilterBtn && sidebar) {
         closeFilterBtn.addEventListener('click', () => {
             sidebar.classList.remove('active');
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.classList.remove('active-filters');
+            }
             document.body.style.overflow = '';
+        });
+    }
+
+    if (overlay && sidebar) {
+        overlay.addEventListener('click', () => {
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                overlay.classList.remove('active-filters');
+                document.body.style.overflow = '';
+            }
         });
     }
 
@@ -253,6 +280,8 @@ export function initProductPage() {
 
   const addToCartBtn = document.getElementById('add-to-cart-btn');
   const buyNowBtn = document.getElementById('buy-now-btn');
+  const mobileAddToCartBtn = document.querySelector('.add-to-cart-main-btn-sticky');
+  const mobileBuyNowBtn = document.querySelector('.buy-now-main-btn-sticky');
   const qtyInput = document.querySelector(".qty-input-main");
   const minusBtn = document.querySelector(".qty-minus-main");
   const plusBtn = document.querySelector(".qty-plus-main");
@@ -314,27 +343,29 @@ export function initProductPage() {
     };
   };
 
-  if (addToCartBtn) {
-    addToCartBtn.addEventListener('click', () => {
-      if (!checkAuth("Please login to add to cart")) return;
-      const item = getSelection();
-      if (item) {
-        addToCart(item);
-        showCartConfirmModal(item);
-      }
-    });
-  }
+  const handleAddToCart = () => {
+    if (!checkAuth("Please login to add to cart")) return;
+    const item = getSelection();
+    if (item) {
+      addToCart(item);
+      showCartConfirmModal(item);
+    }
+  };
 
-  if (buyNowBtn) {
-    buyNowBtn.addEventListener('click', () => {
-      if (!checkAuth("Please login to continue")) return;
-      const item = getSelection();
-      if (item) {
-        addToCart(item);
-        window.location.href = "checkout.html";
-      }
-    });
-  }
+  const handleBuyNow = () => {
+    if (!checkAuth("Please login to continue")) return;
+    const item = getSelection();
+    if (item) {
+      addToCart(item);
+      window.location.href = "checkout.html";
+    }
+  };
+
+  if (addToCartBtn) addToCartBtn.addEventListener('click', handleAddToCart);
+  if (mobileAddToCartBtn) mobileAddToCartBtn.addEventListener('click', handleAddToCart);
+
+  if (buyNowBtn) buyNowBtn.addEventListener('click', handleBuyNow);
+  if (mobileBuyNowBtn) mobileBuyNowBtn.addEventListener('click', handleBuyNow);
 
   // Image Gallery
   const mainImage = document.getElementById('main-product-image');

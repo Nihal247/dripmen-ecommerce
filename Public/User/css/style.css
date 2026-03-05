@@ -57,6 +57,7 @@
   gap: 8px;
   font-size: 14px;
   color: var(--text-muted);
+  flex-wrap: wrap;
 }
 
 .breadcrumb a:hover {
@@ -428,7 +429,8 @@
 /* Mobile */
 @media (max-width: 576px) {
   .products-grid-view {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
 }
 /* =========================================================================
@@ -875,21 +877,29 @@
     .filters-sidebar {
         position: fixed;
         top: 0;
-        left: -100%;
+        left: 0;
+        transform: translateX(-100%);
         width: 85%;
         max-width: 320px;
         height: 100vh;
         z-index: 1005;
         border-radius: 0;
-        transition: left 0.3s ease;
+        transition: transform 0.3s ease;
         overflow-y: auto;
         border: none;
         padding: 2rem;
-        box-shadow: var(--shadow-md);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+        background-color: #fff;
     }
 
     .filters-sidebar.active {
-        left: 0;
+        transform: translateX(0);
+    }
+
+    .mobile-menu-overlay.active-filters {
+        z-index: 1000;
+        opacity: 1;
+        visibility: visible;
     }
 
     .filter-header-mobile {
@@ -912,11 +922,51 @@
         display: none;
     }
 
-    .products-grid-view,
-    .product-grid,
     .category-grid {
-        /* Mobile: 1 Column */
         grid-template-columns: 1fr;
+    }
+
+    .products-grid-view,
+    .product-grid {
+        /* Mobile: 2 Columns */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    /* Mobile Product Card Optimization */
+    .product-image-container {
+        height: 160px;
+        padding: 0.5rem;
+    }
+
+    .wishlist-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+        top: 8px;
+        right: 8px;
+    }
+
+    .product-name {
+        font-size: 0.9rem;
+    }
+
+    .product-price .current-price {
+        font-size: 1rem;
+    }
+
+    /* Center align product card content on mobile */
+    .product-info {
+        align-items: center;
+        text-align: center;
+    }
+
+    .product-rating {
+        justify-content: center;
+    }
+
+    .product-price {
+        justify-content: center;
     }
 
     .category-container {
@@ -1501,13 +1551,19 @@
 
 /* Mobile Responsiveness */
 @media (max-width: 992px) {
-    .cart-layout {
+    .cart-layout,
+    .checkout-layout {
         grid-template-columns: 1fr;
     }
 
     .order-summary-card {
         position: static;
         margin-top: 1rem;
+    }
+
+    .checkout-right {
+        position: static;
+        width: 100%;
     }
 }
 
@@ -2746,6 +2802,44 @@
     font-weight: 700;
 }
 
+/* Mobile Orders Page */
+@media (max-width: 768px) {
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .order-header > div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .order-date {
+        margin-left: 0;
+    }
+
+    .order-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .order-footer > div:first-child {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .order-actions-group {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
 /* =========================================================================
    About Page
    ========================================================================= */
@@ -2936,6 +3030,47 @@
 }
 
 /* =========================================================================
+   Mobile Order Details / Invoice
+   ========================================================================= */
+@media (max-width: 768px) {
+    .order-details-page {
+        padding: 1.5rem 0 3rem;
+    }
+
+    .invoice-container {
+        padding: 1.5rem;
+    }
+
+    .invoice-header {
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .invoice-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .invoice-table {
+        font-size: 0.9rem;
+    }
+
+    .invoice-table th,
+    .invoice-table td {
+        padding: 0.75rem 0.25rem;
+    }
+
+    .invoice-summary {
+        max-width: none;
+        margin-left: 0;
+    }
+}
+
+/* =========================================================================
    Contact Page
    ========================================================================= */
 .contact-page {
@@ -3045,4 +3180,3 @@
         grid-template-columns: 1fr;
     }
 }
-
