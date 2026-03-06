@@ -35,13 +35,3 @@ export const protect = (req, res, next) => {
 
   }
 };
-export const getCurrentUser = async (req, res) => {
-
-  const user = await User.findById(req.user.id).select("-password");
-
-  res.json({
-    success: true,
-    user
-  });
-
-};

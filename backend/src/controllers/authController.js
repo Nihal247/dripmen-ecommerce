@@ -6,6 +6,8 @@ import OTP from "../models/otpModel.js";
 import generateToken from "../utils/generateToken.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 // ==============================
 // ✅ SEND SIGNUP OTP
 // ==============================
@@ -157,6 +159,8 @@ export const verifySignupOtp = async (req, res) => {
 // ✅ USER LOGIN
 // ==============================
 export const loginUser = async (req, res) => {
+  console.log("LOGIN BODY:", req.body);
+
   try {
 
     const { email, password } = req.body;
@@ -236,3 +240,104 @@ export const getCurrentUser = async (req, res) => {
   }
 
 };
+
+// ==============================
+// ✅ FORGOT PASSWORD
+// ==============================
+export const forgotPassword = async (req, res) => {
+  try {
+
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found"
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    user.passwordResetToken = resetToken;
+    user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    const resetUrl =
+      `http://localhost:5500/reset-password.html?token=${resetToken}`;
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      to: user.email,
+      subject: "Password Reset",
+      html: `<p>Reset your password:</p>
+             <a href="${resetUrl}">${resetUrl}</a>`
+    });
+
+    res.json({
+      status: "success",
+      message: "Reset link sent to email"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message
+    });
+  }
+};
+
+// ==============================
+// ✅ RESET PASSWORD
+// ==============================
+export const resetPassword = async (req, res) => {
+
+  try {
+
+    const { token, password } = req.body;
+
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        status: "error",
+        message: "Token invalid or expired"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    res.json({
+      status: "success",
+      message: "Password reset successful"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      status: "error",
+      message: error.message
+    });
+
+  }
+};
+

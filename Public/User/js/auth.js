@@ -1,4 +1,6 @@
 // ==========================================
+import { openModal, closeAllModals, showToast } from "./core.js";
+
 export function initAuthSystem() {
     const authModal = document.getElementById('auth-modal');
     const accountIcon = document.querySelector('.account-icon-link');
@@ -100,14 +102,14 @@ export function initAuthSystem() {
     // Check Auth State
     function checkAuth() {
         const isLoggedIn = localStorage.getItem('dripmen_token') === 'true';
-        
+
         if (isLoggedIn) {
             // Logged In State
             if (dropdown) dropdown.style.display = ''; // Reset to CSS hover
             if (accountIcon) {
                 accountIcon.href = 'javascript:void(0)';
                 // Remove click listener that opens modal
-                accountIcon.onclick = null; 
+                accountIcon.onclick = null;
             }
         } else {
             // Logged Out State
@@ -157,18 +159,51 @@ export function initAuthSystem() {
             });
         }
 
+
         // Login Form Submit
         const loginForm = document.getElementById('modal-login-form');
+
         if (loginForm) {
-            loginForm.addEventListener('submit', (e) => {
+            loginForm.addEventListener('submit', async (e) => {
+
                 e.preventDefault();
-                // Simulate API Call
-                localStorage.setItem('dripmen_token', 'true');
-                showToast("Logged in successfully!");
-                closeAllModals();
-                checkAuth();
-                // Optional: Reload to update other UI parts if needed
-                // window.location.reload(); 
+
+                const email = document.getElementById("modal-login-email").value;
+                const password = document.getElementById("modal-login-password").value;
+
+                try {
+
+                    const response = await fetch("http://localhost:4000/api/auth/login", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        showToast(data.message || "Login failed", "error");
+                        return;
+                    }
+
+                    // Save token
+                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("dripmen_token", "true");
+
+                    showToast("Logged in successfully ✅");
+
+                    closeAllModals();
+                    checkAuth();
+
+                } catch (error) {
+
+                    console.error(error);
+                    showToast("Network error. Try again.", "error");
+
+                }
+
             });
         }
 
@@ -177,7 +212,7 @@ export function initAuthSystem() {
         if (signupForm) {
             signupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
+
                 const name = document.getElementById('modal-signup-name').value;
                 const email = document.getElementById('modal-signup-email').value;
                 const password = document.getElementById('modal-signup-password').value;
@@ -276,10 +311,11 @@ export function initAuthSystem() {
     if (signOutBtn) {
         signOutBtn.addEventListener('click', (e) => {
             e.preventDefault();
+            localStorage.removeItem("token");
             localStorage.removeItem('dripmen_token');
             showToast("Signed out successfully");
             checkAuth();
-            
+
             // If on a protected page, redirect to home
             const protectedPages = ['account.html', 'orders.html', 'address.html', 'payment.html', 'returns.html', 'cancellations.html'];
             const currentPage = window.location.pathname.split('/').pop();
