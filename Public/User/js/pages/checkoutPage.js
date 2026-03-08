@@ -8,7 +8,8 @@ import {
   showToast,
   openModal
 } from "../core.js";
-
+import { isValidEmail, isValidPhone } from "../utils/validators.js";
+import { formatDate } from "../utils/helpers.js";
 
 // ==========================================
 // PAGE: CHECKOUT
@@ -102,15 +103,10 @@ export function initCheckoutPage() {
       };
 
       if (!name.value.trim()) showError(name, 'error-name'); else clearError(name, 'error-name');
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.value.trim())) showError(email, 'error-email'); else clearError(email, 'error-email');
-
+      if (!isValidEmail(email.value.trim())) showError(email, 'error-email'); else clearError(email, 'error-email');
       if (!street.value.trim()) showError(street, 'error-street'); else clearError(street, 'error-street');
       if (!city.value.trim()) showError(city, 'error-city'); else clearError(city, 'error-city');
-
-      const mobileRegex = /^\d{10,}$/;
-      if (!mobileRegex.test(mobile.value.replace(/\D/g, ''))) showError(mobile, 'error-mobile'); else clearError(mobile, 'error-mobile');
+      if (!isValidPhone(mobile.value.replace(/\D/g, ''))) showError(mobile, 'error-mobile'); else clearError(mobile, 'error-mobile');
 
       if (!isValid) {
         showToast("Please fix the errors in the form", "error");
@@ -142,7 +138,7 @@ export function initCheckoutPage() {
       const allOrders = JSON.parse(localStorage.getItem('dripmen_orders') || '[]');
       const newOrder = {
         id: "#" + Math.floor(100000 + Math.random() * 900000),
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        date: formatDate(new Date()),
         status: "Processing",
         statusClass: "status-processing",
         total: parseFloat(document.getElementById("checkout-total").textContent.replace('$', '')),

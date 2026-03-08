@@ -1,2 +1,1 @@
-export const API_BASE_URL = "";
-// Future backend endpoints will go here
+export const API_BASE_URL = "http://localhost:4000";

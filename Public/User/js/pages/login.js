@@ -1,4 +1,9 @@
 // ==========================================
+// IMPORTS
+// ==========================================
+import { showToast } from "../core.js";
+
+// ==========================================
 // PAGE: LOGIN
 // ==========================================
 export function initLoginPage() {
@@ -22,15 +27,17 @@ export function initLoginPage() {
 
             if (data.success) {
                 localStorage.setItem("token", data.token);
-                // Also set dripmen_user so checkAuth works on other pages
                 localStorage.setItem("dripmen_user", JSON.stringify({ email }));
-                window.location.href = "account.html";
+                showToast("Logged in successfully ✅");
+                setTimeout(() => {
+                    window.location.href = "account.html";
+                }, 1000);
             } else {
-                alert(data.message || "Login failed. Please try again.");
+                showToast(data.message || "Login failed. Please try again.", "error");
             }
         } catch (error) {
             console.error("Login error:", error);
-            alert("Network error. Please check your connection.");
+            showToast("Network error. Please check your connection.", "error");
         }
     });
 }

@@ -130,7 +130,7 @@ export function initOrdersPage() {
         status: "Delivered",
         statusClass: "status-delivered",
         total: 145.00,
-        items: [{ name: "Black Tshirt", image: "images/Balck Tshirt.png", quantity: 1, size: "L", price: 145.00 }]
+        items: [{ name: "Black Tshirt", image: "images/black-tshirt.png", quantity: 1, size: "L", price: 145.00 }]
       }, {
         id: "#923730",
         date: "Oct 24, 2023",
@@ -138,8 +138,8 @@ export function initOrdersPage() {
         statusClass: "status-processing",
         total: 260.00,
         items: [
-          { name: "White Hoodie", image: "images/White hoodie.png", quantity: 1, size: "M", price: 130.00 },
-          { name: "Varsity Jacket", image: "images/versity jacket.png", quantity: 1, size: "L", price: 130.00 }
+          { name: "White Hoodie", image: "images/white-hoodie.png", quantity: 1, size: "M", price: 130.00 },
+          { name: "Varsity Jacket", image: "images/varsity-jacket.png", quantity: 1, size: "L", price: 130.00 }
         ]
       }];
       localStorage.setItem('dripmen_orders', JSON.stringify(orders));

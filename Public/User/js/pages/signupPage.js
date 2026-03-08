@@ -2,6 +2,7 @@
 // IMPORTS
 // ==========================================
 import { showToast } from "../core.js";
+import { isStrongPassword } from "../utils/validators.js";
 
 // ==========================================
 // PAGE: SIGN UP
@@ -30,11 +31,8 @@ export function initSignupPage() {
         return;
       }
 
-      // Strong password validation (Frontend UX only)
-      const strongPasswordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
-
-      if (!strongPasswordRegex.test(password)) {
+      // Strong password validation
+      if (!isStrongPassword(password)) {
         showToast(
           "Password must be at least 6 characters and include uppercase, lowercase, and number",
           "error"
@@ -54,10 +52,10 @@ export function initSignupPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email }), // Only email needed here
+          body: JSON.stringify({ email }),
         });
 
-        const data = await response.json(); // Always parse response first
+        const data = await response.json();
 
         if (!response.ok) {
           showToast(data.message || "Signup failed", "error");

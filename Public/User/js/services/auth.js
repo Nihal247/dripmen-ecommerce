@@ -1,5 +1,5 @@
 // ==========================================
-import { openModal, closeAllModals, showToast } from "./core.js";
+import { openModal, closeAllModals, showToast } from "../core.js";
 
 export function initAuthSystem() {
     const authModal = document.getElementById('auth-modal');

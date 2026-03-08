@@ -15,7 +15,7 @@ import {
 } from "./core.js";
 
 import { renderLayout } from "./layout.js";
-import { initAuthSystem } from "./auth.js";
+import { initAuthSystem } from "./services/auth.js";
 
 // Page modules
 import { initProductFilters } from "./pages/productFilters.js";
