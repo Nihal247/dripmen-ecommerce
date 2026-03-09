@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+
 
 const app = express();
 
@@ -20,6 +22,9 @@ app.use(express.json());
 
 // auth routes
 app.use("/api/auth", userRoutes);
+
+// admin routes
+app.use("/api/admin", adminRoutes);
 
 // health check route (optional but useful)
 app.get("/", (req, res) => {
