@@ -26,6 +26,7 @@ import { initCheckoutPage } from "./pages/checkoutPage.js";
 import { initSignupPage } from "./pages/signupPage.js";
 import { initLoginPage } from "./pages/login.js";
 import { initForgotPasswordPage } from "./pages/forgotPasswordPage.js";
+import { initResetPasswordPage } from "./pages/resetPasswordPage.js";
 import { initOrdersPage } from "./pages/ordersPage.js";
 import { initOrderDetailsPage } from "./pages/orderDetailsPage.js";
 import { initAddressPage } from "./pages/addressPage.js";
@@ -33,6 +34,7 @@ import { initContactPage } from "./pages/contactPage.js";
 import { initPaymentPage } from "./pages/paymentPage.js";
 import { initReturnsPage } from "./pages/returnsPage.js";
 import { initCancellationsPage } from "./pages/cancellationsPage.js";
+import { initAccountPage } from "./pages/accountPage.js";
 
 // ==========================================
 // INIT ON DOM READY
@@ -280,5 +282,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("fp-email-form")) {
     initForgotPasswordPage();
   }
+  if (document.getElementById("reset-password-form")) {
+  initResetPasswordPage();
+}
+  // Account page
+if (document.getElementById("account-form")) {
+  initAccountPage();
+}
 
 });

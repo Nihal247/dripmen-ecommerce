@@ -99,30 +99,50 @@ export function initAuthSystem() {
         </div>`;
     }
 
-    // Check Auth State
-    function checkAuth() {
-        const isLoggedIn = localStorage.getItem('dripmen_token') === 'true';
+   // Check Auth State using /me API
+async function checkAuth() {
 
-        if (isLoggedIn) {
-            // Logged In State
-            if (dropdown) dropdown.style.display = ''; // Reset to CSS hover
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        if (dropdown) dropdown.style.display = "none";
+        return;
+    }
+
+    try {
+
+        const res = await fetch("http://localhost:4000/api/auth/me", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+
+            if (dropdown) dropdown.style.display = "";
+
             if (accountIcon) {
-                accountIcon.href = 'javascript:void(0)';
-                // Remove click listener that opens modal
+                accountIcon.href = "javascript:void(0)";
                 accountIcon.onclick = null;
             }
+
+            console.log("Current user:", data.user);
+
         } else {
-            // Logged Out State
-            if (dropdown) dropdown.style.display = 'none'; // Hide dropdown
-            if (accountIcon) {
-                accountIcon.href = 'javascript:void(0)';
-                accountIcon.onclick = (e) => {
-                    e.preventDefault();
-                    openModal(authModal);
-                };
-            }
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("dripmen_token");
+
+            if (dropdown) dropdown.style.display = "none";
+
         }
+
+    } catch (error) {
+        console.error("Auth check failed:", error);
     }
+}
 
     // Modal Tabs Logic
     if (authModal) {

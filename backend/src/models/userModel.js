@@ -25,11 +25,11 @@ const userSchema = new mongoose.Schema(
       select: false, // hide password by default
     },
 
-    passwordResetToken: {
+    resetPasswordToken: {
       type: String,
     },
 
-    passwordResetExpires: {
+    resetPasswordExpire: {
       type: Date,
     },
 
