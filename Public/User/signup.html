@@ -2,94 +2,193 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DripMen | Sign Up</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DripMen | Sign Up</title>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/style.css" />
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
-    <!-- Navbar -->
-    <header class="navbar">
-        <!-- Content injected by js/script.js -->
-    </header>
 
-    <main class="auth-page">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb-container">
-            <nav class="breadcrumb">
-                <a href="index.html">Home</a>
-                <span class="separator"><i class="ph ph-caret-right"></i></span>
-                <span class="current">Sign Up</span>
-            </nav>
+  <!-- Navbar -->
+  <header class="navbar">
+    <!-- Navbar injected by script.js -->
+  </header>
+
+  <main class="auth-page">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-container">
+      <nav class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator">
+          <i class="ph ph-caret-right"></i>
+        </span>
+        <span class="current">Sign Up</span>
+      </nav>
+    </div>
+
+    <div class="auth-split-layout">
+
+      <!-- Left Image Section -->
+      <div class="auth-image-side">
+
+        <img
+          src="images/signup-image.png"
+          alt="Sign Up"
+          class="auth-cover-image"
+          onerror="this.style.display='none'"
+        />
+
+        <div class="auth-side-content">
+          <h2 class="auth-side-heading">Join the Club</h2>
+          <p class="auth-side-subtext">
+            Create an account to unlock exclusive deals and faster checkout.
+          </p>
         </div>
 
-        <div class="auth-split-layout">
-            <div class="auth-image-side">
-                <img src="images/signup-image.png" alt="Sign Up" class="auth-cover-image" onerror="this.style.display='none'">
-                <div class="auth-side-content">
-                    <h2 class="auth-side-heading">Join the Club</h2>
-                    <p class="auth-side-subtext">Create an account to unlock exclusive deals and faster checkout.</p>
-                </div>
-            </div>
-            
-            <div class="auth-form-side">
-                <!-- Step 1: Sign Up Form -->
-                <div id="signup-step-1">
-                    <h1 class="auth-heading">Create Account</h1>
-                    <p class="auth-subheading">Sign up for free to access exclusive features.</p>
-                    
-                    <form id="signup-form" class="auth-form">
-                        <div class="input-group-underlined">
-                            <input type="text" id="signup-name" name="name" placeholder="Full Name" required>
-                        </div>
-                        <div class="input-group-underlined">
-                            <input type="email" id="signup-email" name="email" placeholder="Email Address" required>
-                        </div>
-                        <div class="input-group-underlined">
-                        <input type="password"id="signup-password" name="Password" placeholder="Password" requiredminlength="6"pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}"title="Must contain at least 6 characters, including uppercase, lowercase, and number">
-                        </div>
-                        <div class="input-group-underlined">
-                            <input type="password" id="signup-confirm-password" name="confirmPassword" placeholder="Confirm Password" required>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary full-width" style="margin-top: 1rem;">Sign Up</button>
-                    </form>
-                    
-                    <div class="auth-footer-text">
-                        <p>Already have an account? <a href="login.html">Login</a></p>
-                    </div>
-                </div>
+      </div>
 
-                <!-- Step 2: OTP Verification -->
-                <div id="signup-step-otp" style="display: none;">
-                    <h1 class="auth-heading">Verify Email</h1>
-                    <p class="auth-subheading">Enter the 4-digit code sent to your email.</p>
-                    
-                    <form id="signup-otp-form" class="auth-form">
-                        <div class="input-group-underlined">
-                            <input type="text" id="signup-otp" name="otp" placeholder="Enter 4-digit code" required maxlength="4">
-                        </div>
-                        <button type="submit" class="btn btn-primary full-width" style="margin-top: 1rem;">Verify & Create Account</button>
-                    </form>
-                </div>
+      <!-- Right Form Section -->
+      <div class="auth-form-side">
+
+        <!-- ============================= -->
+        <!-- STEP 1: SIGNUP FORM -->
+        <!-- ============================= -->
+        <div id="signup-step-1">
+
+          <h1 class="auth-heading">Create Account</h1>
+          <p class="auth-subheading">
+            Sign up for free to access exclusive features.
+          </p>
+
+          <form id="signup-form" class="auth-form">
+
+            <!-- Full Name -->
+            <div class="input-group-underlined">
+              <input
+                type="text"
+                id="signup-name"
+                name="name"
+                placeholder="Full Name"
+                required
+              />
             </div>
+
+            <!-- Email -->
+            <div class="input-group-underlined">
+              <input
+                type="email"
+                id="signup-email"
+                name="email"
+                placeholder="Email Address"
+                required
+              />
+            </div>
+
+            <!-- Password -->
+            <div class="input-group-underlined">
+              <input
+                type="password"
+                id="signup-password"
+                name="password"
+                placeholder="Password"
+                required
+                minlength="6"
+                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}"
+                title="Must contain at least 6 characters including uppercase, lowercase and number"
+              />
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="input-group-underlined">
+              <input
+                type="password"
+                id="signup-confirm-password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                required
+              />
+            </div>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              class="btn btn-primary full-width"
+              style="margin-top: 1rem;"
+            >
+              Sign Up
+            </button>
+
+          </form>
+
+          <div class="auth-footer-text">
+            <p>
+              Already have an account?
+              <a href="login.html">Login</a>
+            </p>
+          </div>
+
         </div>
-    </main>
 
-    <div id="toast-container" class="toast-container"></div>
-    <script type="module" src="js/script.js"></script>
+        <!-- ============================= -->
+        <!-- STEP 2: OTP VERIFICATION -->
+        <!-- ============================= -->
+        <div id="signup-step-otp" style="display:none;">
+
+          <h1 class="auth-heading">Verify Email</h1>
+          <p class="auth-subheading">
+            Enter the 4-digit code sent to your email.
+          </p>
+
+          <form id="signup-otp-form" class="auth-form">
+
+            <div class="input-group-underlined">
+              <input
+                type="text"
+                id="signup-otp"
+                name="otp"
+                placeholder="Enter 4-digit code"
+                required
+                maxlength="4"
+                inputmode="numeric"
+                pattern="[0-9]{4}"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary full-width"
+              style="margin-top:1rem;"
+            >
+              Verify & Create Account
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Toast Messages -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+<script type="module" src="js/main.js"></script>
+
 </body>
 </html>
-<!-- test commit for contribution graph -->
