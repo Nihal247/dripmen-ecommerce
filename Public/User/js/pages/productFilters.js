@@ -1,6 +1,59 @@
 import { getProductDataFromElement } from '../core.js';
 
 // ==========================================
+// LOAD CATEGORIES FROM API
+// ==========================================
+// Why: instead of hardcoded HTML buttons, we fetch only
+// ACTIVE categories from backend — so when admin disables
+// a category it disappears from user side automatically
+async function loadCategoryFilters(onCategoryClick) {
+    try {
+        const res = await fetch("http://localhost:4000/api/categories");
+        const data = await res.json();
+
+        const categoryList = document.querySelector(".category-list");
+        if (!categoryList) return;
+
+        // Why keep "All" button: user needs a way to reset category filter
+        categoryList.innerHTML = `
+            <li>
+                <a href="#" class="filter-category-btn active" data-category="all">
+                    All <i class="ph ph-caret-right"></i>
+                </a>
+            </li>`;
+
+        // Why loop: render one button per active category from DB
+        data.categories.forEach((cat) => {
+            // Why replace + capitalize: converts "t-shirts" → "T-shirts" for display
+            const displayName = cat.name.charAt(0).toUpperCase() + cat.name.slice(1).replace(/-/g, " ");
+            categoryList.innerHTML += `
+                <li>
+                    <a href="#" class="filter-category-btn" data-category="${cat.name}">
+                        ${displayName} <i class="ph ph-caret-right"></i>
+                    </a>
+                </li>`;
+        });
+
+        // Why re-attach listeners: buttons were just created dynamically
+        // so the old event listeners from initProductFilters don't exist on them
+        document.querySelectorAll('.filter-category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Remove active from all, add to clicked
+                document.querySelectorAll('.filter-category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Call the callback to update state and re-render products
+                onCategoryClick(btn.dataset.category);
+            });
+        });
+
+    } catch (err) {
+        // Why silent fail: if API is down, hardcoded categories still work
+        console.error("Failed to load categories from API", err);
+    }
+}
+
+// ==========================================
 export function initProductFilters() {
     // --- 1. Elements ---
     const minRange = document.getElementById("min-range");
@@ -138,10 +191,12 @@ export function initProductFilters() {
         maxRange.addEventListener("input", handlePriceChange);
     }
 
-    // Other filters
+    // Category filters — static ones (will be replaced by API ones below)
     document.querySelectorAll('.filter-category-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
+            document.querySelectorAll('.filter-category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
             state.category = btn.dataset.category;
             state.currentPage = 1;
             renderProducts();
@@ -269,4 +324,16 @@ export function initProductFilters() {
 
     // Initial Render
     renderProducts();
+
+    // ==========================================
+    // LOAD REAL CATEGORIES FROM API
+    // ==========================================
+    // Why here at the bottom: renderProducts() must run first
+    // so products are visible even before categories load
+    // Then categories load and replace the hardcoded ones
+    loadCategoryFilters((selectedCategory) => {
+        state.category = selectedCategory;
+        state.currentPage = 1;
+        renderProducts();
+    });
 }

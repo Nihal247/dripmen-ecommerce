@@ -36,7 +36,7 @@ const admin = await User.findOne({ email }).select("+password");
 
     // create token
     const token = jwt.sign(
-      { id: admin._id },
+{ id: admin._id, role: "admin" },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );

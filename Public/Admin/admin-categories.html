@@ -13,7 +13,6 @@
 
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-<link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="admin.css">
 
 </head>
@@ -236,6 +235,48 @@ this.textContent='Enabled'
 })
 })
 </script>
-
+<!-- Add/Edit Category Modal -->
+<!-- Add/Edit Category Modal -->
+<div id="categoryModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:#ffffff; border-radius:16px; padding:2rem; width:90%; max-width:480px; box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+    
+    <h3 id="modalTitle" style="margin-bottom:1.5rem; font-family:Inter; font-weight:700; color:#111;">Add Category</h3>
+    
+    <input type="hidden" id="categoryId">
+    
+    <div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151; font-family:Inter;">Name *</label>
+        <input id="catName" type="text" placeholder="e.g. Hoodies" 
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; font-family:Inter; font-size:0.95rem; outline:none; box-sizing:border-box;">
+      </div>
+      
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151; font-family:Inter;">Description</label>
+        <input id="catDescription" type="text" placeholder="Optional description"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; font-family:Inter; font-size:0.95rem; outline:none; box-sizing:border-box;">
+      </div>
+      
+      <div style="margin-bottom:1.5rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151; font-family:Inter;">Image</label>
+        <input id="catImage" type="file" accept="image/*"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; font-family:Inter; font-size:0.95rem; box-sizing:border-box;">
+      </div>
+      
+      <div style="display:flex; gap:1rem; justify-content:flex-end;">
+        <button onclick="closeModal()" 
+          style="padding:0.75rem 1.5rem; border-radius:8px; border:1px solid #e9ecef; background:transparent; color:#374151; cursor:pointer; font-family:Inter; font-weight:500;">
+          Cancel
+        </button>
+        <button onclick="saveCategory()" 
+          style="padding:0.75rem 1.5rem; border-radius:8px; border:none; background:#111; color:#fff; cursor:pointer; font-family:Inter; font-weight:600;">
+          Save
+        </button>
+      </div>
+    </div>
+    
+  </div>
+</div>
+<script src="js/admin-categories.js"></script>
 </body>
 </html>
