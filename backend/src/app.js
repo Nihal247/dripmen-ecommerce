@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-
+import categoryRoutes from "./routes/categoryRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cors());
 // parse JSON body
 app.use(express.json());
 
+
 // ==============================
 // ✅ ROUTES
 // ==============================
@@ -25,6 +27,12 @@ app.use("/api/auth", userRoutes);
 
 // admin routes
 app.use("/api/admin", adminRoutes);
+
+// category routes
+app.use("/api/categories", categoryRoutes);
+
+// product routes
+app.use("/api/products", productRoutes);
 
 // health check route (optional but useful)
 app.get("/", (req, res) => {

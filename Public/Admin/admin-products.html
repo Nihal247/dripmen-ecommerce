@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link rel="stylesheet" href="style.css"> <!-- Base styles -->
     <link rel="stylesheet" href="admin.css"> <!-- Admin specific styles -->
 </head>
 <body>
@@ -53,10 +52,10 @@
 
             <!-- Products Toolbar -->
             <div class="products-toolbar">
-                <div class="search-box">
-                    <i class="ph ph-magnifying-glass"></i>
-                    <input type="text" placeholder="Search products...">
-                </div>
+               <div class="search-box">
+    <i class="ph ph-magnifying-glass"></i>
+<input id="productSearch" type="text" placeholder="Search products...">
+</div>
                 <div class="toolbar-actions">
                     <div class="filters">
                         <select class="filter-select">
@@ -65,12 +64,13 @@
                             <option value="hoodies">Hoodies</option>
                             <option value="jackets">Jackets</option>
                         </select>
-                        <select class="filter-select">
-                            <option value="">Status</option>
-                            <option value="active">Active</option>
-                            <option value="draft">Draft</option>
-                            <option value="out_of_stock">Out of Stock</option>
-                        </select>
+                       <select class="filter-select">
+  <option value="">Status</option>
+  <option value="active">Active</option>
+  <option value="inactive">Inactive</option>
+  <option value="draft">Draft</option>
+  <option value="out_of_stock">Out of Stock</option>
+</select>
                     </div>
                     <button class="btn btn-primary add-product-btn"><i class="ph ph-plus"></i> Add Product</button>
                 </div>
@@ -99,7 +99,93 @@
             </div>
         </main>
     </div>
-    <script src="admin-products.js"></script>
+
+    <!-- Add/Edit Product Modal -->
+<div id="productModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; overflow-y:auto;">
+  <div style="background:#ffffff; border-radius:16px; padding:2rem; width:90%; max-width:560px; margin:2rem auto; box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+
+    <h3 id="modalTitle" style="margin-bottom:1.5rem; font-weight:700; color:#111;">Add Product</h3>
+    <input type="hidden" id="productId">
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+
+      <div style="grid-column:1/-1;">
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Name *</label>
+        <input id="prodName" type="text" placeholder="e.g. Black Hoodie"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Description</label>
+        <textarea id="prodDescription" placeholder="Product description" rows="3"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box; resize:vertical;"></textarea>
+      </div>
+
+      <div>
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Price * ($)</label>
+        <input id="prodPrice" type="number" placeholder="e.g. 120"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+      </div>
+
+      <div>
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Sale Price ($)</label>
+        <input id="prodSalePrice" type="number" placeholder="Optional"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+      </div>
+
+      <div>
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Category *</label>
+        <select id="prodCategory"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+          <option value="">Select Category</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Stock</label>
+        <input id="prodStock" type="number" placeholder="e.g. 50"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+      </div>
+
+      <div>
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Sizes (comma separated)</label>
+        <input id="prodSizes" type="text" placeholder="e.g. S,M,L,XL"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+      </div>
+
+      <div>
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Colors (comma separated)</label>
+        <input id="prodColors" type="text" placeholder="e.g. black,white"
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+      </div>
+
+      <div style="grid-column:1/-1;">
+  <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Images (max 5)</label>
+
+  <input id="prodImages" type="file" accept="image/*" multiple
+    style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+
+  <!-- Image Preview Container -->
+  <div id="imagePreview"
+       style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;"></div>
+</div>
+
+    </div>
+
+    <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1.5rem;">
+      <button onclick="closeModal()"
+        style="padding:0.75rem 1.5rem; border-radius:8px; border:1px solid #e9ecef; background:transparent; color:#374151; cursor:pointer; font-weight:500;">
+        Cancel
+      </button>
+      <button onclick="saveProduct()"
+        style="padding:0.75rem 1.5rem; border-radius:8px; border:none; background:#111; color:#fff; cursor:pointer; font-weight:600;">
+        Save
+      </button>
+    </div>
+
+  </div>
+</div>
+<script type="module" src="js/admin-products.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>

@@ -48,9 +48,14 @@ const productSchema = new mongoose.Schema({
   },
 
   status: {
-    type: String,
-    default: "active"
-  }
+  type: String,
+  enum: ["active", "inactive", "draft", "out_of_stock"],
+  default: "draft"
+},
+sales: {
+  type: Number,
+  default: 0
+}
 
 }, { timestamps: true });
 
