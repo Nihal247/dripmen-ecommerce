@@ -30,7 +30,26 @@ export const createCategory = async (req, res) => {
     // uploads to Cloudinary and puts the URL in req.file.path
     const image = req.file ? req.file.path : "";
 
-    const category = await Category.create({ name, description, image });
+// generate slug from name
+const slug = name
+  .toLowerCase()
+  .replace(/\s+/g, "-");
+
+// prevent duplicate slug
+const slugExists = await Category.findOne({ slug });
+if (slugExists) {
+  return res.status(400).json({
+    success: false,
+    message: "Category slug already exists",
+  });
+}
+
+const category = await Category.create({
+  name,
+  slug,
+  description,
+  image
+});
 
     res.status(201).json({
       success: true,
@@ -88,10 +107,10 @@ export const getAdminCategories = async (req, res) => {
 // Why: admin clicks the pencil edit button on each category card
 export const updateCategory = async (req, res) => {
   try {
+
     const { id } = req.params;
     const { name, description } = req.body;
 
-    // Why: catch empty name before hitting database
     if (!name || name.trim() === "") {
       return res.status(400).json({
         success: false,
@@ -100,6 +119,7 @@ export const updateCategory = async (req, res) => {
     }
 
     const category = await Category.findById(id);
+
     if (!category) {
       return res.status(404).json({
         success: false,
@@ -107,17 +127,27 @@ export const updateCategory = async (req, res) => {
       });
     }
 
-    // Why: only replace image if admin uploaded a new one
-    // otherwise keep the existing image URL
     if (req.file) {
       if (category.image) {
-        const publicId = category.image.split("/").pop().split(".")[0];
+
+        const publicId = category.image
+          .split("/")
+          .pop()
+          .split(".")[0];
+
         await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
       }
+
       category.image = req.file.path;
     }
 
     category.name = name || category.name;
+
+    // create slug automatically
+    category.slug = name
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
     category.description = description || category.description;
 
     await category.save();
@@ -127,11 +157,16 @@ export const updateCategory = async (req, res) => {
       message: "Category updated successfully",
       category,
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
 };
-
 // ==============================
 // ✅ TOGGLE STATUS (Admin only)
 // ==============================
@@ -139,28 +174,30 @@ export const updateCategory = async (req, res) => {
 // admin-categories.html — no delete, just toggle status
 export const toggleCategoryStatus = async (req, res) => {
   try {
-    const { id } = req.params;
 
-    const category = await Category.findById(id);
+    const category = await Category.findById(req.params.id);
+
     if (!category) {
       return res.status(404).json({
         success: false,
-        message: "Category not found",
+        message: "Category not found"
       });
     }
 
-    // Why: if currently active → make inactive, and vice versa
-    category.status = category.status === "active" ? "inactive" : "active";
+    category.status =
+      category.status === "active" ? "inactive" : "active";
 
     await category.save();
 
-    res.status(200).json({
+    res.json({
       success: true,
-      message: `Category ${category.status === "active" ? "enabled" : "disabled"} successfully`,
-      status: category.status,
-      category,
+      status: category.status
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };

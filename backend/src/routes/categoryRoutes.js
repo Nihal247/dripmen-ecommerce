@@ -4,7 +4,7 @@ import {
   getAllCategories,
   getAdminCategories,
   updateCategory,
-  toggleCategoryStatus,
+toggleCategoryStatus,
 } from "../controllers/categoryController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { adminOnly } from "../middleware/adminMiddleware.js";
