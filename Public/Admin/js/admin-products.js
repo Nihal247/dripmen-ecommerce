@@ -161,6 +161,11 @@ function openAddModal() {
   document.getElementById("prodSizes").value = "";
   document.getElementById("prodColors").value = "";
 
+  // Reset section checkboxes
+  document.getElementById("section-new-arrivals").checked = false;
+  document.getElementById("section-top-selling").checked  = false;
+  document.getElementById("section-explore").checked      = false;
+
   loadCategoryOptions("prodCategory");
 
   document.getElementById("productModal").style.display = "flex";
@@ -192,10 +197,17 @@ async function openEditModal(id) {
     document.getElementById("prodSizes").value = p.sizes.join(",");
     document.getElementById("prodColors").value = p.colors.join(",");
 
+    // Load categories first (await it)
     await loadCategoryOptions("prodCategory");
-
     document.getElementById("prodCategory").value = p.categoryId?._id || "";
 
+    // Set checkboxes AFTER everything else is loaded
+    const productSection = Array.isArray(p.section) ? p.section : [];
+    document.getElementById("section-new-arrivals").checked = productSection.includes("new_arrivals");
+    document.getElementById("section-top-selling").checked  = productSection.includes("top_selling");
+    document.getElementById("section-explore").checked      = productSection.includes("explore");
+
+    // Open modal last
     document.getElementById("productModal").style.display = "flex";
 
   } catch (err) {
@@ -250,6 +262,13 @@ async function saveProduct() {
     "colors",
     JSON.stringify(colorsRaw.split(",").map(c => c.trim()).filter(Boolean))
   );
+
+  // Collect which homepage sections are checked
+  const selectedSections = [];
+  if (document.getElementById("section-new-arrivals").checked) selectedSections.push("new_arrivals");
+  if (document.getElementById("section-top-selling").checked)  selectedSections.push("top_selling");
+  if (document.getElementById("section-explore").checked)      selectedSections.push("explore");
+  formData.append("section", JSON.stringify(selectedSections));
 
   for (const file of images) {
     formData.append("images", file);
