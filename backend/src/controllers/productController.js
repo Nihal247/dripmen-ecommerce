@@ -5,12 +5,10 @@ import cloudinary from "../config/cloudinary.js";
 // ==============================
 // ✅ CREATE PRODUCT (Admin only)
 // ==============================
-// Why: admin clicks "Add Product" in admin-products.html
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, salePrice, categoryId, sizes, colors, stock } = req.body;
+    const { name, description, price, salePrice, categoryId, sizes, colors, stock, section } = req.body;
 
-    // Why validate: catch missing required fields before hitting DB
     if (!name || !price || !categoryId) {
       return res.status(400).json({
         success: false,
@@ -18,12 +16,15 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    // Why req.files: admin uploads MULTIPLE images per product
-    // multer puts them in req.files array
     const images = req.files ? req.files.map((f) => f.path) : [];
 
-    // Why JSON.parse: sizes and colors come as strings from FormData
-    // e.g. '["S","M","L"]' needs to be parsed to actual array
+    // Parse section safely
+    let parsedSection = [];
+    if (section) {
+      try { parsedSection = JSON.parse(section); } catch(e) { parsedSection = []; }
+      if (!Array.isArray(parsedSection)) parsedSection = [];
+    }
+
     const product = await Product.create({
       name,
       description,
@@ -35,6 +36,7 @@ export const createProduct = async (req, res) => {
       colors: colors ? JSON.parse(colors) : [],
       stock: Number(stock) || 0,
       status: "active",
+      section: parsedSection,
     });
 
     res.status(201).json({
@@ -50,14 +52,10 @@ export const createProduct = async (req, res) => {
 // ==============================
 // ✅ GET ALL PRODUCTS (Admin)
 // ==============================
-// Why: admin-products.html table needs ALL products
-// including inactive ones
 export const getAdminProducts = async (req, res) => {
   try {
     const { search, category, status } = req.query;
 
-    // Why build filter object: admin can search and filter
-    // from the toolbar in admin-products.html
     let filter = {};
     if (search) filter.name = { $regex: search, $options: "i" };
     if (category) filter.categoryId = category;
@@ -65,8 +63,6 @@ export const getAdminProducts = async (req, res) => {
 
     const products = await Product.find(filter)
       .populate("categoryId", "name")
-      // Why populate: replaces categoryId ObjectId with actual
-      // category object so we can show category name in table
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -82,21 +78,20 @@ export const getAdminProducts = async (req, res) => {
 // ==============================
 // ✅ GET ALL PRODUCTS (User/Public)
 // ==============================
-// Why separate from admin: users only see active products
-// also supports filtering and pagination for products page
 export const getProducts = async (req, res) => {
   try {
-    const { category, minPrice, maxPrice, color, size, sort, page = 1, limit = 9 } = req.query;
+    const { category, minPrice, maxPrice, color, size, sort, section, page = 1, limit = 9 } = req.query;
 
-    // Why start with status active: users never see
-    // draft or disabled products
-let filter = {
-  status: { $in: ["active", "out_of_stock"] }
-};
+    let filter = {
+      status: { $in: ["active", "out_of_stock"] }
+    };
+
+    // Filter by homepage section
+    if (section) {
+      filter.section = { $elemMatch: { $eq: section } };
+    }
 
     if (category && category !== "all") {
-      // Why lookup category by name: frontend sends category name
-      // like "hoodies" but DB stores categoryId (ObjectId)
       const cat = await Category.findOne({ name: category });
       if (cat) filter.categoryId = cat._id;
     }
@@ -110,15 +105,13 @@ let filter = {
     if (color) filter.colors = { $in: [color] };
     if (size) filter.sizes = { $in: [size] };
 
-    // Why sort options: matches your frontend sort dropdown
     let sortOption = {};
     if (sort === "price-low") sortOption = { price: 1 };
     else if (sort === "price-high") sortOption = { price: -1 };
     else if (sort === "newest") sortOption = { createdAt: -1 };
-    else sortOption = { createdAt: -1 }; // default
+    else if (sort === "top-selling") sortOption = { sales: -1 };
+    else sortOption = { createdAt: -1 };
 
-    // Why pagination: don't send all products at once
-    // send 9 at a time for the products grid
     const skip = (Number(page) - 1) * Number(limit);
     const total = await Product.countDocuments(filter);
 
@@ -144,8 +137,6 @@ let filter = {
 // ==============================
 // ✅ GET SINGLE PRODUCT (Public)
 // ==============================
-// Why: product.html page needs full product details
-// when user clicks on a product card
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
@@ -167,10 +158,9 @@ export const getProductById = async (req, res) => {
 // ==============================
 // ✅ UPDATE PRODUCT (Admin only)
 // ==============================
-// Why: admin clicks edit button on product row in table
 export const updateProduct = async (req, res) => {
   try {
-    const { name, description, price, salePrice, categoryId, sizes, colors, stock } = req.body;
+    const { name, description, price, salePrice, categoryId, sizes, colors, stock, section } = req.body;
 
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -180,10 +170,7 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    // Why only update images if new ones uploaded:
-    // keeps existing images if admin doesn't upload new ones
     if (req.files && req.files.length > 0) {
-      // Delete old images from Cloudinary to save storage
       for (const imageUrl of product.images) {
         const publicId = imageUrl.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
@@ -200,6 +187,19 @@ export const updateProduct = async (req, res) => {
     product.colors = colors ? JSON.parse(colors) : product.colors;
     product.stock = stock !== undefined ? Number(stock) : product.stock;
 
+    // ALWAYS update section — parse safely and force Mongoose to save
+    let parsedSection = [];
+    if (section !== undefined && section !== null) {
+      try {
+        parsedSection = JSON.parse(section);
+        if (!Array.isArray(parsedSection)) parsedSection = [];
+      } catch(e) {
+        parsedSection = [];
+      }
+    }
+    product.section = parsedSection;
+    product.markModified("section");
+
     await product.save();
 
     res.status(200).json({
@@ -215,8 +215,6 @@ export const updateProduct = async (req, res) => {
 // ==============================
 // ✅ TOGGLE PRODUCT STATUS (Admin)
 // ==============================
-// Why toggle not delete: same pattern as categories
-// admin can disable a product without losing its data
 export const toggleProductStatus = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -239,6 +237,7 @@ export const toggleProductStatus = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 // ==============================
 // ✅ DELETE PRODUCT (Admin only)
 // ==============================
@@ -267,9 +266,12 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// ==============================
+// ✅ UPDATE PRODUCT STATUS (Admin)
+// ==============================
 export const updateProductStatus = async (req, res) => {
   try {
-
     const { status } = req.body;
 
     const product = await Product.findByIdAndUpdate(
@@ -284,11 +286,9 @@ export const updateProductStatus = async (req, res) => {
     });
 
   } catch (error) {
-
     res.status(500).json({
       success: false,
       message: error.message
     });
-
   }
 };

@@ -18,6 +18,7 @@ import { renderLayout } from "./layout.js";
 import { initAuthSystem } from "./services/auth.js";
 
 // Page modules
+import { initHomePage } from "./pages/homePage.js";
 import { initProductFilters } from "./pages/productFilters.js";
 import { initProductPage } from "./pages/productPage.js";
 import { initCartPage } from "./pages/cartPage.js";
@@ -205,6 +206,11 @@ document.addEventListener("DOMContentLoaded", () => {
   //    Using actual IDs/selectors present in HTML
   // ----------------------------------------
 
+  // Home page product sections
+  if (document.getElementById("new-arrivals-grid")) {
+    initHomePage();
+  }
+
   // Products listing pages (hoodies, tshirts, jackets, sweatshirts, products)
   if (document.getElementById("products-grid")) {
     initProductFilters();
@@ -212,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Single product detail page
   if (document.querySelector(".single-product-section")) {
-    initProductPage();
+    initProductPage(); // async — runs in background, no need to await
   }
 
   // Cart page
