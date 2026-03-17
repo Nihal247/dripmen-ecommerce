@@ -55,6 +55,13 @@ const productSchema = new mongoose.Schema({
 sales: {
   type: Number,
   default: 0
+},
+
+// Which homepage sections this product appears in
+// e.g. ["new_arrivals", "top_selling", "explore"]
+section: {
+  type: [String],
+  default: []
 }
 
 }, { timestamps: true });
