@@ -4,7 +4,7 @@ import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
-
+import cartRoutes from "./routes/cartRoutes.js";
 const app = express();
 
 // ==============================
@@ -33,6 +33,12 @@ app.use("/api/categories", categoryRoutes);
 
 // product routes
 app.use("/api/products", productRoutes);
+
+// cart routes
+app.use("/api/cart", cartRoutes);
+
+
+// ==============================
 
 // health check route (optional but useful)
 app.get("/", (req, res) => {

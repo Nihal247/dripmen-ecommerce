@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import mongoose from "mongoose";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 
@@ -14,7 +13,7 @@ process.on("uncaughtException", (err) => {
 // 🔌 Connect MongoDB
 await connectDB();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT
 
 // 🚀 Start server
 const server = app.listen(PORT, () => {

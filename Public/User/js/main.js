@@ -8,6 +8,7 @@ import {
   handleGridAddToCart,
   checkAuth,
   addToCart,
+  addToCartAPI,
   showToast,
   openModal,
   closeAllModals,
@@ -43,7 +44,7 @@ import { initAccountPage } from "./pages/accountPage.js";
 document.addEventListener("DOMContentLoaded", () => {
 
   // ----------------------------------------
-  // 1. LAYOUT: Render navbar + footer on all pages that use empty placeholders
+  // 1. LAYOUT: Render navbar + footer on all pages
   // ----------------------------------------
   renderLayout();
 
@@ -58,15 +59,15 @@ document.addEventListener("DOMContentLoaded", () => {
   updateHeaderCounts();
 
   // ----------------------------------------
-  // 4. WISHLIST STATE: Highlight filled hearts for already-wishlisted products
+  // 4. WISHLIST STATE: Highlight filled hearts
   // ----------------------------------------
   initializeWishlistState();
 
   // ----------------------------------------
   // 5. MOBILE MENU
   // ----------------------------------------
-  const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
-  const navLinks = document.querySelector(".nav-links");
+  const mobileMenuBtn     = document.querySelector(".mobile-menu-btn");
+  const navLinks          = document.querySelector(".nav-links");
   const mobileMenuOverlay = document.querySelector(".mobile-menu-overlay");
 
   if (mobileMenuBtn && navLinks) {
@@ -94,9 +95,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ----------------------------------------
   // 6. GLOBAL CLICK DELEGATION
-  //    (handles buttons on every page)
   // ----------------------------------------
-  document.body.addEventListener("click", (e) => {
+  document.body.addEventListener("click", async (e) => {
     const target = e.target;
 
     // ---- Wishlist button ----
@@ -109,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---- Add to Cart (product grid cards) ----
-    // Exclude the main product page button — that's handled by productPage.js
     const addToCartBtn = target.closest(".add-to-cart-btn");
     if (addToCartBtn && !addToCartBtn.classList.contains("add-to-cart-main-btn")) {
       e.preventDefault();
@@ -132,10 +131,33 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---- Confirm size in size-selection-modal ----
     if (target.closest("#confirm-size-btn")) {
       if (!window.currentSelection) { closeAllModals(); return; }
+
       const activeSizeBtn = document.querySelector(".modal.active .size-btn.active");
       if (!activeSizeBtn) { showToast("Please select a size", "error"); return; }
-      const size = activeSizeBtn.dataset.size || activeSizeBtn.textContent.trim();
-      addToCart({ ...window.currentSelection, size, quantity: 1 });
+
+      const size  = activeSizeBtn.dataset.size || activeSizeBtn.textContent.trim();
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        // ✅ call backend API
+        const data = await addToCartAPI(window.currentSelection.id, 1);
+        if (data?.success) {
+          const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+          document.querySelectorAll(
+            ".cart-count, .header-cart-badge, .cart-badge"
+          ).forEach(badge => {
+            badge.textContent   = count;
+            badge.style.display = count > 0 ? "flex" : "none";
+          });
+          showToast("Added to cart 🛒");
+        } else {
+          showToast("Failed to add to cart", "error");
+        }
+      } else {
+        // fallback localStorage
+        addToCart({ ...window.currentSelection, size, quantity: 1 });
+      }
+
       closeAllModals();
       setTimeout(() => showCartConfirmModal(window.currentSelection), 300);
       return;
@@ -203,35 +225,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ----------------------------------------
   // 8. PAGE SPECIFIC INIT
-  //    Using actual IDs/selectors present in HTML
   // ----------------------------------------
 
-  // Home page product sections
   if (document.getElementById("new-arrivals-grid")) {
     initHomePage();
   }
 
-  // Products listing pages (hoodies, tshirts, jackets, sweatshirts, products)
   if (document.getElementById("products-grid")) {
     initProductFilters();
   }
 
-  // Single product detail page
   if (document.querySelector(".single-product-section")) {
-    initProductPage(); // async — runs in background, no need to await
+    initProductPage();
   }
 
-  // Cart page
   if (document.getElementById("cart-items-container")) {
     initCartPage();
   }
 
-  // Wishlist page
   if (document.getElementById("wishlist-grid")) {
     initWishlistPage();
   }
 
-  // Checkout page
   if (
     document.getElementById("place-order-btn-modern") ||
     document.getElementById("checkout-form")
@@ -239,61 +254,52 @@ document.addEventListener("DOMContentLoaded", () => {
     initCheckoutPage();
   }
 
-  // Orders page
   if (document.getElementById("orders-list")) {
     initOrdersPage();
   }
 
-  // Order Details / Invoice page
   if (document.querySelector(".invoice-container")) {
     initOrderDetailsPage();
   }
 
-  // Returns page
   if (document.getElementById("returns-list")) {
     initReturnsPage();
   }
 
-  // Cancellations page
   if (document.getElementById("cancellations-list")) {
     initCancellationsPage();
   }
 
-  // Address book page
   if (document.getElementById("address-grid")) {
     initAddressPage();
   }
 
-  // Contact page
   if (document.getElementById("contact-form")) {
     initContactPage();
   }
 
-  // Payment / saved cards page
   if (document.getElementById("payment-grid")) {
     initPaymentPage();
   }
 
-  // Login page
   if (document.getElementById("loginForm")) {
     initLoginPage();
   }
 
-  // Signup page
   if (document.getElementById("signup-form")) {
     initSignupPage();
   }
 
-  // Forgot password page
   if (document.getElementById("fp-email-form")) {
     initForgotPasswordPage();
   }
+
   if (document.getElementById("reset-password-form")) {
-  initResetPasswordPage();
-}
-  // Account page
-if (document.getElementById("account-form")) {
-  initAccountPage();
-}
+    initResetPasswordPage();
+  }
+
+  if (document.getElementById("account-form")) {
+    initAccountPage();
+  }
 
 });
