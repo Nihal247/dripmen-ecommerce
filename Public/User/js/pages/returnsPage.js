@@ -1,109 +1,221 @@
-// ==========================================
+ // ==========================================
 // IMPORT CORE FUNCTIONS
 // ==========================================
-import {
-    showToast,
-    openModal,
-    closeAllModals
-} from "../core.js";
+import { showToast, openModal, closeAllModals } from "../core.js";
 
+const API = "http://localhost:4000";
+
+// ==========================================
+// HELPER: FORMAT DATE
+// ==========================================
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric", month: "short", day: "numeric"
+  });
+}
 
 // ==========================================
 // HELPER: ORDER DETAILS MODAL
 // (shared between returns and cancellations)
 // ==========================================
 export function openOrderDetailsModal(order) {
-    const modal = document.getElementById('order-details-modal');
-    if (!modal || !order) return;
+  const modal = document.getElementById("order-details-modal");
+  if (!modal || !order) return;
 
-    const idEl = document.getElementById('modal-order-id');
-    const dateEl = document.getElementById('modal-order-date');
-    const totalEl = document.getElementById('modal-order-total');
-    const statusEl = document.getElementById('modal-order-status');
+  const idEl     = document.getElementById("modal-order-id");
+  const dateEl   = document.getElementById("modal-order-date");
+  const totalEl  = document.getElementById("modal-order-total");
+  const statusEl = document.getElementById("modal-order-status");
 
-    if (idEl) idEl.textContent = order.id;
-    if (dateEl) dateEl.textContent = order.date;
-    if (totalEl) totalEl.textContent = `$${Number(order.total).toFixed(2)}`;
+  const orderId = order._id  || order.id  || "";
+  const status  = order.orderStatus || order.status || "";
 
-    if (statusEl) {
-        statusEl.className = `order-status ${order.statusClass}`;
-        statusEl.textContent = order.status;
-    }
+  if (idEl)    idEl.textContent    = "#" + String(orderId).slice(-6).toUpperCase();
+  if (dateEl)  dateEl.textContent  = formatDate(order.createdAt || order.date);
+  if (totalEl) totalEl.textContent = `$${Number(order.total).toFixed(2)}`;
 
-    const itemsContainer = document.getElementById('modal-order-items');
-    if (itemsContainer) {
-        itemsContainer.innerHTML = order.items.map(item => `
-      <div class="modal-product-inline" style="margin-bottom: 0.5rem;">
-        <img src="${item.image}" class="modal-product-img-small">
+  if (statusEl) {
+    statusEl.className   = `order-status ${order.statusClass || "status-refunded"}`;
+    statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+  }
+
+  const itemsContainer = document.getElementById("modal-order-items");
+  if (itemsContainer) {
+    itemsContainer.innerHTML = (order.items || []).map(item => `
+      <div class="modal-product-inline" style="margin-bottom:0.5rem;">
+        <img src="${item.image || item.product?.images?.[0] || ""}"
+             class="modal-product-img-small">
         <div class="modal-product-details-small">
-          <h4 class="modal-product-name">${item.name}</h4>
-          <p class="modal-product-price">Qty: ${item.quantity} | Size: ${item.size}</p>
+          <h4 class="modal-product-name">
+            ${item.name || item.product?.name || ""}
+          </h4>
+          <p class="modal-product-price">
+            Qty: ${item.quantity} | Size: ${item.size || "N/A"}
+          </p>
         </div>
       </div>
-    `).join('');
-    }
+    `).join("");
+  }
 
-    // Remove old dynamic action buttons before adding new ones
-    const oldActions = modal.querySelector('.modal-actions-dynamic');
-    if (oldActions) oldActions.remove();
+  // remove old dynamic actions
+  modal.querySelector(".modal-actions-dynamic")?.remove();
 
-    openModal(modal);
+  openModal(modal);
 }
 
+// ==========================================
+// RENDER RETURNS
+// ==========================================
+function renderReturns(orders) {
+  const container = document.getElementById("returns-list");
+  if (!container) return;
+
+  if (!orders || orders.length === 0) {
+    container.innerHTML = `
+      <div class="empty-cart-state" style="padding:2rem 0;">
+        <div class="empty-cart-icon" style="font-size:3rem;">
+          <i class="ph ph-arrow-u-up-left"></i>
+        </div>
+        <h3 style="font-size:1.2rem;margin-bottom:0.5rem;">No returns yet</h3>
+        <p style="margin-bottom:1.5rem;">
+          You haven't returned any orders yet.
+        </p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = orders.map((order, index) => {
+
+    const orderId = order._id  || order.id  || "";
+    const shortId = "#" + String(orderId).slice(-6).toUpperCase();
+    const date    = formatDate(order.createdAt || order.date);
+    const status  = order.orderStatus || order.status || "refunded";
+    const items   = order.items || [];
+    const total   = Number(order.total || 0);
+
+    return `
+      <div class="order-card">
+        <div class="order-header">
+          <div>
+            <span class="order-id">Return ${shortId}</span>
+            <span class="order-date">${date}</span>
+          </div>
+          <span class="order-status status-refunded">
+            Refunded
+          </span>
+        </div>
+
+        <div class="order-items-list">
+          ${items.map(item => `
+            <div class="order-item">
+              <img src="${item.image || item.product?.images?.[0] || ""}"
+                   alt="${item.name || ""}"
+                   class="order-item-img">
+              <div class="order-item-info">
+                <span class="order-item-name">
+                  ${item.name || item.product?.name || ""}
+                </span>
+                <span class="order-item-meta">
+                  Qty: ${item.quantity} | Size: ${item.size || "N/A"}
+                </span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="order-footer">
+          <div>
+            <span class="order-total-label">Refund Amount:</span>
+            <span class="order-total-value">$${total.toFixed(2)}</span>
+          </div>
+          <button class="btn btn-outline view-details-btn"
+                  data-id="${orderId}" data-index="${index}">
+            View Details
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  // click handler
+  container.addEventListener("click", (e) => {
+    const btn = e.target.closest(".view-details-btn");
+    if (btn) {
+      window.location.href = `order-details.html?id=${btn.dataset.id}`;
+    }
+  });
+}
+
+// ==========================================
+// LOAD RETURNS FROM API
+// ==========================================
+async function loadReturns() {
+  const container = document.getElementById("returns-list");
+  if (!container) return;
+
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    try {
+      container.innerHTML = `
+        <div style="text-align:center;padding:3rem;color:#888;">
+          <p>Loading...</p>
+        </div>`;
+
+      const res  = await fetch(`${API}/api/orders/my-orders`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // for now show delivered orders as returnable
+        // when you build a returns system, filter by return status
+        const returned = data.orders.filter(
+          o => o.orderStatus === "delivered"
+        );
+        renderReturns(returned);
+      } else {
+        renderReturns([]);
+      }
+
+    } catch (err) {
+      console.error("Load returns failed:", err);
+      renderReturns([]);
+    }
+
+  } else {
+    // fallback localStorage
+    const returns = JSON.parse(
+      localStorage.getItem("dripmen_returns") || "[]"
+    );
+    renderReturns(returns);
+  }
+}
 
 // ==========================================
 // PAGE: RETURNS
 // ==========================================
 export function initReturnsPage() {
-    const container = document.getElementById('returns-list');
-    if (!container) return;
+  const container = document.getElementById("returns-list");
+  if (!container) return;
 
-    const returns = JSON.parse(localStorage.getItem('dripmen_returns') || '[]');
-
-    if (returns.length === 0) {
-        container.innerHTML = `
-      <div class="empty-cart-state" style="padding: 2rem 0;">
-        <div class="empty-cart-icon" style="font-size: 3rem;"><i class="ph ph-arrow-u-up-left"></i></div>
-        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">No returns yet</h3>
-        <p style="margin-bottom: 1.5rem;">You haven't returned any orders yet.</p>
-      </div>`;
-        return;
-    }
-
-    container.innerHTML = returns.map((ret, index) => `
-    <div class="order-card">
-      <div class="order-header">
-        <div>
-          <span class="order-id">Return ${ret.id}</span>
-          <span class="order-date">${ret.date}</span>
-        </div>
-        <span class="order-status ${ret.statusClass}">${ret.status}</span>
-      </div>
-      <div class="order-items-list">
-        ${ret.items.map(item => `
-          <div class="order-item">
-            <img src="${item.image}" alt="${item.name}" class="order-item-img">
-            <div class="order-item-info">
-              <span class="order-item-name">${item.name}</span>
-              <span class="order-item-meta">Qty: ${item.quantity}, Size: ${item.size}</span>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-      <div class="order-footer">
-        <div>
-          <span class="order-total-label">Refund Amount:</span>
-          <span class="order-total-value">$${Number(ret.total).toFixed(2)}</span>
-        </div>
-        <button class="btn btn-outline view-details-btn" data-index="${index}">View Details</button>
-      </div>
-    </div>
-  `).join('');
-
-    container.addEventListener('click', (e) => {
-        const btn = e.target.closest('.view-details-btn');
-        if (btn) {
-            openOrderDetailsModal(returns[btn.dataset.index]);
-        }
-    });
+  // smart auth wait then load
+  const token = localStorage.getItem("token");
+  if (token) {
+    loadReturns();
+  } else {
+    let attempts = 0;
+    const waitForAuth = setInterval(() => {
+      const t = localStorage.getItem("token");
+      attempts++;
+      if (t) {
+        clearInterval(waitForAuth);
+        loadReturns();
+      } else if (attempts > 10) {
+        clearInterval(waitForAuth);
+        loadReturns();
+      }
+    }, 200);
+  }
 }

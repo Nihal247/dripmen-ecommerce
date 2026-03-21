@@ -5,6 +5,9 @@ import adminRoutes from "./routes/adminRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
+ import orderRoutes from "./routes/orderRoutes.js";
+ import wishlistRoutes from "./routes/wishlistRoutes.js";
+
 const app = express();
 
 // ==============================
@@ -37,6 +40,11 @@ app.use("/api/products", productRoutes);
 // cart routes
 app.use("/api/cart", cartRoutes);
 
+// order routes
+app.use("/api/orders", orderRoutes);
+
+// wishlist routes
+app.use("/api/wishlist", wishlistRoutes);
 
 // ==============================
 
