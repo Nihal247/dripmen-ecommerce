@@ -70,7 +70,7 @@ export const verifySignupOtp = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      token: generateToken(user._id),
+token: generateToken(user._id, user.is_Admin || false),
       message: "Account created successfully",
     });
 
@@ -91,7 +91,11 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+const token = jwt.sign(
+  { id: user._id, is_Admin: user.is_Admin || false },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
 
     res.status(200).json({
       success: true,

@@ -36,11 +36,10 @@ const admin = await User.findOne({ email }).select("+password");
 
     // create token
     const token = jwt.sign(
-{ id: admin._id, role: "admin" },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
+  { id: admin._id, is_Admin: true },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
     res.json({
       success: true,
       token,
@@ -51,5 +50,51 @@ const admin = await User.findOne({ email }).select("+password");
     res.status(500).json({
       message: error.message
     });
+  }
+};
+
+ // ✅ GET ALL USERS
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().sort({ createdAt: -1 });
+    res.json({ success: true, count: users.length, users });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ BLOCK / UNBLOCK USER
+export const toggleBlockUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isBlocked = !user.isBlocked;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: user.isBlocked ? "User blocked" : "User unblocked",
+      user
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ DELETE USER
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.is_Admin) {
+      return res.status(400).json({ message: "Cannot delete admin user" });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: "User deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
