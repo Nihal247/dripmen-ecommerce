@@ -136,40 +136,80 @@ export function initializeWishlistState() {
   });
 }
 
-// ==========================================
-// WISHLIST TOGGLE
-// ==========================================
 
-export function toggleWishlist(btn) {
+export async function toggleWishlist(btn) {
   const product = getProductDataFromElement(btn);
   if (!product) return;
 
-  let wishlist  = getWishlist();
-  const index   = wishlist.findIndex(item => item.id === product.id);
+  const token = localStorage.getItem("token");
 
-  if (index === -1) {
-    wishlist.push(product);
-    btn.classList.add("active");
-    const icon = btn.querySelector("i");
-    if (icon) {
-      icon.classList.remove("ph-heart");
-      icon.classList.add("ph-fill", "ph-heart");
+  if (token) {
+    // check if already in API wishlist
+    const wishlistItems = await getWishlistFromAPI();
+    const exists = wishlistItems.find(
+      item => (item.product?._id || item.product) === product.id
+    );
+
+    if (exists) {
+      // remove from API
+      await removeFromWishlistAPI(product.id);
+      btn.classList.remove("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-fill", "ph-heart");
+        icon.classList.add("ph-heart");
+      }
+      showToast("Removed from wishlist");
+    } else {
+      // add to API
+      await addToWishlistAPI(product.id);
+      btn.classList.add("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-heart");
+        icon.classList.add("ph-fill", "ph-heart");
+      }
+      showToast("Added to wishlist ❤️");
     }
-    showToast("Added to wishlist ❤️");
+
+    // update badge count
+    const items = await getWishlistFromAPI();
+    document.querySelectorAll(
+      ".wishlist-count, .header-wishlist-badge, .wishlist-badge"
+    ).forEach(badge => {
+      badge.textContent   = items.length;
+      badge.style.display = items.length > 0 ? "flex" : "none";
+    });
+
   } else {
-    wishlist.splice(index, 1);
-    btn.classList.remove("active");
-    const icon = btn.querySelector("i");
-    if (icon) {
-      icon.classList.remove("ph-fill", "ph-heart");
-      icon.classList.add("ph-heart");
-    }
-    showToast("Removed from wishlist");
-  }
+    // fallback localStorage
+    let wishlist  = getWishlist();
+    const index   = wishlist.findIndex(item => item.id === product.id);
 
-  saveWishlist(wishlist);
-  updateHeaderCounts();
-  window.dispatchEvent(new Event("wishlist-updated"));
+    if (index === -1) {
+      wishlist.push(product);
+      btn.classList.add("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-heart");
+        icon.classList.add("ph-fill", "ph-heart");
+      }
+      showToast("Added to wishlist ❤️");
+    } else {
+      wishlist.splice(index, 1);
+      btn.classList.remove("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-fill", "ph-heart");
+        icon.classList.add("ph-heart");
+      }
+      showToast("Removed from wishlist");
+    }
+
+    saveWishlist(wishlist);
+    updateHeaderCounts();
+    window.dispatchEvent(new Event("wishlist-updated"));
+  }
 }
 
 // ==========================================
@@ -399,6 +439,74 @@ export async function updateCartItemAPI(productId, quantity) {
     return res.json();
   } catch (err) {
     console.error("updateCartItemAPI failed:", err);
+    return null;
+  }
+}
+
+// ==========================================
+// WISHLIST API FUNCTIONS
+// ==========================================
+
+export async function getWishlistFromAPI() {
+  const token = localStorage.getItem("token");
+  if (!token) return [];
+  try {
+    const res  = await fetch(`${API}/api/wishlist`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    return data.items || [];
+  } catch (err) {
+    console.error("getWishlistFromAPI failed:", err);
+    return [];
+  }
+}
+
+export async function addToWishlistAPI(productId) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/wishlist`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ productId })
+    });
+    return res.json();
+  } catch (err) {
+    console.error("addToWishlistAPI failed:", err);
+    return null;
+  }
+}
+
+export async function removeFromWishlistAPI(productId) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/wishlist/${productId}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    return res.json();
+  } catch (err) {
+    console.error("removeFromWishlistAPI failed:", err);
+    return null;
+  }
+}
+
+export async function clearWishlistAPI() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/wishlist`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    return res.json();
+  } catch (err) {
+    console.error("clearWishlistAPI failed:", err);
     return null;
   }
 }
