@@ -16,11 +16,12 @@ const router = express.Router();
 // user routes
 router.post("/",          protect, placeOrder);
 router.get("/my-orders",  protect, getMyOrders);
-router.get("/:id",        protect, getOrderById);
-router.put("/:id/cancel", protect, cancelOrder);
 
 // admin routes
 router.get("/admin/all",        protect, adminOnly, getAllOrders);
 router.put("/admin/:id/status", protect, adminOnly, updateOrderStatus);
+
+router.get("/:id",        protect, getOrderById);
+router.put("/:id/cancel", protect, cancelOrder);
 
 export default router;
