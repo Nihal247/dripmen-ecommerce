@@ -7,6 +7,11 @@ export const placeOrder = async (req, res) => {
   try {
     const userId = req.user.id;
     const { address, paymentMethod, couponCode, notes } = req.body;
+    if (!paymentMethod) {
+  return res.status(400).json({
+    message: "Payment method is required",
+  });
+}
 
     if (!address) {
       return res.status(400).json({ message: "Address is required" });
@@ -14,21 +19,55 @@ export const placeOrder = async (req, res) => {
 
     // get user cart
     const cart = await Cart.findOne({ user: userId }).populate("items.product");
+    const productIds = cart.items.map(item => item.product._id);
+
+const products = await Product.find({
+  _id: { $in: productIds }
+});
+
+const productMap = {};
+
+products.forEach(p => {
+  productMap[p._id.toString()] = p;
+});
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    // build order items from cart
-    const orderItems = cart.items.map(item => ({
-      product:  item.product._id,
-      name:     item.product.name,
-      image:    item.product.images?.[0] || "",
-      price:    item.product.price,
-      quantity: item.quantity,
-      size:     item.size  || "L",
-      color:    item.color || "Black"
-    }));
+const orderItems = [];
+
+for (const item of cart.items) {
+const product = productMap[item.product._id.toString()];
+
+  if (item.quantity <= 0) {
+  return res.status(400).json({
+    message: "Invalid quantity",
+  });
+}
+
+  // ❌ STOCK VALIDATION
+  if (product.stock < item.quantity) {
+    return res.status(400).json({
+      message: `${product.name} is out of stock`,
+    });
+  }
+
+  // ✅ ADD ITEM TO ORDER
+  orderItems.push({
+    product:  product._id,
+    name:     product.name,
+    image:    product.images?.[0] || "",
+    price:    product.price, // locked price
+    quantity: item.quantity,
+    size:     item.size  || "L",
+    color:    item.color || "Black"
+  });
+
+  // ✅ REDUCE STOCK
+  product.stock -= item.quantity;
+  await product.save();
+}
 
     // calculate totals
     const subtotal       = orderItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
