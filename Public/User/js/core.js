@@ -23,7 +23,6 @@ export function saveWishlist(wishlist) {
 // ==========================================
 
 export function showToast(message, type = "success") {
-  // Try the simple #toast element first (product.html)
   const simpleToast = document.getElementById("toast");
   if (simpleToast) {
     simpleToast.textContent = message;
@@ -32,7 +31,6 @@ export function showToast(message, type = "success") {
     return;
   }
 
-  // Fallback: create a dynamic toast (all other pages)
   let container = document.getElementById("toast-container");
   if (!container) {
     container = document.createElement("div");
@@ -48,28 +46,30 @@ export function showToast(message, type = "success") {
   </div>`;
   container.appendChild(toast);
   setTimeout(() => toast.classList.add("show"), 50);
-  setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
 }
 
 export function updateHeaderCounts() {
-  const cart = getCart();
+  const cart     = getCart();
   const wishlist = getWishlist();
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount     = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;
 
-  // Support both naming conventions used across pages
   document.querySelectorAll(
     ".cart-count, .header-cart-badge, .cart-badge"
   ).forEach(badge => {
-    badge.textContent = cartCount;
+    badge.textContent   = cartCount;
     badge.style.display = cartCount > 0 ? "flex" : "none";
   });
 
   document.querySelectorAll(
     ".wishlist-count, .header-wishlist-badge, .wishlist-badge"
   ).forEach(badge => {
-    badge.textContent = wishlistCount;
+    badge.textContent   = wishlistCount;
     badge.style.display = wishlistCount > 0 ? "flex" : "none";
   });
 }
@@ -120,7 +120,7 @@ export function getProductDataFromElement(el) {
 // ==========================================
 
 export function initializeWishlistState() {
-  const wishlist = getWishlist();
+  const wishlist    = getWishlist();
   const wishlistIds = new Set(wishlist.map(item => item.id));
 
   document.querySelectorAll(".wishlist-btn, .wishlist-main").forEach(btn => {
@@ -136,38 +136,84 @@ export function initializeWishlistState() {
   });
 }
 
-// ==========================================
-// WISHLIST TOGGLE
-// ==========================================
 
-export function toggleWishlist(btn) {
+export async function toggleWishlist(btn) {
   const product = getProductDataFromElement(btn);
   if (!product) return;
 
-  let wishlist = getWishlist();
-  const index = wishlist.findIndex(item => item.id === product.id);
+  const token = localStorage.getItem("token");
 
-  if (index === -1) {
-    wishlist.push(product);
-    btn.classList.add("active");
-    const icon = btn.querySelector("i");
-    if (icon) { icon.classList.remove("ph-heart"); icon.classList.add("ph-fill", "ph-heart"); }
-    showToast("Added to wishlist ❤️");
+  if (token) {
+    // check if already in API wishlist
+    const wishlistItems = await getWishlistFromAPI();
+    const exists = wishlistItems.find(
+      item => (item.product?._id || item.product) === product.id
+    );
+
+    if (exists) {
+      // remove from API
+      await removeFromWishlistAPI(product.id);
+      btn.classList.remove("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-fill", "ph-heart");
+        icon.classList.add("ph-heart");
+      }
+      showToast("Removed from wishlist");
+    } else {
+      // add to API
+      await addToWishlistAPI(product.id);
+      btn.classList.add("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-heart");
+        icon.classList.add("ph-fill", "ph-heart");
+      }
+      showToast("Added to wishlist ❤️");
+    }
+
+    // update badge count
+    const items = await getWishlistFromAPI();
+    document.querySelectorAll(
+      ".wishlist-count, .header-wishlist-badge, .wishlist-badge"
+    ).forEach(badge => {
+      badge.textContent   = items.length;
+      badge.style.display = items.length > 0 ? "flex" : "none";
+    });
+
   } else {
-    wishlist.splice(index, 1);
-    btn.classList.remove("active");
-    const icon = btn.querySelector("i");
-    if (icon) { icon.classList.remove("ph-fill", "ph-heart"); icon.classList.add("ph-heart"); }
-    showToast("Removed from wishlist");
-  }
+    // fallback localStorage
+    let wishlist  = getWishlist();
+    const index   = wishlist.findIndex(item => item.id === product.id);
 
-  saveWishlist(wishlist);
-  updateHeaderCounts();
-  window.dispatchEvent(new Event("wishlist-updated"));
+    if (index === -1) {
+      wishlist.push(product);
+      btn.classList.add("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-heart");
+        icon.classList.add("ph-fill", "ph-heart");
+      }
+      showToast("Added to wishlist ❤️");
+    } else {
+      wishlist.splice(index, 1);
+      btn.classList.remove("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-fill", "ph-heart");
+        icon.classList.add("ph-heart");
+      }
+      showToast("Removed from wishlist");
+    }
+
+    saveWishlist(wishlist);
+    updateHeaderCounts();
+    window.dispatchEvent(new Event("wishlist-updated"));
+  }
 }
 
 // ==========================================
-// CART
+// CART (localStorage — fallback)
 // ==========================================
 
 export function addToCart(product) {
@@ -185,12 +231,12 @@ export function addToCart(product) {
     showToast("Cart updated ✔️");
   } else {
     cart.push({
-      id: product.id,
-      name: product.name,
-      price: Number(product.price),
-      image: product.image,
-      size: product.size || "L",
-      color: product.color || "Black",
+      id:       product.id,
+      name:     product.name,
+      price:    Number(product.price),
+      image:    product.image,
+      size:     product.size  || "L",
+      color:    product.color || "Black",
       quantity: product.quantity || 1,
     });
     showToast("Added to cart 🛒");
@@ -205,28 +251,43 @@ export function addToCart(product) {
 // GRID ADD TO CART (from product cards)
 // ==========================================
 
-export function handleGridAddToCart(btn) {
+export async function handleGridAddToCart(btn) {
   const product = getProductDataFromElement(btn);
   if (!product) return;
 
-  // Store current selection for the size modal flow
   window.currentSelection = product;
 
-  // Try to show the size-selection modal
+  // if size modal exists — open it first
   const sizeModal = document.getElementById("size-selection-modal");
   if (sizeModal) {
-    const imgEl = document.getElementById("size-modal-img");
-    const nameEl = document.getElementById("size-modal-name");
+    const imgEl   = document.getElementById("size-modal-img");
+    const nameEl  = document.getElementById("size-modal-name");
     const priceEl = document.getElementById("size-modal-price");
-    if (imgEl) imgEl.src = product.image;
-    if (nameEl) nameEl.textContent = product.name;
+    if (imgEl)   imgEl.src           = product.image;
+    if (nameEl)  nameEl.textContent  = product.name;
     if (priceEl) priceEl.textContent = `$${product.price}`;
     openModal(sizeModal);
     return;
   }
 
-  // No size modal — add immediately with default size
-  addToCart({ ...product, size: "L", quantity: 1 });
+  // no size modal — call backend API directly
+  const token = localStorage.getItem("token");
+  if (token) {
+    const data = await addToCartAPI(product.id, 1);
+    if (data?.success) {
+      const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+      document.querySelectorAll(
+        ".cart-count, .header-cart-badge, .cart-badge"
+      ).forEach(badge => {
+        badge.textContent   = count;
+        badge.style.display = count > 0 ? "flex" : "none";
+      });
+    }
+  } else {
+    // not logged in — fallback to localStorage
+    addToCart({ ...product, size: "L", quantity: 1 });
+  }
+
   showCartConfirmModal(product);
 }
 
@@ -235,7 +296,6 @@ export function handleGridAddToCart(btn) {
 // ==========================================
 
 export function checkAuth(message = "Please login first") {
-  // Support both token storage keys used by auth.js
   const isLoggedIn =
     localStorage.getItem("dripmen_token") === "true" ||
     !!localStorage.getItem("token") ||
@@ -268,7 +328,6 @@ export function openModal(modal) {
   closeAllModals();
   modal.classList.add("active");
 
-  // Also activate overlay if present
   const overlay =
     document.getElementById("modal-overlay") ||
     document.querySelector(".modal-overlay");
@@ -276,12 +335,10 @@ export function openModal(modal) {
 
   document.body.style.overflow = "hidden";
 
-  // Close on backdrop click
   modal.addEventListener("click", (e) => {
     if (e.target === modal) closeAllModals();
   }, { once: true });
 
-  // Close on .close-modal / .close-btn button click
   const closeBtn = modal.querySelector(
     ".close-modal, .modal-close, .close-btn, [data-close-modal]"
   );
@@ -295,20 +352,161 @@ export function openModal(modal) {
 // ==========================================
 
 export function showCartConfirmModal(item) {
-  // The HTML uses id="cart-modal" (not "cart-confirm-modal")
   const modal = document.getElementById("cart-modal");
   if (!modal) {
     showToast(`"${item.name}" added to cart! 🛒`);
     return;
   }
 
-  const nameEl = document.getElementById("cart-modal-name");
-  const imgEl = document.getElementById("cart-modal-img");
+  const nameEl  = document.getElementById("cart-modal-name");
+  const imgEl   = document.getElementById("cart-modal-img");
   const priceEl = document.getElementById("cart-modal-price");
 
-  if (nameEl) nameEl.textContent = item.name || "";
-  if (imgEl) imgEl.src = item.image || "";
+  if (nameEl)  nameEl.textContent = item.name  || "";
+  if (imgEl)   imgEl.src          = item.image  || "";
   if (priceEl) priceEl.textContent = `$${item.price}`;
 
   openModal(modal);
+}
+
+// ==========================================
+// CART API FUNCTIONS
+// ==========================================
+
+const API = "http://localhost:4000";
+
+export async function getCartFromAPI() {
+  const token = localStorage.getItem("token");
+  if (!token) return [];
+  try {
+    const res  = await fetch(`${API}/api/cart`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    return data.items || [];
+  } catch (err) {
+    console.error("getCartFromAPI failed:", err);
+    return [];
+  }
+}
+
+export async function addToCartAPI(productId, quantity = 1) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res  = await fetch(`${API}/api/cart`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ productId, quantity })
+    });
+    return res.json();
+  } catch (err) {
+    console.error("addToCartAPI failed:", err);
+    return null;
+  }
+}
+
+export async function removeFromCartAPI(productId) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/cart/${productId}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    return res.json();
+  } catch (err) {
+    console.error("removeFromCartAPI failed:", err);
+    return null;
+  }
+}
+
+export async function updateCartItemAPI(productId, quantity) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/cart/${productId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ quantity })
+    });
+    return res.json();
+  } catch (err) {
+    console.error("updateCartItemAPI failed:", err);
+    return null;
+  }
+}
+
+// ==========================================
+// WISHLIST API FUNCTIONS
+// ==========================================
+
+export async function getWishlistFromAPI() {
+  const token = localStorage.getItem("token");
+  if (!token) return [];
+  try {
+    const res  = await fetch(`${API}/api/wishlist`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    return data.items || [];
+  } catch (err) {
+    console.error("getWishlistFromAPI failed:", err);
+    return [];
+  }
+}
+
+export async function addToWishlistAPI(productId) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/wishlist`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ productId })
+    });
+    return res.json();
+  } catch (err) {
+    console.error("addToWishlistAPI failed:", err);
+    return null;
+  }
+}
+
+export async function removeFromWishlistAPI(productId) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/wishlist/${productId}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    return res.json();
+  } catch (err) {
+    console.error("removeFromWishlistAPI failed:", err);
+    return null;
+  }
+}
+
+export async function clearWishlistAPI() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/wishlist`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    return res.json();
+  } catch (err) {
+    console.error("clearWishlistAPI failed:", err);
+    return null;
+  }
 }

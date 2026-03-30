@@ -10,6 +10,19 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 
 // ==============================
+// ✅ REUSABLE EMAIL TRANSPORTER
+// ==============================
+function createTransporter() {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+}
+
+// ==============================
 // ✅ SEND SIGNUP OTP
 // ==============================
 export const sendSignupOtp = async (req, res) => {
@@ -35,10 +48,35 @@ export const sendSignupOtp = async (req, res) => {
     await OTP.create({
       email,
       otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), 
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    console.log("Signup OTP:", otp);
+    console.log("Signup OTP:", otp); // keep for debugging
+
+    // ✅ Send OTP email
+    try {
+      const transporter = createTransporter();
+      await transporter.sendMail({
+        from: `"DripMen" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Your DripMen Verification Code",
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f9f9f9;border-radius:12px;">
+            <h2 style="color:#111;margin-bottom:8px;">DRIPMEN</h2>
+            <p style="color:#555;font-size:15px;margin-bottom:24px;">Thanks for signing up! Use the code below to verify your email address.</p>
+            <div style="background:#111;color:#fff;font-size:40px;font-weight:700;letter-spacing:14px;text-align:center;padding:24px;border-radius:8px;">
+              ${otp}
+            </div>
+            <p style="color:#888;font-size:13px;margin-top:24px;">This code expires in <strong>5 minutes</strong>. Do not share it with anyone.</p>
+            <p style="color:#bbb;font-size:12px;margin-top:8px;">If you didn't request this, you can safely ignore this email.</p>
+          </div>
+        `
+      });
+      console.log("OTP email sent to:", email);
+    } catch (emailErr) {
+      console.error("OTP email send failed:", emailErr.message);
+      // OTP is saved in DB — user can still verify even if email fails
+    }
 
     res.status(200).json({ status: "success", message: "OTP sent successfully" });
 
@@ -70,7 +108,7 @@ export const verifySignupOtp = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      token: generateToken(user._id),
+      token: generateToken(user._id, user.is_Admin || false),
       message: "Account created successfully",
     });
 
@@ -91,7 +129,11 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user._id, is_Admin: user.is_Admin || false },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(200).json({
       success: true,
@@ -116,7 +158,7 @@ export const getCurrentUser = async (req, res) => {
 };
 
 // ==============================
-// ✅ FORGOT PASSWORD (STABLE VERSION)
+// ✅ FORGOT PASSWORD
 // ==============================
 export const forgotPassword = async (req, res) => {
   try {
@@ -127,32 +169,32 @@ export const forgotPassword = async (req, res) => {
       return res.status(404).json({ status: "error", message: "User not found" });
     }
 
-    // 1. Generate a simple token
     const resetToken = crypto.randomBytes(32).toString("hex");
 
-    // 2. Save the HASHED version to the database
-    user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+    user.resetPasswordToken  = crypto.createHash("sha256").update(resetToken).digest("hex");
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 
     await user.save();
 
-    // 3. Send the RAW token to the user
-    const resetUrl = `http://localhost:5500/reset-password.html?token=${resetToken}`;
+    const resetUrl = `http://localhost:5500/Public/User/reset-password.html?token=${resetToken}`;
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
+    const transporter = createTransporter();
     await transporter.sendMail({
+      from: `"DripMen" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Password Reset - DripMen",
-      html: `<h3>DripMen Password Reset</h3>
-             <p>Click the link below to reset your password. It expires in 10 minutes:</p>
-             <a href="${resetUrl}">${resetUrl}</a>`
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f9f9f9;border-radius:12px;">
+          <h2 style="color:#111;margin-bottom:8px;">DRIPMEN</h2>
+          <p style="color:#555;font-size:15px;margin-bottom:24px;">We received a request to reset your password.</p>
+          <a href="${resetUrl}"
+             style="display:block;background:#111;color:#fff;text-align:center;padding:14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">
+            Reset My Password
+          </a>
+          <p style="color:#888;font-size:13px;margin-top:24px;">This link expires in <strong>10 minutes</strong>.</p>
+          <p style="color:#bbb;font-size:12px;margin-top:8px;">If you didn't request this, you can safely ignore this email.</p>
+        </div>
+      `
     });
 
     res.json({ status: "success", message: "Reset link sent to email" });
@@ -163,20 +205,18 @@ user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 };
 
 // ==============================
-// ✅ RESET PASSWORD (STABLE VERSION)
+// ✅ RESET PASSWORD
 // ==============================
 export const resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
 
-    // 1. Hash the incoming token from Postman to compare it with the DB
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-    // 2. Find user where hashed token matches and isn't expired
     const user = await User.findOne({
-  resetPasswordToken: hashedToken,
-  resetPasswordExpire: { $gt: Date.now() }
-});
+      resetPasswordToken:  hashedToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
 
     if (!user) {
       return res.status(400).json({
@@ -185,11 +225,9 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-  user.password = password;
-    
-    // 4. Important: Clear the reset fields
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    user.password            = password;
+    user.resetPasswordToken  = undefined;
+    user.resetPasswordExpire = undefined;
 
     await user.save();
 
@@ -197,5 +235,63 @@ export const resetPassword = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ status: "error", message: error.message });
+  }
+};
+
+
+// ==============================
+// ✅ UPDATE PASSWORD
+// ==============================
+
+// UPDATE PROFILE
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, email },
+      { new: true }
+    ).select("-password");
+
+    res.json({ success: true, user });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// CHANGE PASSWORD
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id).select("+password");
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect"
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password changed successfully"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };

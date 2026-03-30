@@ -1,6 +1,6 @@
 import express from "express";
 import { sendSignupOtp, verifySignupOtp,loginUser,getCurrentUser,forgotPassword,
-  resetPassword} from "../controllers/authController.js";
+  resetPassword,updateProfile,changePassword } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 
@@ -12,4 +12,7 @@ router.post("/login", loginUser);
 router.get("/me", protect, getCurrentUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.put("/update-profile", protect, updateProfile);
+router.put("/change-password", protect, changePassword);
+
 export default router;

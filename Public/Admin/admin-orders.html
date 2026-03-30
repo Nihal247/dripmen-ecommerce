@@ -13,8 +13,8 @@
 
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="../User/css/style.css">
+<link rel="stylesheet" href="../Admin/admin.css">
 
 </head>
 
@@ -135,52 +135,7 @@
 </tr>
 </thead>
 
-<tbody>
-
-<tr>
-<td>#923742</td>
-<td>Alex Doe</td>
-<td>Nov 12, 2023</td>
-<td>$145.00</td>
-<td>Paid (Card)</td>
-<td><span class="status-badge status-active">Delivered</span></td>
-
-<td>
-<button class="action-btn" title="View Details">
-<i class="ph ph-eye"></i>
-</button>
-
-<button class="action-btn" title="Invoice">
-<i class="ph ph-printer"></i>
-</button>
-</td>
-
-</tr>
-
-<tr>
-
-<td>#923741</td>
-<td>David Smith</td>
-<td>Nov 12, 2023</td>
-<td>$240.00</td>
-<td>Pending (COD)</td>
-<td><span class="status-badge status-packed">Pending</span></td>
-
-<td>
-
-<button class="action-btn" title="View Details">
-<i class="ph ph-eye"></i>
-</button>
-
-<button class="action-btn" title="Update Status">
-<i class="ph ph-pencil-simple"></i>
-</button>
-
-</td>
-
-</tr>
-
-</tbody>
+<tbody id="admin-orders-list"></tbody>
 
 </table>
 
@@ -193,6 +148,7 @@
 </div>
 
 <script src="admin.js"></script>
+<script src="./js/adminOrders.js"></script>
 
 </body>
 </html>

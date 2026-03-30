@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../User/css/style.css">
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
@@ -62,32 +62,14 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td><div class="admin-profile"><img src="https://ui-avatars.com/api/?name=John+Doe" alt=""><span>John Doe</span></div></td>
-                                <td>john@example.com</td>
-                                <td><span class="status-badge status-active">User</span></td>
-                                <td><span class="status-badge status-active">Active</span></td>
-                                <td>Oct 24, 2023</td>
-                                <td>
-                                    <button class="action-btn" title="Block"><i class="ph ph-prohibit"></i></button>
-                                    <button class="action-btn delete" title="Delete"><i class="ph ph-trash"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><div class="admin-profile"><img src="https://ui-avatars.com/api/?name=Jane+Smith" alt=""><span>Jane Smith</span></div></td>
-                                <td>jane@example.com</td>
-                                <td><span class="status-badge status-shipped">Admin</span></td>
-                                <td><span class="status-badge status-blocked">Blocked</span></td>
-                                <td>Sep 12, 2023</td>
-                                <td><button class="action-btn" title="Unblock"><i class="ph ph-check-circle"></i></button></td>
-                            </tr>
-                        </tbody>
+                        <tbody id="admin-users-list">
+</tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
     <script src="admin.js"></script>
+    <script src="js/admin-users.js"></script>
 </body>
 </html>

@@ -2,21 +2,20 @@
 import { openModal, closeAllModals, showToast } from "../core.js";
 
 export function initAuthSystem() {
-    const authModal = document.getElementById('auth-modal');
+    const authModal   = document.getElementById('auth-modal');
     const accountIcon = document.querySelector('.account-icon-link');
-    const dropdown = document.querySelector('.account-dropdown');
-    const signOutBtn = document.getElementById('nav-sign-out');
+    const dropdown    = document.querySelector('.account-dropdown');
+    const signOutBtn  = document.getElementById('nav-sign-out');
 
     // Rename "Sign out" to "Logout"
     if (signOutBtn) {
-        // The text is in the last child node of the <a> element
         const textNode = signOutBtn.lastChild;
         if (textNode && textNode.nodeType === Node.TEXT_NODE) {
             textNode.textContent = ' Logout';
         }
     }
 
-    // --- Inject Updated Modal HTML ---
+    // ── Inject Updated Modal HTML ─────────────────────────────────────
     if (authModal) {
         authModal.innerHTML = `
         <button class="close-modal"><i class="ph ph-x"></i></button>
@@ -48,7 +47,7 @@ export function initAuthSystem() {
 
             <!-- Signup Form Wrapper -->
             <div id="signup-form-wrapper" class="auth-form-wrapper">
-                
+
                 <!-- Step 1: Details -->
                 <div id="modal-signup-step-1">
                     <div class="auth-header">
@@ -99,56 +98,86 @@ export function initAuthSystem() {
         </div>`;
     }
 
-   // Check Auth State using /me API
-async function checkAuth() {
+    // ── Check Auth State ──────────────────────────────────────────────
+    async function checkAuth() {
+        const token = localStorage.getItem("token");
 
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        if (dropdown) dropdown.style.display = "none";
-        return;
-    }
-
-    try {
-
-        const res = await fetch("http://localhost:4000/api/auth/me", {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-
-            if (dropdown) dropdown.style.display = "";
-
-            if (accountIcon) {
-                accountIcon.href = "javascript:void(0)";
-                accountIcon.onclick = null;
-            }
-
-            console.log("Current user:", data.user);
-
-        } else {
-
-            localStorage.removeItem("token");
-            localStorage.removeItem("dripmen_token");
-
+        if (!token) {
+            // NOT logged in — show login modal on icon click
             if (dropdown) dropdown.style.display = "none";
-
+            if (accountIcon) {
+                accountIcon.onclick = (e) => {
+                    e.preventDefault();
+                    if (authModal) openModal(authModal);
+                };
+            }
+            return;
         }
 
-    } catch (error) {
-        console.error("Auth check failed:", error);
-    }
-}
+        try {
+            const res  = await fetch("http://localhost:4000/api/auth/me", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
 
-    // Modal Tabs Logic
+            if (data.success) {
+                // ✅ LOGGED IN — show dropdown on click
+                if (dropdown) dropdown.style.display = "";
+
+                if (accountIcon) {
+                    accountIcon.href    = "javascript:void(0)";
+                    // ✅ THIS IS THE FIX — toggle dropdown on click
+                    accountIcon.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const isVisible = dropdown.style.display === "block";
+                        dropdown.style.display = isVisible ? "none" : "block";
+                    };
+                }
+
+                // close dropdown when clicking outside
+                document.addEventListener("click", (e) => {
+                    if (
+                        dropdown &&
+                        !dropdown.contains(e.target) &&
+                        !accountIcon.contains(e.target)
+                    ) {
+                        dropdown.style.display = "none";
+                    }
+                }, { capture: true });
+
+                console.log("Current user:", data.user);
+
+            } else {
+                // Token invalid — clear and show login on click
+                localStorage.removeItem("token");
+                localStorage.removeItem("dripmen_token");
+
+                if (dropdown) dropdown.style.display = "none";
+                if (accountIcon) {
+                    accountIcon.onclick = (e) => {
+                        e.preventDefault();
+                        if (authModal) openModal(authModal);
+                    };
+                }
+            }
+
+        } catch (error) {
+            // Network error — fallback: open login modal on click
+            console.error("Auth check failed:", error);
+            if (accountIcon) {
+                accountIcon.onclick = (e) => {
+                    e.preventDefault();
+                    if (authModal) openModal(authModal);
+                };
+            }
+        }
+    }
+
+    // ── Modal Tab Logic ───────────────────────────────────────────────
     if (authModal) {
-        // Switch to Signup from Link
         const switchSignupBtn = authModal.querySelector('.switch-to-signup');
-        const switchLoginBtn = authModal.querySelector('.switch-to-login');
+        const switchLoginBtn  = authModal.querySelector('.switch-to-login');
         const backToSignupBtn = authModal.querySelector('#back-to-signup-step-1');
 
         if (switchSignupBtn) {
@@ -156,13 +185,11 @@ async function checkAuth() {
                 e.preventDefault();
                 document.getElementById('login-form-wrapper').classList.remove('active');
                 document.getElementById('signup-form-wrapper').classList.add('active');
-                // Reset steps
-                document.getElementById('modal-signup-step-1').style.display = 'block';
+                document.getElementById('modal-signup-step-1').style.display  = 'block';
                 document.getElementById('modal-signup-step-otp').style.display = 'none';
             });
         }
 
-        // Switch to Login from Link
         if (switchLoginBtn) {
             switchLoginBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -175,29 +202,23 @@ async function checkAuth() {
             backToSignupBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 document.getElementById('modal-signup-step-otp').style.display = 'none';
-                document.getElementById('modal-signup-step-1').style.display = 'block';
+                document.getElementById('modal-signup-step-1').style.display   = 'block';
             });
         }
 
-
-        // Login Form Submit
+        // ── Login Form Submit ─────────────────────────────────────────
         const loginForm = document.getElementById('modal-login-form');
-
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
-
                 e.preventDefault();
 
-                const email = document.getElementById("modal-login-email").value;
+                const email    = document.getElementById("modal-login-email").value;
                 const password = document.getElementById("modal-login-password").value;
 
                 try {
-
                     const response = await fetch("http://localhost:4000/api/auth/login", {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, password })
                     });
 
@@ -208,43 +229,36 @@ async function checkAuth() {
                         return;
                     }
 
-                    // Save token
                     localStorage.setItem("token", data.token);
                     localStorage.setItem("dripmen_token", "true");
 
                     showToast("Logged in successfully ✅");
-
                     closeAllModals();
                     checkAuth();
 
                 } catch (error) {
-
                     console.error(error);
                     showToast("Network error. Try again.", "error");
-
                 }
-
             });
         }
 
-        // Signup Form Submit
+        // ── Signup Form Submit ────────────────────────────────────────
         const signupForm = document.getElementById('modal-signup-form');
         if (signupForm) {
             signupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                const name = document.getElementById('modal-signup-name').value;
-                const email = document.getElementById('modal-signup-email').value;
-                const password = document.getElementById('modal-signup-password').value;
+                const name        = document.getElementById('modal-signup-name').value;
+                const email       = document.getElementById('modal-signup-email').value;
+                const password    = document.getElementById('modal-signup-password').value;
                 const confirmPass = document.getElementById('modal-signup-confirm-password').value;
 
-                // Strong password validation
                 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
                 if (!strongPasswordRegex.test(password)) {
                     showToast("Password must be at least 6 characters and include uppercase, lowercase, and number", "error");
                     return;
                 }
-
                 if (password !== confirmPass) {
                     showToast("Passwords do not match", "error");
                     return;
@@ -265,11 +279,8 @@ async function checkAuth() {
                     }
 
                     showToast("OTP sent successfully ✅");
-
-                    // Store data temporarily for step 2
                     sessionStorage.setItem("signupData", JSON.stringify({ name, email, password }));
-
-                    document.getElementById('modal-signup-step-1').style.display = 'none';
+                    document.getElementById('modal-signup-step-1').style.display  = 'none';
                     document.getElementById('modal-signup-step-otp').style.display = 'block';
 
                 } catch (error) {
@@ -279,7 +290,7 @@ async function checkAuth() {
             });
         }
 
-        // Signup OTP Submit
+        // ── OTP Submit ────────────────────────────────────────────────
         const otpForm = document.getElementById('modal-signup-otp-form');
         if (otpForm) {
             otpForm.addEventListener('submit', async (e) => {
@@ -288,7 +299,6 @@ async function checkAuth() {
 
                 try {
                     const storedData = JSON.parse(sessionStorage.getItem("signupData"));
-
                     if (!storedData) {
                         showToast("Session expired. Please signup again.", "error");
                         return;
@@ -308,14 +318,9 @@ async function checkAuth() {
                     }
 
                     showToast("Account created successfully! 🎉");
-
-                    // Save JWT and UI flag
                     localStorage.setItem("token", data.token);
                     localStorage.setItem('dripmen_token', 'true');
-
-                    // Clear temp signup data
                     sessionStorage.removeItem("signupData");
-
                     closeAllModals();
                     checkAuth();
 
@@ -327,27 +332,24 @@ async function checkAuth() {
         }
     }
 
-    // Sign Out Logic
+    // ── Sign Out ──────────────────────────────────────────────────────
     if (signOutBtn) {
         signOutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             localStorage.removeItem("token");
             localStorage.removeItem('dripmen_token');
+            if (dropdown) dropdown.style.display = "none";
             showToast("Signed out successfully");
             checkAuth();
 
-            // If on a protected page, redirect to home
             const protectedPages = ['account.html', 'orders.html', 'address.html', 'payment.html', 'returns.html', 'cancellations.html'];
-            const currentPage = window.location.pathname.split('/').pop();
+            const currentPage    = window.location.pathname.split('/').pop();
             if (protectedPages.includes(currentPage)) {
                 window.location.href = 'index.html';
             }
         });
     }
 
-    // Initial Check
+    // ── Initial Check ─────────────────────────────────────────────────
     checkAuth();
 }
-
-// ==========================================
-// PAGE: PRODUCTS (FILTERS & SORT)

@@ -1,4 +1,4 @@
-import { showToast, checkAuth, addToCart, showCartConfirmModal } from "../core.js";
+import { showToast, checkAuth, addToCart, addToCartAPI, showCartConfirmModal } from "../core.js";
 
 const API_BASE = "http://localhost:4000";
 
@@ -19,7 +19,6 @@ export async function initProductPage() {
   if (productId) {
     const product = await loadProductFromAPI(productId);
     if (product) {
-      // category name is now available — pass it to recommended
       const categoryName = product.categoryId?.name || "";
       loadRecommended(productId, categoryName);
     }
@@ -31,7 +30,7 @@ export async function initProductPage() {
 }
 
 // ==========================================
-// FETCH PRODUCT — returns the product object
+// FETCH PRODUCT
 // ==========================================
 async function loadProductFromAPI(id) {
   try {
@@ -39,7 +38,7 @@ async function loadProductFromAPI(id) {
     const data = await res.json();
     if (!data.success || !data.product) return null;
     populatePage(data.product);
-    return data.product; // ← return so initProductPage can use it
+    return data.product;
   } catch (err) {
     console.error("Failed to load product:", err);
     return null;
@@ -53,20 +52,17 @@ function populatePage(p) {
   const container    = document.querySelector(".single-product-section");
   const displayPrice = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
 
-  // data attributes for cart
   container.dataset.id    = p._id;
   container.dataset.name  = p.name;
   container.dataset.price = displayPrice;
   container.dataset.image = p.images?.[0] || "";
 
-  // title + breadcrumb
   document.title = `DripMen | ${p.name}`;
   const bc = document.querySelector(".breadcrumb .current");
   if (bc) bc.textContent = p.name;
   const titleEl = document.querySelector(".product-title-main");
   if (titleEl) titleEl.textContent = p.name;
 
-  // price
   const curEl = document.querySelector(".current-price-main");
   const orgEl = document.querySelector(".original-price-main");
   const badEl = document.querySelector(".discount-badge-main");
@@ -80,7 +76,6 @@ function populatePage(p) {
     if (badEl) badEl.style.display = "none";
   }
 
-  // stock
   const stockEl = document.querySelector(".stock-status");
   if (stockEl) {
     if (p.status === "out_of_stock" || p.stock === 0) {
@@ -92,7 +87,6 @@ function populatePage(p) {
     }
   }
 
-  // description (only replace if product has one)
   if (p.description) {
     const descEl    = document.querySelector(".product-desc-short");
     const tabDescEl = document.querySelector("#tab-desc p");
@@ -100,18 +94,14 @@ function populatePage(p) {
     if (tabDescEl) tabDescEl.textContent = p.description;
   }
 
-  // main image
   const mainImg = document.getElementById("main-product-image");
   if (mainImg && p.images?.[0]) mainImg.src = p.images[0];
 
-  // thumbnails — always show, repeat image if only 1 uploaded
   const thumbList = document.querySelector(".thumbnail-list");
   if (thumbList && p.images?.length) {
-    // If only 1 image repeat it 3 times so selector always shows
     const thumbImages = p.images.length === 1
       ? [p.images[0], p.images[0], p.images[0]]
       : p.images;
-
     thumbList.style.display = "";
     thumbList.innerHTML = thumbImages.map((img, i) => `
       <button class="thumb-btn ${i === 0 ? "active" : ""}" data-image="${img}">
@@ -119,7 +109,6 @@ function populatePage(p) {
       </button>`).join("");
   }
 
-  // colors
   const colorRow = document.querySelector(".color-options-row");
   if (colorRow && p.colors?.length) {
     colorRow.innerHTML = p.colors.map((color, i) => {
@@ -132,25 +121,23 @@ function populatePage(p) {
           <i class="ph ph-check" ${i !== 0 ? 'style="display:none"' : ""}></i>
         </button>`;
     }).join("");
-    initColorSelection(); // rebind after new DOM
+    initColorSelection();
   }
 
-  // sizes
   const sizeRow = document.querySelector(".size-options-row");
   if (sizeRow && p.sizes?.length) {
     sizeRow.innerHTML = p.sizes.map((size, i) => `
       <button class="size-pill-btn ${i === 0 ? "active" : ""}">${size}</button>`
     ).join("");
-    initSizeSelection(); // rebind after new DOM
+    initSizeSelection();
   }
 
-  // sticky bar price
   const stickyPrice = document.querySelector(".sticky-price");
   if (stickyPrice) stickyPrice.textContent = `$${displayPrice}`;
 }
 
 // ==========================================
-// YOU MIGHT ALSO LIKE — same category first
+// YOU MIGHT ALSO LIKE
 // ==========================================
 async function loadRecommended(currentProductId, categoryName) {
   const grid = document.getElementById("recommended-grid");
@@ -159,7 +146,6 @@ async function loadRecommended(currentProductId, categoryName) {
   try {
     let products = [];
 
-    // 1 — same category
     if (categoryName) {
       const res  = await fetch(`${API_BASE}/api/products?category=${encodeURIComponent(categoryName)}&limit=5`);
       const data = await res.json();
@@ -168,7 +154,6 @@ async function loadRecommended(currentProductId, categoryName) {
       }
     }
 
-    // 2 — fill gaps with newest if needed
     if (products.length < 4) {
       const res  = await fetch(`${API_BASE}/api/products?sort=newest&limit=8`);
       const data = await res.json();
@@ -217,7 +202,9 @@ function renderCard(p) {
       data-price="${displayPrice}" data-image="${image}">
       <div class="product-image-container">
         <img src="${image}" alt="${p.name}" class="product-image" />
-        <button class="wishlist-btn" aria-label="Add to wishlist"><i class="ph ph-heart"></i></button>
+        <button class="wishlist-btn" aria-label="Add to wishlist">
+          <i class="ph ph-heart"></i>
+        </button>
         <div class="card-hover-actions">
           <button class="btn btn-primary add-to-cart-btn">
             <i class="ph ph-shopping-cart"></i> Add to Cart
@@ -238,7 +225,7 @@ function renderCard(p) {
 }
 
 // ==========================================
-// SIZE / COLOR / GALLERY / TABS / CART
+// SIZE / COLOR / GALLERY / TABS
 // ==========================================
 function initSizeSelection() {
   document.querySelectorAll(".size-pill-btn").forEach(btn => {
@@ -284,13 +271,19 @@ function initTabs() {
   });
 }
 
+// ==========================================
+// CART BUTTONS
+// ==========================================
 function initCartButtons() {
   const qtyInput = document.querySelector(".qty-input-main");
+
   document.querySelector(".qty-minus-main")?.addEventListener("click", () => {
-    let v = parseInt(qtyInput.value); if (v > 1) qtyInput.value = v - 1;
+    let v = parseInt(qtyInput.value);
+    if (v > 1) qtyInput.value = v - 1;
   });
   document.querySelector(".qty-plus-main")?.addEventListener("click", () => {
-    let v = parseInt(qtyInput.value); if (v < 99) qtyInput.value = v + 1;
+    let v = parseInt(qtyInput.value);
+    if (v < 99) qtyInput.value = v + 1;
   });
 
   const getSelection = () => {
@@ -309,13 +302,46 @@ function initCartButtons() {
     };
   };
 
-  const handleAddToCart = () => {
+  // ✅ Add to Cart — calls backend API
+  const handleAddToCart = async () => {
     if (!checkAuth("Please login to add to cart")) return;
-    const item = getSelection(); if (item) { addToCart(item); showCartConfirmModal(item); }
+    const item = getSelection();
+    if (!item) return;
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      const data = await addToCartAPI(item.id, item.quantity);
+      if (data?.success) {
+        const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+        document.querySelectorAll(
+          ".cart-count, .header-cart-badge, .cart-badge"
+        ).forEach(badge => {
+          badge.textContent   = count;
+          badge.style.display = count > 0 ? "flex" : "none";
+        });
+        showCartConfirmModal(item);
+      } else {
+        showToast("Failed to add to cart", "error");
+      }
+    } else {
+      addToCart(item);
+      showCartConfirmModal(item);
+    }
   };
-  const handleBuyNow = () => {
+
+  // ✅ Buy Now — calls backend API then redirects
+  const handleBuyNow = async () => {
     if (!checkAuth("Please login to continue")) return;
-    const item = getSelection(); if (item) { addToCart(item); window.location.href = "checkout.html"; }
+    const item = getSelection();
+    if (!item) return;
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      await addToCartAPI(item.id, item.quantity);
+    } else {
+      addToCart(item);
+    }
+    window.location.href = "checkout.html";
   };
 
   document.getElementById("add-to-cart-btn")?.addEventListener("click", handleAddToCart);
