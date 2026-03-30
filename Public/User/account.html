@@ -2,127 +2,164 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DripMen | My Account</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DripMen | My Account</title>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet" />
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-    <!-- Phosphor Icons -->
-     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/style.css" />
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
-    <!-- Top Announcement Bar -->
-    <div class="announcement-bar" id="announcement-bar">
-        <span>Sign up and get 20% off to your first order. Sign Up Now</span>
-        <button class="close-announcement" aria-label="Close">
-            <i class="ph ph-x"></i>
-        </button>
-    </div>
 
-    <!-- Navbar -->
-    <header class="navbar">
-        <!-- Content injected by js/script.js -->
-    </header>
+  <!-- Announcement Bar -->
+  <div class="announcement-bar" id="announcement-bar">
+    <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+    <button class="close-announcement" aria-label="Close">
+      <i class="ph ph-x"></i>
+    </button>
+  </div>
 
-    <main class="account-page">
-        <div class="account-container">
-            <!-- Breadcrumb -->
-            <nav class="breadcrumb">
-                <a href="index.html">Home</a>
-                <span class="separator"><i class="ph ph-caret-right"></i></span>
-                <span class="current">My Account</span>
-            </nav>
+  <!-- Navbar -->
+  <header class="navbar"></header>
 
-            <div class="account-layout">
-                <!-- Sidebar -->
-                <aside class="account-sidebar">
-                    <div class="account-nav-section">
-                        <h3 class="account-nav-title">Manage My Account</h3>
-                        <div class="account-nav-list">
-                            <a href="#" class="active">My Profile</a>
-                            <a href="address.html">Address Book</a>
-                            <a href="payment.html">My Payment Options</a>
-                        </div>
-                    </div>
-                    <div class="account-nav-section">
-                        <h3 class="account-nav-title">My Orders</h3>
-                        <div class="account-nav-list">
-                            <a href="orders.html">My Orders</a>
-                            <a href="returns.html">My Returns</a>
-                            <a href="#">My Cancellations</a>
-                        </div>
-                    </div>
-                </aside>
+  <!-- MAIN -->
+  <main class="account-page">
+    <div class="account-container">
 
-                <!-- Main Content -->
-                <div class="account-content">
-                    <div class="account-header">
-                        <h2>Edit Your Profile</h2>
-                    </div>
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator"><i class="ph ph-caret-right"></i></span>
+        <span class="current">My Account</span>
+      </nav>
 
-                    <form id="account-form" class="account-form"></form>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>First Name</label>
-<input id="firstName" type="text" placeholder="First Name">
-                            </div>
-                            <div class="form-group">
-                                <label>Last Name</label>
-<input id="lastName" type="text" placeholder="Last Name">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Email</label>
-<input id="email" type="email" placeholder="Email">
-                            </div>
-                            <div class="form-group">
-                                <label>Address</label>
-<input id="address" type="text" placeholder="Address">
-                            </div>
-                        </div>
+      <div class="account-layout">
 
-                        <div class="password-change-section">
-                            <h3 class="section-subtitle">Password Changes</h3>
-                            <div class="form-group">
-                                <input type="password" placeholder="Current Password">
-                            </div>
-                            <div class="form-group">
-                                <input type="password" placeholder="New Password">
-                            </div>
-                            <div class="form-group">
-                                <input type="password" placeholder="Confirm New Password">
-                            </div>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-outline">Cancel</button>
-                            <button type="button" class="btn btn-primary">Save Changes</button>
-                        </div>
-                    </form>
-                </div>
+        <!-- Sidebar -->
+        <aside class="account-sidebar">
+          <div class="account-nav-section">
+            <h3 class="account-nav-title">Manage My Account</h3>
+            <div class="account-nav-list">
+              <a href="account.html" class="active">My Profile</a>
+              <a href="address.html">Address Book</a>
+              <a href="payment.html">My Payment Options</a>
             </div>
-        </div>
-    </main>
+          </div>
 
-    <!-- Footer -->
-    <footer class="footer" id="footer">
-        <!-- Content injected by js/script.js -->
-    </footer>
+          <div class="account-nav-section">
+            <h3 class="account-nav-title">My Orders</h3>
+            <div class="account-nav-list">
+              <a href="orders.html">My Orders</a>
+              <a href="returns.html">My Returns</a>
+              <a href="cancellations.html">My Cancellations</a>
+            </div>
+          </div>
+        </aside>
 
-    <!-- Overlay for mobile menu -->
-    <div class="mobile-menu-overlay"></div>
+        <!-- Content -->
+        <section class="account-content">
+          <div class="account-header">
+            <h1>Edit Your Profile</h1>
+          </div>
 
-<script type="module" src="js/main.js"></script>
+          <!-- FORM -->
+          <form id="account-form" class="account-form" novalidate>
+
+            <!-- Name + Email -->
+            <div class="form-row">
+
+              <div class="form-group">
+                <label for="firstName">Full Name</label>
+                <input 
+                  id="firstName" 
+                  name="name"
+                  type="text" 
+                  placeholder="Your name"
+                  required
+                  autocomplete="name"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input 
+                  id="email" 
+                  name="email"
+                  type="email" 
+                  placeholder="Your email"
+                  required
+                  autocomplete="email"
+                >
+              </div>
+
+            </div>
+
+            <!-- Password -->
+            <div class="password-change-section">
+              <h2 class="section-subtitle">Change Password</h2>
+
+              <div class="form-group">
+                <input 
+                  id="currentPassword" 
+                  type="password" 
+                  placeholder="Current Password"
+                  autocomplete="current-password"
+                >
+              </div>
+
+              <div class="form-group">
+                <input 
+                  id="newPassword" 
+                  type="password" 
+                  placeholder="New Password"
+                  autocomplete="new-password"
+                >
+              </div>
+
+              <div class="form-group">
+                <input 
+                  id="confirmPassword" 
+                  type="password" 
+                  placeholder="Confirm New Password"
+                  autocomplete="new-password"
+                >
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <button type="button" id="cancel-btn" class="btn btn-outline">
+                Cancel
+              </button>
+
+              <button type="submit" id="save-changes-btn" class="btn btn-primary">
+                Save Changes
+              </button>
+            </div>
+
+          </form>
+
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" id="footer"></footer>
+
+  <div class="mobile-menu-overlay"></div>
+
+  <script type="module" src="js/main.js"></script>
+
 </body>
 </html>
