@@ -8,7 +8,12 @@ export async function initAccountPage() {
     return;
   }
 
-  // ───────── LOAD USER DATA ─────────
+
+  
+
+  // ==============================
+  // LOAD USER DATA
+  // ==============================
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -31,7 +36,9 @@ export async function initAccountPage() {
     showToast("Network error while loading user", "error");
   }
 
-  // ───────── FORM SUBMIT ─────────
+  // ==============================
+  // FORM SUBMIT
+  // ==============================
   const form = document.getElementById("account-form");
 
   form.addEventListener("submit", async (e) => {
@@ -45,7 +52,9 @@ export async function initAccountPage() {
     const newPass = document.getElementById("newPassword")?.value;
     const confirm = document.getElementById("confirmPassword")?.value;
 
-    // ───────── VALIDATION ─────────
+    // ==============================
+    // VALIDATION
+    // ==============================
     if (!name) {
       showToast("Name cannot be empty", "error");
       return;
@@ -56,11 +65,17 @@ export async function initAccountPage() {
       return;
     }
 
-    // ───────── LOADING STATE ─────────
-    saveBtn.disabled = true;
-    saveBtn.innerText = "Saving...";
+    // ==============================
+    // LOADING STATE
+    // ==============================
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerText = "Saving...";
+    }
 
-    // ───────── UPDATE PROFILE ─────────
+    // ==============================
+    // UPDATE PROFILE
+    // ==============================
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/update-profile`, {
         method: "PUT",
@@ -75,8 +90,7 @@ export async function initAccountPage() {
 
       if (!res.ok || !data.success) {
         showToast(data.message || "Failed to update profile", "error");
-        saveBtn.disabled = false;
-        saveBtn.innerText = "Save Changes";
+        resetButton(saveBtn);
         return;
       }
 
@@ -84,32 +98,30 @@ export async function initAccountPage() {
 
     } catch (err) {
       showToast("Network error", "error");
-      saveBtn.disabled = false;
-      saveBtn.innerText = "Save Changes";
+      resetButton(saveBtn);
       return;
     }
 
-    // ───────── PASSWORD CHANGE ─────────
+    // ==============================
+    // PASSWORD CHANGE
+    // ==============================
     if (current || newPass || confirm) {
 
       if (!current || !newPass || !confirm) {
         showToast("Fill all password fields", "error");
-        saveBtn.disabled = false;
-        saveBtn.innerText = "Save Changes";
+        resetButton(saveBtn);
         return;
       }
 
       if (newPass !== confirm) {
         showToast("Passwords do not match", "error");
-        saveBtn.disabled = false;
-        saveBtn.innerText = "Save Changes";
+        resetButton(saveBtn);
         return;
       }
 
       if (newPass.length < 6) {
         showToast("Password must be at least 6 characters", "error");
-        saveBtn.disabled = false;
-        saveBtn.innerText = "Save Changes";
+        resetButton(saveBtn);
         return;
       }
 
@@ -130,14 +142,13 @@ export async function initAccountPage() {
 
         if (!res.ok || !data.success) {
           showToast(data.message || "Failed to change password", "error");
-          saveBtn.disabled = false;
-          saveBtn.innerText = "Save Changes";
+          resetButton(saveBtn);
           return;
         }
 
         showToast("Password changed successfully ✅");
 
-        // clear password fields
+        // clear fields
         document.getElementById("currentPassword").value = "";
         document.getElementById("newPassword").value = "";
         document.getElementById("confirmPassword").value = "";
@@ -147,12 +158,12 @@ export async function initAccountPage() {
       }
     }
 
-    // ───────── RESET BUTTON ─────────
-    saveBtn.disabled = false;
-    saveBtn.innerText = "Save Changes";
+    resetButton(saveBtn);
   });
 
-  // ───────── CANCEL BUTTON ─────────
+  // ==============================
+  // CANCEL BUTTON
+  // ==============================
   const cancelBtn = document.getElementById("cancel-btn");
   if (cancelBtn) {
     cancelBtn.addEventListener("click", () => {
@@ -161,7 +172,18 @@ export async function initAccountPage() {
   }
 }
 
-// ───────── TOAST FUNCTION ─────────
+// ==============================
+// HELPER FUNCTION
+// ==============================
+function resetButton(btn) {
+  if (!btn) return;
+  btn.disabled = false;
+  btn.innerText = "Save Changes";
+}
+
+// ==============================
+// TOAST FUNCTION
+// ==============================
 function showToast(message, type = "success") {
   let container = document.getElementById("toast-container");
 

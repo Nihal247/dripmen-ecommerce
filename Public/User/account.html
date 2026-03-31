@@ -20,6 +20,9 @@
 
 <body>
 
+  <!-- ✅ OVERLAY -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
   <!-- Announcement Bar -->
   <div class="announcement-bar" id="announcement-bar">
     <span>Sign up and get 20% off to your first order. Sign Up Now</span>
@@ -44,37 +47,50 @@
 
       <div class="account-layout">
 
-        <!-- Sidebar -->
-        <aside class="account-sidebar">
+        <!-- SIDEBAR -->
+        <aside class="account-sidebar" id="account-sidebar">
+
+
+
           <div class="account-nav-section">
-            <h3 class="account-nav-title">Manage My Account</h3>
+            <h3 class="account-nav-title">Manage Account</h3>
             <div class="account-nav-list">
-              <a href="account.html" class="active">My Profile</a>
+              <a href="account.html" class="active">Profile</a>
               <a href="address.html">Address Book</a>
-              <a href="payment.html">My Payment Options</a>
+              <a href="payment.html">Payment Options</a>
             </div>
           </div>
 
           <div class="account-nav-section">
-            <h3 class="account-nav-title">My Orders</h3>
+            <h3 class="account-nav-title">Orders</h3>
             <div class="account-nav-list">
-              <a href="orders.html">My Orders</a>
-              <a href="returns.html">My Returns</a>
-              <a href="cancellations.html">My Cancellations</a>
+              <a href="orders.html">Orders</a>
+              <a href="returns.html">Returns</a>
+              <a href="cancellations.html">Cancellations</a>
             </div>
           </div>
+
         </aside>
 
-        <!-- Content -->
+        <!-- CONTENT -->
         <section class="account-content">
+
           <div class="account-header">
-            <h1>Edit Your Profile</h1>
+
+            <h1>My Profile</h1>
           </div>
+          <div class="account-tabs">
+  <a href="account.html" class="tab active">Profile</a>
+  <a href="address.html" class="tab">Address</a>
+  <a href="payment.html" class="tab">Payment</a>
+  <a href="orders.html" class="tab">Orders</a>
+  <a href="returns.html" class="tab">Returns</a>
+  <a href="cancellations.html" class="tab">Cancel</a>
+</div>
 
           <!-- FORM -->
           <form id="account-form" class="account-form" novalidate>
 
-            <!-- Name + Email -->
             <div class="form-row">
 
               <div class="form-group">
@@ -85,7 +101,6 @@
                   type="text" 
                   placeholder="Your name"
                   required
-                  autocomplete="name"
                 >
               </div>
 
@@ -97,51 +112,33 @@
                   type="email" 
                   placeholder="Your email"
                   required
-                  autocomplete="email"
                 >
               </div>
 
             </div>
 
-            <!-- Password -->
+            <!-- PASSWORD -->
             <div class="password-change-section">
               <h2 class="section-subtitle">Change Password</h2>
 
               <div class="form-group">
-                <input 
-                  id="currentPassword" 
-                  type="password" 
-                  placeholder="Current Password"
-                  autocomplete="current-password"
-                >
+                <input id="currentPassword" type="password" placeholder="Current Password">
               </div>
 
               <div class="form-group">
-                <input 
-                  id="newPassword" 
-                  type="password" 
-                  placeholder="New Password"
-                  autocomplete="new-password"
-                >
+                <input id="newPassword" type="password" placeholder="New Password">
               </div>
 
               <div class="form-group">
-                <input 
-                  id="confirmPassword" 
-                  type="password" 
-                  placeholder="Confirm New Password"
-                  autocomplete="new-password"
-                >
+                <input id="confirmPassword" type="password" placeholder="Confirm New Password">
               </div>
             </div>
 
-            <!-- Actions -->
+            <!-- ACTIONS -->
             <div class="form-actions">
-              <button type="button" id="cancel-btn" class="btn btn-outline">
-                Cancel
-              </button>
+              <button id="cancel-btn" type="button" class="btn btn-outline">Cancel</button>
 
-              <button type="submit" id="save-changes-btn" class="btn btn-primary">
+              <button id="save-changes-btn" type="submit" class="btn btn-primary">
                 Save Changes
               </button>
             </div>
@@ -156,8 +153,6 @@
 
   <!-- Footer -->
   <footer class="footer" id="footer"></footer>
-
-  <div class="mobile-menu-overlay"></div>
 
   <script type="module" src="js/main.js"></script>
 

@@ -119,6 +119,7 @@ export function initAuthSystem() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
+            console.log("LOGIN RESPONSE:", data);
 
             if (data.success) {
                 // ✅ LOGGED IN — show dropdown on click

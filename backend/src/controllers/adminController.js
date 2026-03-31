@@ -19,7 +19,7 @@ const admin = await User.findOne({ email }).select("+password");
     }
 
     // check admin role
-    if (!admin.is_Admin) {
+    if (!admin.isAdmin) {
       return res.status(403).json({
         message: "Not an admin"
       });
@@ -36,7 +36,7 @@ const admin = await User.findOne({ email }).select("+password");
 
     // create token
     const token = jwt.sign(
-  { id: admin._id, is_Admin: true },
+  { id: admin._id, isAdmin: true },
   process.env.JWT_SECRET,
   { expiresIn: "7d" }
 );
@@ -88,7 +88,7 @@ export const deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (user.is_Admin) {
+    if (user.isAdmin) {
       return res.status(400).json({ message: "Cannot delete admin user" });
     }
 

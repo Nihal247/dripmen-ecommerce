@@ -19,7 +19,7 @@ async function adminLogin(event) {
 
     if (data.success) {
 
-      localStorage.setItem("adminToken", data.token);
+localStorage.setItem("token", data.token);
 
       window.location.href = "admin.html";
 

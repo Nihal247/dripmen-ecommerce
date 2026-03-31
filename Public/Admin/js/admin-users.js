@@ -101,17 +101,17 @@ function renderUsers(users) {
 
     const name    = user.name  || "Unknown";
     const email   = user.email || "";
-    const role    = user.is_Admin ? "Admin" : "User";
+    const role    = user.isAdmin ? "Admin" : "User";
     const blocked = user.isBlocked;
     const joined  = new Date(user.createdAt).toLocaleDateString("en-US", {
       year: "numeric", month: "short", day: "numeric"
     });
 
-    const roleColor   = user.is_Admin ? "#8b5cf6" : "#3b82f6";
+    const roleColor   = user.isAdmin ? "#8b5cf6" : "#3b82f6";
     const statusColor = blocked ? "#ef4444" : "#10b981";
     const statusText  = blocked ? "Blocked" : "Active";
 
-    const blockBtn = user.is_Admin ? "" : `
+    const blockBtn = user.isAdmin ? "" : `
       <button class="action-btn block-btn"
               data-id="${user._id}"
               data-blocked="${blocked}"
@@ -119,7 +119,7 @@ function renderUsers(users) {
         <i class="ph ph-${blocked ? "check-circle" : "prohibit"}"></i>
       </button>`;
 
-    const deleteBtn = user.is_Admin ? "" : `
+    const deleteBtn = user.isAdmin ? "" : `
       <button class="action-btn delete-btn"
               data-id="${user._id}"
               title="Delete"
