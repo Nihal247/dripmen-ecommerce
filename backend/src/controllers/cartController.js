@@ -19,9 +19,15 @@ export const addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // 🚀 Stock & Limit Validation
-    if (product.stock <= 0) {
-      return res.status(400).json({ success: false, message: "Product is out of stock" });
+    // 🚀 Stock & Limit Validation (Size-Specific)
+    const sizeObj = product.sizes.find(s => s.size === (size || "L"));
+    const availableStock = sizeObj ? sizeObj.stock : 0;
+
+    if (availableStock <= 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `${product.name} (Size: ${size || "L"}) is out of stock` 
+      });
     }
 
     let cart = await Cart.findOne({ user: userId });
@@ -51,8 +57,11 @@ export const addToCart = async (req, res) => {
         const currentQty = cart.items[itemIndex].quantity;
         const totalNewQty = currentQty + (quantity || 1);
 
-        if (totalNewQty > product.stock) {
-          return res.status(400).json({ success: false, message: `Only ${product.stock} items left in stock` });
+        if (totalNewQty > availableStock) {
+          return res.status(400).json({ 
+            success: false, 
+            message: `Only ${availableStock} items left in stock for size ${size || "L"}` 
+          });
         }
         if (totalNewQty > MAX_LIMIT_PER_ITEM) {
           return res.status(400).json({ success: false, message: `Max ${MAX_LIMIT_PER_ITEM} items allowed per product` });
@@ -63,8 +72,11 @@ export const addToCart = async (req, res) => {
         // Validation for new item
         const newQty = quantity || 1;
 
-        if (newQty > product.stock) {
-          return res.status(400).json({ success: false, message: `Only ${product.stock} items left in stock` });
+        if (newQty > availableStock) {
+          return res.status(400).json({ 
+            success: false, 
+            message: `Only ${availableStock} items left in stock for size ${size || "L"}` 
+          });
         }
         if (newQty > MAX_LIMIT_PER_ITEM) {
           return res.status(400).json({ success: false, message: `Max ${MAX_LIMIT_PER_ITEM} items allowed per product` });
@@ -128,10 +140,17 @@ export const updateCartItem = async (req, res) => {
     }
 
     // 🚀 Stock & Limit Validation
+    // 🚀 Stock & Limit Validation (Size-Specific)
     const product = await Product.findById(item.product);
     if (product) {
-      if (quantity > product.stock) {
-        return res.status(400).json({ success: false, message: `Only ${product.stock} left in stock` });
+      const sizeObj = product.sizes.find(s => s.size === item.size);
+      const availableStock = sizeObj ? sizeObj.stock : 0;
+
+      if (quantity > availableStock) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Only ${availableStock} left in stock for size ${item.size}` 
+        });
       }
     }
 

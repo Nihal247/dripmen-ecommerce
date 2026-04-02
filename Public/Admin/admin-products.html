@@ -24,6 +24,7 @@
                 <a href="admin.html" class="nav-item"><i class="ph ph-squares-four"></i> Dashboard</a>
                 <a href="admin-users.html" class="nav-item"><i class="ph ph-users"></i> Users</a>
                 <a href="admin-products.html" class="nav-item active"><i class="ph ph-t-shirt"></i> Products</a>
+                <a href="admin-inventory.html" class="nav-item"><i class="ph ph-stack"></i> Inventory</a>
                 <a href="admin-categories.html" class="nav-item"><i class="ph ph-tag"></i> Categories</a>
                 <a href="admin-orders.html" class="nav-item"><i class="ph ph-shopping-cart"></i> Orders</a>
                 <a href="admin-coupons.html" class="nav-item"><i class="ph ph-ticket"></i> Coupons</a>
@@ -143,19 +144,24 @@
         </select>
       </div>
 
-      <div>
-        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Stock</label>
-        <input id="prodStock" type="number" placeholder="e.g. 50"
-          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+      <div style="grid-column:1/-1;">
+        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Total Stock (Summary)</label>
+        <input id="prodStock" type="number" placeholder="Calculated from sizes" readonly
+          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f1f5f9; color:#64748b; box-sizing:border-box; cursor:not-allowed;">
       </div>
 
-      <div>
-        <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Sizes (comma separated)</label>
-        <input id="prodSizes" type="text" placeholder="e.g. S,M,L,XL"
-          style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">
+      <div style="grid-column:1/-1;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <label style="font-weight:500; color:#374151;">Inventory per Size *</label>
+          <button type="button" onclick="addSizeRow()" style="font-size:0.8rem; background:#111; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">+ Add Size</button>
+        </div>
+        <div id="size-stock-container" style="display:flex; flex-direction:column; gap:0.5rem; padding:1rem; border:1px solid #e9ecef; border-radius:8px; background:#f8f9fa;">
+          <!-- Size rows injected via JS -->
+        </div>
+        <p style="font-size:0.75rem; color:#888; margin-top:0.4rem;">Example: Size: M, Stock: 20</p>
       </div>
 
-      <div>
+      <div style="grid-column:1/-1;">
         <label style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">Colors (comma separated)</label>
         <input id="prodColors" type="text" placeholder="e.g. black,white"
           style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #e9ecef; background:#f8f9fa; color:#111; box-sizing:border-box;">

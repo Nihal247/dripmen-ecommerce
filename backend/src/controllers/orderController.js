@@ -46,28 +46,32 @@ const product = productMap[item.product._id.toString()];
   });
 }
 
-  // ❌ STOCK VALIDATION
-  if (product.stock < item.quantity) {
-    return res.status(400).json({
-      message: `${product.name} is out of stock`,
+    // ❌ SIZE-SPECIFIC STOCK VALIDATION
+    const sizeObj = product.sizes.find(s => s.size === (item.size || "L"));
+    
+    if (!sizeObj || sizeObj.stock < item.quantity) {
+      return res.status(400).json({
+        message: `${product.name} (Size: ${item.size || "L"}) is out of stock`,
+      });
+    }
+
+    // ✅ ADD ITEM TO ORDER
+    orderItems.push({
+      product:  product._id,
+      name:     product.name,
+      image:    product.images?.[0] || "",
+      price:    product.price, 
+      quantity: item.quantity,
+      size:     item.size  || "L",
+      color:    item.color || "Black"
     });
+
+    // ✅ REDUCE STOCK (Size-Specific and Global Summary)
+    sizeObj.stock -= item.quantity;
+    product.stock -= item.quantity;
+    
+    await product.save();
   }
-
-  // ✅ ADD ITEM TO ORDER
-  orderItems.push({
-    product:  product._id,
-    name:     product.name,
-    image:    product.images?.[0] || "",
-    price:    product.price, // locked price
-    quantity: item.quantity,
-    size:     item.size  || "L",
-    color:    item.color || "Black"
-  });
-
-  // ✅ REDUCE STOCK
-  product.stock -= item.quantity;
-  await product.save();
-}
 
     // calculate totals
     const subtotal       = orderItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);

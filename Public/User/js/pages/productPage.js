@@ -227,6 +227,8 @@ function populatePage(p) {
   container.dataset.price = displayPrice;
   container.dataset.image = p.images?.[0] || "";
   container.dataset.stock = p.stock || "0";
+  // Store sizes data for dynamic stock checks
+  container.dataset.sizes = JSON.stringify(p.sizes || []);
 
   document.title = `DripMen | ${p.name}`;
   const bc = document.querySelector(".breadcrumb .current");
@@ -297,14 +299,44 @@ function populatePage(p) {
 
   const sizeRow = document.querySelector(".size-options-row");
   if (sizeRow && p.sizes?.length) {
-    sizeRow.innerHTML = p.sizes.map((size, i) => `
-      <button class="size-pill-btn ${i === 0 ? "active" : ""}">${size}</button>`
-    ).join("");
+    sizeRow.innerHTML = p.sizes.map((s, i) => {
+      const isOutOfStock = s.stock <= 0;
+      return `
+        <button class="size-pill-btn ${i === 0 && !isOutOfStock ? "active" : ""} ${isOutOfStock ? "out-of-stock" : ""}" 
+          data-size="${s.size}" 
+          data-stock="${s.stock}"
+          ${isOutOfStock ? "disabled" : ""}>
+          ${s.size}
+        </button>`;
+    }).join("");
     initSizeSelection();
+    
+    // Set initial stock message if a size is active
+    const activeSize = sizeRow.querySelector(".size-pill-btn.active");
+    if (activeSize) updateStockStatus(activeSize.dataset.size, activeSize.dataset.stock);
   }
 
   const stickyPrice = document.querySelector(".sticky-price");
   if (stickyPrice) stickyPrice.textContent = `$${displayPrice}`;
+}
+
+function updateStockStatus(size, stock) {
+  const stockEl = document.querySelector(".stock-status");
+  if (!stockEl) return;
+
+  const s = parseInt(stock);
+  if (s <= 0) {
+    stockEl.className = "stock-status out-of-stock";
+    stockEl.innerHTML = `<span class="status-dot"></span> Size ${size} Out of Stock`;
+  } else if (s < 5) {
+    stockEl.className = "stock-status low-stock"; // Assuming low-stock CSS exists or style directly
+    stockEl.innerHTML = `<span class="status-dot"></span> Only ${s} left in Size ${size}!`;
+    stockEl.style.color = "#f97316"; // Orange for urgency
+  } else {
+    stockEl.className = "stock-status in-stock";
+    stockEl.innerHTML = `<span class="status-dot"></span> Size ${size} is In Stock (${s} available)`;
+    stockEl.style.color = "#10b981"; // Green
+  }
 }
 
 // ==========================================
@@ -401,8 +433,17 @@ function renderCard(p) {
 function initSizeSelection() {
   document.querySelectorAll(".size-pill-btn").forEach(btn => {
     btn.addEventListener("click", () => {
+      if (btn.classList.contains("out-of-stock")) return;
+      
       document.querySelectorAll(".size-pill-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
+      
+      // Update stock display
+      updateStockStatus(btn.dataset.size, btn.dataset.stock);
+      
+      // Reset quantity to 1 when changing size to avoid exceeding new limit
+      const qtyInput = document.querySelector(".qty-input-main");
+      if (qtyInput) qtyInput.value = 1;
     });
   });
 }
@@ -455,9 +496,13 @@ function initCartButtons() {
   });
 
   document.querySelector(".qty-plus-main")?.addEventListener("click", () => {
-    const container = document.querySelector(".single-product-section");
-    // We could store stock in a data attribute during populatePage
-    const stock = parseInt(container?.dataset.stock || "999"); 
+    const activeSize = document.querySelector(".size-pill-btn.active");
+    if (!activeSize) {
+      showToast("Please select a size first", "error");
+      return;
+    }
+
+    const stock = parseInt(activeSize.dataset.stock || "0"); 
     let v = parseInt(qtyInput.value);
 
     if (v >= MAX_LIMIT_PER_ITEM) {

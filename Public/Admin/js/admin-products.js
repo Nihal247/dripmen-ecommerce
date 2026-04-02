@@ -157,9 +157,16 @@ function openAddModal() {
   document.getElementById("prodDescription").value = "";
   document.getElementById("prodPrice").value = "";
   document.getElementById("prodSalePrice").value = "";
-  document.getElementById("prodStock").value = "";
-  document.getElementById("prodSizes").value = "";
+  document.getElementById("prodStock").value = "0";
   document.getElementById("prodColors").value = "";
+
+  // Reset Size Stock Container
+  const container = document.getElementById("size-stock-container");
+  container.innerHTML = "";
+  addSizeRow("S", 0);
+  addSizeRow("M", 0);
+  addSizeRow("L", 0);
+  addSizeRow("XL", 0);
 
   // Reset section checkboxes
   document.getElementById("section-new-arrivals").checked = false;
@@ -193,9 +200,17 @@ async function openEditModal(id) {
     document.getElementById("prodDescription").value = p.description || "";
     document.getElementById("prodPrice").value = p.price;
     document.getElementById("prodSalePrice").value = p.salePrice || "";
-    document.getElementById("prodStock").value = p.stock;
-    document.getElementById("prodSizes").value = p.sizes.join(",");
+    document.getElementById("prodStock").value = p.stock || 0;
     document.getElementById("prodColors").value = p.colors.join(",");
+
+    // Render Size Rows
+    const sizeContainer = document.getElementById("size-stock-container");
+    sizeContainer.innerHTML = "";
+    if (p.sizes && p.sizes.length > 0) {
+      p.sizes.forEach(s => addSizeRow(s.size, s.stock));
+    } else {
+      addSizeRow("S", 0);
+    }
 
     // Load categories first (await it)
     await loadCategoryOptions("prodCategory");
@@ -237,10 +252,21 @@ async function saveProduct() {
   const price = document.getElementById("prodPrice").value;
   const salePrice = document.getElementById("prodSalePrice").value;
   const categoryId = document.getElementById("prodCategory").value;
-  const stock = document.getElementById("prodStock").value;
-
-  const sizesRaw = document.getElementById("prodSizes").value;
   const colorsRaw = document.getElementById("prodColors").value;
+
+  // COLLECT SIZES & STOCK
+  const sizeRows = document.querySelectorAll(".size-row");
+  const sizes = [];
+  let totalStock = 0;
+
+  sizeRows.forEach(row => {
+    const size = row.querySelector(".size-id").value.trim();
+    const stock = parseInt(row.querySelector(".size-qty").value) || 0;
+    if (size) {
+      sizes.push({ size, stock });
+      totalStock += stock;
+    }
+  });
 
   const images = document.getElementById("prodImages").files;
 
@@ -251,12 +277,9 @@ async function saveProduct() {
   formData.append("price", price);
   formData.append("salePrice", salePrice);
   formData.append("categoryId", categoryId);
-  formData.append("stock", stock);
+  formData.append("stock", totalStock); // Send calculated total
 
-  formData.append(
-    "sizes",
-    JSON.stringify(sizesRaw.split(",").map(s => s.trim()).filter(Boolean))
-  );
+  formData.append("sizes", JSON.stringify(sizes));
 
   formData.append(
     "colors",
@@ -457,13 +480,41 @@ document.querySelector(".add-product-btn")
   .addEventListener("click", openAddModal);
 
 // ==============================
-// INITIAL LOAD
+// INITIAL LOAD & SIZE STOCK LOGIC
 // ==============================
+function addSizeRow(size = "", stock = 0) {
+  const container = document.getElementById("size-stock-container");
+  if (!container) return;
+  
+  const div = document.createElement("div");
+  div.className = "size-row";
+  div.style.display = "flex";
+  div.style.gap = "0.5rem";
+  div.style.alignItems = "center";
+  div.style.marginBottom = "0.5rem";
+
+  div.innerHTML = `
+    <input type="text" class="size-id" placeholder="Size" value="${size}" style="flex:1; padding:0.5rem; border-radius:6px; border:1px solid #e9ecef; font-size:0.9rem; background:#fff; color:#111;">
+    <input type="number" class="size-qty" placeholder="Stock" value="${stock}" style="width:80px; padding:0.5rem; border-radius:6px; border:1px solid #e9ecef; font-size:0.9rem; background:#fff; color:#111;">
+    <button type="button" onclick="this.parentElement.remove()" style="background:transparent; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer;"><i class="ph ph-minus-circle"></i></button>
+  `;
+  container.appendChild(div);
+}
+
 loadCategoryFilter();
-loadProducts();
+loadProducts().then(() => {
+  // Check if we should auto-open an edit modal (from Inventory page)
+  const urlParams = new URLSearchParams(window.location.search);
+  const editId = urlParams.get("edit");
+  if (editId) {
+    openEditModal(editId);
+  }
+});
+
 // expose functions to HTML
 window.saveProduct = saveProduct;
 window.openEditModal = openEditModal;
 window.deleteProduct = deleteProduct;
 window.changeStatus = changeStatus;
 window.closeModal = closeModal;
+window.addSizeRow = addSizeRow;
