@@ -1,11 +1,13 @@
 import Cart from "../models/cartModel.js";
 import Product from "../models/Product.js";
 
+const MAX_LIMIT_PER_ITEM = 10;
+
 // ✅ ADD TO CART
 export const addToCart = async (req, res) => {
   try {
-    const userId = req.user.id; // from auth middleware
-    const { productId, quantity } = req.body;
+    const userId = req.user.id;
+    const { productId, quantity, size, color } = req.body;
 
     if (!productId) {
       return res.status(400).json({ message: "Product ID is required" });
@@ -17,26 +19,63 @@ export const addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // 🚀 Stock & Limit Validation
+    if (product.stock <= 0) {
+      return res.status(400).json({ success: false, message: "Product is out of stock" });
+    }
+
     let cart = await Cart.findOne({ user: userId });
 
     // if cart doesn't exist → create new
     if (!cart) {
       cart = new Cart({
         user: userId,
-        items: [{ product: productId, quantity: quantity || 1 }],
+        items: [{
+          product: productId,
+          quantity: quantity || 1,
+          size: size || "N/A",
+          color: color || "Black"
+        }],
       });
     } else {
-      // check if product already in cart
+      // check if product with SAME size and color already in cart
       const itemIndex = cart.items.findIndex(
-        (item) => item.product.toString() === productId
+        (item) =>
+          item.product.toString() === productId &&
+          item.size === (size || "N/A") &&
+          item.color === (color || "Black")
       );
 
       if (itemIndex > -1) {
-        // increase quantity
-        cart.items[itemIndex].quantity += quantity || 1;
+        // Validation for existing item
+        const currentQty = cart.items[itemIndex].quantity;
+        const totalNewQty = currentQty + (quantity || 1);
+
+        if (totalNewQty > product.stock) {
+          return res.status(400).json({ success: false, message: `Only ${product.stock} items left in stock` });
+        }
+        if (totalNewQty > MAX_LIMIT_PER_ITEM) {
+          return res.status(400).json({ success: false, message: `Max ${MAX_LIMIT_PER_ITEM} items allowed per product` });
+        }
+
+        cart.items[itemIndex].quantity = totalNewQty;
       } else {
-        // add new item
-        cart.items.push({ product: productId, quantity: quantity || 1 });
+        // Validation for new item
+        const newQty = quantity || 1;
+
+        if (newQty > product.stock) {
+          return res.status(400).json({ success: false, message: `Only ${product.stock} items left in stock` });
+        }
+        if (newQty > MAX_LIMIT_PER_ITEM) {
+          return res.status(400).json({ success: false, message: `Max ${MAX_LIMIT_PER_ITEM} items allowed per product` });
+        }
+
+        cart.items.push({
+          product: productId,
+          quantity: newQty,
+          size: size || "N/A",
+          color: color || "Black"
+        });
       }
     }
 
@@ -73,7 +112,7 @@ export const getCart = async (req, res) => {
 export const updateCartItem = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { productId } = req.params;
+    const { itemId } = req.params;
     const { quantity } = req.body;
 
     const cart = await Cart.findOne({ user: userId });
@@ -82,12 +121,22 @@ export const updateCartItem = async (req, res) => {
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    const item = cart.items.find(
-      (item) => item.product.toString() === productId
-    );
+    const item = cart.items.id(itemId);
 
     if (!item) {
       return res.status(404).json({ message: "Item not found in cart" });
+    }
+
+    // 🚀 Stock & Limit Validation
+    const product = await Product.findById(item.product);
+    if (product) {
+      if (quantity > product.stock) {
+        return res.status(400).json({ success: false, message: `Only ${product.stock} left in stock` });
+      }
+    }
+
+    if (quantity > MAX_LIMIT_PER_ITEM) {
+      return res.status(400).json({ success: false, message: `Max ${MAX_LIMIT_PER_ITEM} allowed` });
     }
 
     item.quantity = quantity;
@@ -108,7 +157,7 @@ export const updateCartItem = async (req, res) => {
 export const removeCartItem = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { productId } = req.params;
+    const { itemId } = req.params;
 
     const cart = await Cart.findOne({ user: userId });
 
@@ -117,7 +166,7 @@ export const removeCartItem = async (req, res) => {
     }
 
     cart.items = cart.items.filter(
-      (item) => item.product.toString() !== productId
+      (item) => item._id.toString() !== itemId
     );
 
     await cart.save();

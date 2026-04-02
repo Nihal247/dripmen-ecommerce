@@ -3,6 +3,7 @@
 // ==========================================
 import {
   updateHeaderCounts,
+  updateNavbarProfile,
   initializeWishlistState,
   toggleWishlist,
   handleGridAddToCart,
@@ -57,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3. HEADER COUNTS: Always update cart/wishlist badges
   // ----------------------------------------
   updateHeaderCounts();
+  updateNavbarProfile();
 
   // ----------------------------------------
   // 4. WISHLIST STATE: Highlight filled hearts
@@ -136,11 +138,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!activeSizeBtn) { showToast("Please select a size", "error"); return; }
 
       const size  = activeSizeBtn.dataset.size || activeSizeBtn.textContent.trim();
+      const color = "Black"; // Default for grid items if no color selection
       const token = localStorage.getItem("token");
 
       if (token) {
         // ✅ call backend API
-        const data = await addToCartAPI(window.currentSelection.id, 1);
+        const data = await addToCartAPI(window.currentSelection.id, 1, size, color);
         if (data?.success) {
           const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
           document.querySelectorAll(
@@ -150,16 +153,16 @@ document.addEventListener("DOMContentLoaded", () => {
             badge.style.display = count > 0 ? "flex" : "none";
           });
           showToast("Added to cart 🛒");
+          closeAllModals();
+          setTimeout(() => showCartConfirmModal(window.currentSelection), 300);
         } else {
           showToast("Failed to add to cart", "error");
         }
       } else {
-        // fallback localStorage
-        addToCart({ ...window.currentSelection, size, quantity: 1 });
+        // This case should theoretically not be hit due to checkAuth on the button click,
+        // but we'll provide a graceful redirect just in case.
+        checkAuth("Please login to add to cart");
       }
-
-      closeAllModals();
-      setTimeout(() => showCartConfirmModal(window.currentSelection), 300);
       return;
     }
 
@@ -261,6 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.querySelector(".invoice-container")) {
     initOrderDetailsPage();
   }
+
 
   if (document.getElementById("returns-list")) {
     initReturnsPage();

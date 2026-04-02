@@ -7,7 +7,11 @@ import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import wishlistRoutes from "./routes/wishlistRoutes.js";
-
+import paymentRoutes from "./routes/paymentRoutes.js";
+import addressRoutes from "./routes/addressRoutes.js";
+import couponRoutes from "./routes/couponRoutes.js";
+import bannerRoutes from "./routes/bannerRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 
 const app = express();
 
@@ -46,6 +50,13 @@ app.use("/api/orders", orderRoutes);
 
 // wishlist routes
 app.use("/api/wishlist", wishlistRoutes);
+
+// payment routes
+
+app.use("/api/payment", paymentRoutes);
+app.use("/api/address", addressRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/banners", bannerRoutes);
 
 // ==============================
 

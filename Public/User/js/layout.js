@@ -24,7 +24,10 @@ const NAVBAR_HTML = `
           <span class="cart-badge header-cart-badge">0</span>
         </a>
         <div class="account-dropdown-container">
-          <a href="javascript:void(0)" aria-label="Profile" class="account-icon-link"><i class="ph ph-user"></i></a>
+          <a href="javascript:void(0)" aria-label="Profile" class="account-icon-link">
+            <i class="ph ph-user"></i>
+            <span id="user-name-nav" class="nav-user-name" style="display: none; margin-left: 8px; font-weight: 500; font-size: 0.9rem;"></span>
+          </a>
           <div class="account-dropdown">
             <a href="account.html"><i class="ph ph-user"></i> Account</a>
             <a href="orders.html"><i class="ph ph-package"></i> My Orders</a>

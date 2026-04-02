@@ -5,7 +5,7 @@ const API_BASE = "http://localhost:4000";
 // ==============================
 // Why: every admin API call needs this token to prove
 // the request is coming from a logged-in admin
-const token = localStorage.getItem("adminToken");
+const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
 
 // ==============================
 // LOAD ALL CATEGORIES ON PAGE LOAD

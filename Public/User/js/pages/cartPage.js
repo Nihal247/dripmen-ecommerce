@@ -12,6 +12,8 @@ import {
   updateCartItemAPI
 } from "../core.js";
 
+const MAX_LIMIT_PER_ITEM = 10;
+
 // ==========================================
 // PAGE: CART
 // ==========================================
@@ -36,20 +38,26 @@ export function initCartPage() {
 
     container.innerHTML = cart.map((item, index) => {
 
-      // support both API format { product: {...}, quantity }
-      // and localStorage format { id, name, price, image, quantity }
-      const id    = item.product?._id    || item.id    || "";
+      // support both API format { _id, product: {...}, quantity, size, color }
+      // and localStorage format { id, name, price, image, quantity, size, color }
+      const itemId = item._id          || item.id    || ""; // unique item/id
+      const prodId = item.product?._id || item.id    || ""; // product reference
+      
       const name  = item.product?.name   || item.name  || "Unknown Product";
       const price = item.product?.price  || item.price || 0;
       const image = item.product?.images?.[0] || item.image || "";
       const qty   = item.quantity || 1;
       const size  = item.size  || "N/A";
       const color = item.color || "Black";
+      const stock = item.product?.stock || 0;
 
-      if (!id) return "";
+      if (!prodId) return "";
+
+      const isMaxReached = qty >= MAX_LIMIT_PER_ITEM;
+      const isStockReached = qty >= stock;
 
       return `
-        <div class="cart-item" data-id="${id}" data-index="${index}">
+        <div class="cart-item" data-id="${itemId}" data-index="${index}">
 
           <div class="cart-item-img">
             <img src="${image}">
@@ -60,13 +68,14 @@ export function initCartPage() {
             <div class="cart-item-header">
               <h3 class="cart-item-title">${name}</h3>
               <button class="remove-cart-item-btn remove-btn"
-                      data-id="${id}" data-index="${index}">
+                      data-id="${itemId}" data-index="${index}">
                 <i class="ph-fill ph-trash"></i>
               </button>
             </div>
 
             <p class="cart-item-meta">
               Size: ${size} | Color: ${color}
+              ${stock < 5 ? `<br><small style="color:var(--accent-red);font-weight:600;">Only ${stock} left in stock!</small>` : ""}
             </p>
 
             <div class="cart-item-actions">
@@ -74,13 +83,14 @@ export function initCartPage() {
 
               <div class="qty-stepper">
                 <button class="qty-change"
-                        data-id="${id}" data-index="${index}" data-delta="-1"
+                        data-id="${itemId}" data-index="${index}" data-delta="-1"
                         ${qty <= 1 ? "disabled" : ""}>
                   <i class="ph ph-minus"></i>
                 </button>
                 <input type="number" class="qty-input" value="${qty}" readonly>
                 <button class="qty-change"
-                        data-id="${id}" data-index="${index}" data-delta="1">
+                        data-id="${itemId}" data-index="${index}" data-delta="1"
+                        ${isMaxReached || isStockReached ? "disabled" : ""}>
                   <i class="ph ph-plus"></i>
                 </button>
               </div>
@@ -139,11 +149,11 @@ export function initCartPage() {
 
     const removeBtn = e.target.closest(".remove-cart-item-btn");
     if (removeBtn) {
-      const productId = removeBtn.dataset.id;
-      const token     = localStorage.getItem("token");
+      const itemId = removeBtn.dataset.id;
+      const token  = localStorage.getItem("token");
 
-      if (token && productId) {
-        await removeFromCartAPI(productId);
+      if (token && itemId) {
+        await removeFromCartAPI(itemId);
       } else {
         const cart = getCart();
         cart.splice(removeBtn.dataset.index, 1);
@@ -157,20 +167,41 @@ export function initCartPage() {
 
     const qtyBtn = e.target.closest(".qty-change");
     if (qtyBtn) {
-      const productId = qtyBtn.dataset.id;
-      const delta     = parseInt(qtyBtn.dataset.delta);
-      const token     = localStorage.getItem("token");
-      const input     = qtyBtn.closest(".qty-stepper").querySelector(".qty-input");
-      const newQty    = parseInt(input.value) + delta;
+      const itemId = qtyBtn.dataset.id;
+      const delta  = parseInt(qtyBtn.dataset.delta);
+      const token  = localStorage.getItem("token");
+      const input  = qtyBtn.closest(".qty-stepper").querySelector(".qty-input");
+      const currentQty = parseInt(input.value);
+      const newQty = currentQty + delta;
 
       if (newQty < 1) return;
 
-      if (token && productId) {
-        await updateCartItemAPI(productId, newQty);
+      const cart   = token ? await getCartFromAPI() : getCart();
+      const item   = token ? cart.find(i => i._id === itemId) : cart[qtyBtn.dataset.index];
+      const product = item.product || item;
+      const stock   = product.stock || 0;
+
+      if (delta > 0) {
+        if (newQty > stock) {
+          showToast(`Only ${stock} items available in stock`, "error");
+          return;
+        }
+        if (newQty > MAX_LIMIT_PER_ITEM) {
+          showToast(`Maximum ${MAX_LIMIT_PER_ITEM} items per product allowed`, "error");
+          return;
+        }
+      }
+
+      if (token && itemId) {
+        const res = await updateCartItemAPI(itemId, newQty);
+        if (!res?.success && res?.message) {
+          showToast(res.message, "error");
+          return;
+        }
       } else {
-        const cart = getCart();
-        cart[qtyBtn.dataset.index].quantity += delta;
-        saveCart(cart);
+        const localCart = getCart();
+        localCart[qtyBtn.dataset.index].quantity += delta;
+        saveCart(localCart);
       }
 
       renderCart();

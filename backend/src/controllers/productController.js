@@ -80,11 +80,16 @@ export const getAdminProducts = async (req, res) => {
 // ==============================
 export const getProducts = async (req, res) => {
   try {
-    const { category, minPrice, maxPrice, color, size, sort, section, page = 1, limit = 9 } = req.query;
+    const { category, minPrice, maxPrice, color, size, sort, section, search, page = 1, limit = 9 } = req.query;
 
     let filter = {
       status: { $in: ["active", "out_of_stock"] }
     };
+
+    // Filter by name (search)
+    if (search) {
+      filter.name = { $regex: search, $options: "i" };
+    }
 
     // Filter by homepage section
     if (section) {
@@ -128,6 +133,36 @@ export const getProducts = async (req, res) => {
       totalPages: Math.ceil(total / Number(limit)),
       currentPage: Number(page),
       products,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==============================
+// ✅ GET PRICE RANGE (Public)
+// ==============================
+export const getPriceRange = async (req, res) => {
+  try {
+    const result = await Product.aggregate([
+      { $match: { status: { $in: ["active", "out_of_stock"] } } },
+      {
+        $group: {
+          _id: null,
+          minPrice: { $min: "$price" },
+          maxPrice: { $max: "$price" },
+        },
+      },
+    ]);
+
+    if (result.length === 0) {
+      return res.status(200).json({ success: true, min: 0, max: 1000 });
+    }
+
+    res.status(200).json({
+      success: true,
+      min: Math.floor(result[0].minPrice),
+      max: Math.ceil(result[0].maxPrice),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

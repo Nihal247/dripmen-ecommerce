@@ -8,242 +8,179 @@ import {
   showToast
 } from "../core.js";
 
+const API = "http://localhost:4000/api/address";
 
 // ==========================================
 // PAGE: ADDRESS BOOK
 // ==========================================
 export function initAddressPage() {
-
   const container = document.getElementById('address-grid');
   if (!container) return;
 
+  async function fetchAddresses() {
+    const token = localStorage.getItem("token");
+    if (!token) return [];
 
-  // Initialize default address if empty
-  if (!localStorage.getItem('dripmen_addresses')) {
-
-    const defaultAddr = [{
-      name: "Muhammed Nihal",
-      street: "Kingston, 5236, United State",
-      city: "New York",
-      zip: "10001",
-      email: "nihal@gmail.com",
-      mobile: "+1 234 567 890"
-    }];
-
-    localStorage.setItem(
-      'dripmen_addresses',
-      JSON.stringify(defaultAddr)
-    );
-
+    try {
+      const res = await fetch(API, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      return data.success ? data.addresses : [];
+    } catch (err) {
+      console.error("Failed to fetch addresses:", err);
+      return [];
+    }
   }
 
+  async function renderAddresses() {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+        <p class="text-muted">Loading your address book...</p>
+      </div>`;
 
-
-  function renderAddresses() {
-
-    const addresses = JSON.parse(
-      localStorage.getItem('dripmen_addresses') || '[]'
-    );
+    const addresses = await fetchAddresses();
 
     if (addresses.length === 0) {
-
       container.innerHTML = `
         <p class="text-muted"
            style="grid-column: 1/-1; text-align: center; padding: 2rem;">
-          No addresses found.
+          No addresses found. Click "Add New Address" to get started.
         </p>
       `;
-
       return;
     }
 
-
-
     container.innerHTML = addresses.map((addr, index) => `
-
       <div class="address-card">
-
         <div class="address-header">
           <span class="address-name">${addr.name}</span>
-          ${index === 0 ? '<span class="badge-default">Default</span>' : ''}
+          ${addr.isDefault ? '<span class="badge-default">Default</span>' : ''}
         </div>
-
         <div class="address-details">
           <p>${addr.street}</p>
-          <p>${addr.city}</p>
+          <p>${addr.city}, ${addr.zip}</p>
           <p>${addr.email || ''}</p>
           <p>${addr.mobile}</p>
         </div>
-
         <div class="address-actions">
-          <button class="btn-link edit-address-btn" data-index="${index}">
+          <button class="btn-link edit-address-btn" data-id="${addr._id}">
             Edit
           </button>
-
-          <button class="btn-link text-red remove-address-btn" data-index="${index}">
+          <button class="btn-link text-red remove-address-btn" data-id="${addr._id}">
             Remove
           </button>
         </div>
-
       </div>
-
     `).join("");
-
   }
 
-
-
   renderAddresses();
-
-
 
   // Add address modal logic
   const addBtn = document.getElementById('add-address-btn');
   const modal = document.getElementById('add-address-modal');
   const form = document.getElementById('add-address-form');
   const modalTitle = document.getElementById('address-modal-title');
-  const editIndexInput = document.getElementById('address-edit-index');
-
-
+  const editIdInput = document.getElementById('address-edit-index'); // reusing index input for ID
 
   if (addBtn && modal) {
-
     addBtn.addEventListener('click', () => {
-
       if (!checkAuth("Please login to add address")) return;
-
       form.reset();
-
-      if (editIndexInput) editIndexInput.value = "-1";
-
-      if (modalTitle)
-        modalTitle.textContent = "Add New Address";
-
+      if (editIdInput) editIdInput.value = "";
+      if (modalTitle) modalTitle.textContent = "Add New Address";
       openModal(modal);
-
     });
-
   }
 
-
-
   if (form) {
-
-    form.addEventListener('submit', (e) => {
-
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
       const formData = new FormData(form);
-
-      const newAddress = {
+      const addressData = {
         name: formData.get('name'),
         email: formData.get('email'),
         mobile: formData.get('mobile'),
         street: formData.get('street'),
         city: formData.get('city'),
-        zip: formData.get('zip')
+        zip: formData.get('zip'),
+        isDefault: formData.get('is-default') === 'on'
       };
 
+      const editId = editIdInput.value;
+      const url = editId ? `${API}/${editId}` : API;
+      const method = editId ? "PUT" : "POST";
 
-      const addresses = JSON.parse(
-        localStorage.getItem('dripmen_addresses') || '[]'
-      );
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(addressData)
+        });
 
-      const editIndex = parseInt(editIndexInput.value);
-
-
-
-      if (editIndex > -1 && addresses[editIndex]) {
-
-        addresses[editIndex] = newAddress;
-
-        showToast("Address updated successfully");
-
-      } else {
-
-        addresses.push(newAddress);
-
-        showToast("Address added successfully");
-
+        const data = await res.json();
+        if (data.success) {
+          showToast(editId ? "Address updated! ✅" : "Address added! ✅");
+          renderAddresses();
+          closeAllModals();
+          form.reset();
+        } else {
+          showToast(data.message || "Failed to save address", "error");
+        }
+      } catch (err) {
+        showToast("Network error", "error");
       }
-
-
-
-      localStorage.setItem(
-        'dripmen_addresses',
-        JSON.stringify(addresses)
-      );
-
-
-
-      renderAddresses();
-
-      closeAllModals();
-
-      form.reset();
-
     });
-
   }
 
-
-
   // Edit + Remove logic
-  container.addEventListener('click', (e) => {
+  container.addEventListener('click', async (e) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
     if (e.target.classList.contains('edit-address-btn')) {
-
-      const index = e.target.dataset.index;
-
-      const addresses = JSON.parse(
-        localStorage.getItem('dripmen_addresses') || '[]'
-      );
-
-      const addr = addresses[index];
+      const id = e.target.dataset.id;
+      const addresses = await fetchAddresses();
+      const addr = addresses.find(a => a._id === id);
 
       if (addr && form) {
-
         form.name.value = addr.name || '';
         form.mobile.value = addr.mobile || '';
         form.email.value = addr.email || '';
         form.street.value = addr.street || '';
         form.city.value = addr.city || '';
         form.zip.value = addr.zip || '';
-
-        if (editIndexInput) editIndexInput.value = index;
-
-        if (modalTitle)
-          modalTitle.textContent = "Edit Address";
-
+        
+        if (editIdInput) editIdInput.value = id;
+        if (modalTitle) modalTitle.textContent = "Edit Address";
         openModal(modal);
-
       }
-
     }
-
-
 
     if (e.target.classList.contains('remove-address-btn')) {
+      const id = e.target.dataset.id;
+      if (!confirm("Are you sure you want to remove this address?")) return;
 
-      const index = e.target.dataset.index;
-
-      const addresses = JSON.parse(
-        localStorage.getItem('dripmen_addresses') || '[]'
-      );
-
-      addresses.splice(index, 1);
-
-      localStorage.setItem(
-        'dripmen_addresses',
-        JSON.stringify(addresses)
-      );
-
-      renderAddresses();
-
-      showToast("Address removed");
-
+      try {
+        const res = await fetch(`${API}/${id}`, {
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast("Address removed");
+          renderAddresses();
+        }
+      } catch (err) {
+        showToast("Network error", "error");
+      }
     }
-
   });
-
 }

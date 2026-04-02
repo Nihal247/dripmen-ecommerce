@@ -70,6 +70,15 @@
           </div>
           <hr class="filter-divider" />
 
+          <!-- Search -->
+          <div class="filter-section">
+            <div class="search-filter-container">
+              <input type="text" id="filter-search-input" placeholder="Search products..." class="filter-search-input" />
+              <i class="ph ph-magnifying-glass"></i>
+            </div>
+          </div>
+          <hr class="filter-divider" />
+
           <!-- Categories — dynamically loaded from API by products.js -->
           <div class="filter-section">
             <ul class="category-list" id="category-filter-list">
@@ -244,9 +253,6 @@
 
   <!-- Mobile menu overlay -->
   <div class="mobile-menu-overlay"></div>
-
-  <!-- Products JS (loads API data + handles all filters) -->
-  <script src="js/pages/products.js"></script>
 
   <!-- Main JS (navbar, cart, wishlist, modals) -->
   <script type="module" src="js/main.js"></script>

@@ -3,7 +3,8 @@ import {
   adminLogin,
   getAllUsers,
   toggleBlockUser,
-  deleteUser
+  deleteUser,
+  getDashboardStats
 } from "../controllers/adminController.js";
 
 import { protect }   from "../middleware/authMiddleware.js";
@@ -12,6 +13,9 @@ import { adminOnly } from "../middleware/adminMiddleware.js";
 const router = express.Router();
 
 router.post("/login", adminLogin);
+
+// Dashboard
+router.get("/stats",              protect, adminOnly, getDashboardStats);
 
 // user management
 router.get("/users",              protect, adminOnly, getAllUsers);

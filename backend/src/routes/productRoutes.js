@@ -6,7 +6,8 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
-  updateProductStatus
+  updateProductStatus,
+  getPriceRange
 } from "../controllers/productController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -41,6 +42,9 @@ router.delete("/:id", protect, adminOnly, deleteProduct);
 
 // get products for users
 router.get("/", getProducts);
+
+// get price range
+router.get("/price-range", getPriceRange);
 
 // get single product
 router.get("/:id", getProductById);

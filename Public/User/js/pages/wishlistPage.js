@@ -162,29 +162,29 @@ export function initWishlistPage() {
       const productId = addBtn.dataset.id;
       const token     = localStorage.getItem("token");
 
-      addBtn.textContent = "Adding...";
+      addBtn.textContent = "Moving...";
       addBtn.disabled    = true;
 
-      if (token && productId) {
-        const data = await addToCartAPI(productId, 1);
-        if (data?.success) {
-          const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
-          updateCartBadge(count);
-          showToast("Added to cart 🛒");
-        } else {
-          showToast("Failed to add to cart", "error");
-        }
+      // Since checkAuth passed, token & productId MUST exist for a professional flow
+      const data = await addToCartAPI(productId, 1);
+      if (data?.success) {
+        // 🚀 PROFESSIONAL FIX: Remove from wishlist after moving to cart
+        await removeFromWishlistAPI(productId);
+        
+        const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+        updateCartBadge(count);
+        
+        // Refresh wishlist display
+        const items = await getWishlistFromAPI();
+        render(items);
+        updateWishlistBadge(items.length);
+        
+        showToast("Moved to cart 🛒");
       } else {
-        const wishlist = getWishlist();
-        const item     = wishlist[addBtn.dataset.index];
-        addToCart({ ...item, quantity: 1 });
-      }
-
-      addBtn.textContent = "Added ✓";
-      setTimeout(() => {
+        showToast("Failed to move to cart", "error");
         addBtn.textContent = "Add to Cart";
         addBtn.disabled    = false;
-      }, 1500);
+      }
       return;
     }
   });

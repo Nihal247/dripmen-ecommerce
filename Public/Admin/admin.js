@@ -127,6 +127,63 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobileTableActions();
 
     // ==========================================
+    // Dashboard Stats & Recent Orders
+    // ==========================================
+    const API = "http://localhost:4000";
+    const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
+
+    async function fetchDashboardStats() {
+        const statOrders   = document.getElementById("stat-orders");
+        const statRevenue  = document.getElementById("stat-revenue");
+        const statUsers    = document.getElementById("stat-users");
+        const statProducts = document.getElementById("stat-products");
+        const recentBody   = document.getElementById("recent-orders-body");
+
+        if (!statOrders) return; // Not on dashboard home
+
+        try {
+            const res = await fetch(`${API}/api/admin/stats`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const { stats, recentOrders } = data;
+                
+                if (statOrders)   statOrders.textContent   = stats.totalOrders;
+                if (statRevenue)  statRevenue.textContent  = `$${stats.totalRevenue}`;
+                if (statUsers)    statUsers.textContent    = stats.totalUsers;
+                if (statProducts) statProducts.textContent = stats.totalProducts;
+
+                if (recentBody && recentOrders) {
+                    recentBody.innerHTML = recentOrders.map(order => {
+                        const date = new Date(order.createdAt).toLocaleDateString();
+                        const status = order.orderStatus || "Processing";
+                        const customer = order.user?.name || "Guest";
+                        return `
+                            <tr>
+                                <td>#${order._id.slice(-6).toUpperCase()}</td>
+                                <td>${order.items?.[0]?.name || "Product"}</td>
+                                <td>${date}</td>
+                                <td>${customer}</td>
+                                <td>$${order.total}</td>
+                                <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
+                                <td><button class="btn-text">Detail</button></td>
+                            </tr>
+                        `;
+                    }).join("");
+                }
+            }
+        } catch (err) {
+            console.error("Failed to fetch admin stats", err);
+        }
+    }
+
+    if (window.location.pathname.includes("admin.html") || window.location.pathname.endsWith("/Admin/")) {
+        fetchDashboardStats();
+    }
+
+    // ==========================================
     // Auto-Wrap Tables for Responsiveness
     // ==========================================
     const tables = document.querySelectorAll('.admin-table');
@@ -138,4 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
             wrapper.appendChild(table);
         }
     });
+
+    // Handle logout
+    const logoutBtn = document.querySelector(".ph-sign-out")?.closest("a");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            localStorage.removeItem("token");
+            localStorage.removeItem("adminToken");
+            localStorage.removeItem("dripmen_user");
+            window.location.href = "admin-login.html";
+        });
+    }
 });

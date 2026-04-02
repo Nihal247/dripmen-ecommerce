@@ -198,16 +198,31 @@
             <div class="success-icon-large">
                 <i class="ph-fill ph-check-circle"></i>
             </div>
-            <h3 class="modal-title">Order Placed Successfully!</h3>
-            <p class="text-muted" style="margin-bottom: 1.5rem;">Thank you for your purchase. Your order has been received.</p>
-            <div class="order-details-box">
-                <p>Order ID: <span id="success-order-id">#000000</span></p>
-                <p>Total Amount: <span id="success-order-total">$0.00</span></p>
+            
+            <h3 class="modal-title">Order Received!</h3>
+            <p class="success-subtitle">Thank you for your purchase. We've received your order and are getting it ready for shipment.</p>
+            
+            <div class="order-summary-box-modal">
+                <div class="modal-info-row">
+                    <span class="modal-info-label">Order Number</span>
+                    <span class="modal-info-value" id="success-order-id">#ORD-LOADING</span>
+                </div>
+                <div class="modal-info-row">
+                    <span class="modal-info-label">Total Amount</span>
+                    <span class="modal-info-value" id="success-order-total">$0.00</span>
+                </div>
             </div>
+
             <div class="modal-actions-col">
-                <button class="btn btn-primary full-width" id="order-success-view-btn">View Order</button>
-                <button class="btn btn-outline full-width" id="order-success-home-btn">Continue Shopping</button>
+                <button class="btn btn-primary full-width" id="order-success-home-btn">
+                    <i class="ph ph-shopping-bag"></i> Continue Shopping
+                </a>
+                <button class="btn btn-outline full-width" id="order-success-view-btn">
+                    <i class="ph ph-receipt"></i> View My Orders
+                </a>
             </div>
+            
+            <p class="modal-footer-note">A confirmation email has been sent to your address.</p>
         </div>
     </div>
 
@@ -215,6 +230,7 @@
     <div id="toast-container" class="toast-container"></div>
 
 <script type="module" src="js/main.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </body>
 
 </html>

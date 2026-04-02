@@ -37,28 +37,49 @@
                     <h2 class="page-title">Banners</h2>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-primary"><i class="ph ph-plus"></i> Add Banner</button>
+                    <button class="btn btn-primary" id="add-banner-btn">
+                        <i class="ph ph-plus"></i> Add Banner
+                    </button>
                 </div>
             </header>
 
-            <div class="admin-grid-cards">
-                <div class="admin-card-item">
-                    <img src="images/newbanner.png" alt="Hero Banner" class="admin-card-img">
-                    <div class="admin-card-body">
-                        <div class="admin-card-header">
-                            <h3 class="admin-card-title">Main Hero</h3>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                        <p style="color: var(--text-gray); font-size: 0.9rem;">Link: /products</p>
-                        <div class="admin-card-actions">
-                            <button class="action-btn"><i class="ph ph-pencil-simple"></i></button>
-                            <button class="action-btn delete"><i class="ph ph-trash"></i></button>
-                        </div>
-                    </div>
-                </div>
+            <div class="admin-grid-cards" id="banners-grid">
+                <!-- Banners injected via JS -->
             </div>
         </main>
     </div>
+
+    <!-- Banner Modal -->
+    <div id="banner-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New Banner</h3>
+                <button class="close-modal-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="banner-form" class="admin-form">
+                <input type="hidden" id="banner-id">
+                <div class="form-group">
+                    <label>Banner Title</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Banner Image</label>
+                    <input type="file" name="image" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Redirect Link</label>
+                    <input type="text" name="link" placeholder="/products" value="/products">
+                </div>
+                <div class="form-group">
+                    <label>Display Order</label>
+                    <input type="number" name="order" value="0">
+                </div>
+                <button type="submit" class="btn btn-primary full-width">Save Banner</button>
+            </form>
+        </div>
+    </div>
+
     <script src="admin.js"></script>
+    <script src="js/admin-banners.js"></script>
 </body>
 </html>

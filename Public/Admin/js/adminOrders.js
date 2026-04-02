@@ -6,7 +6,7 @@ const API = "http://localhost:4000";
 // HELPER
 // ==============================
 function getToken() {
-  return localStorage.getItem("adminToken") || localStorage.getItem("token");
+  return localStorage.getItem("token") || localStorage.getItem("adminToken");
 }
 
 // ==============================

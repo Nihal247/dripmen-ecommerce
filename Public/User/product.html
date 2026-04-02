@@ -203,10 +203,14 @@
         </div>
         <div class="tab-pane" id="tab-reviews">
           <div class="reviews-summary">
-            <p class="overall-rating">4.5 <i class="ph-fill ph-star"></i></p>
-            <p class="verified-text">From 128 verified buyers.</p>
+            <p class="overall-rating"><span id="avg-rating">0.0</span> <i class="ph-fill ph-star"></i></p>
+            <p class="verified-text">From <span id="review-count">0</span> verified buyers.</p>
           </div>
-          <div class="reviews-list">
+          
+          <!-- Dynamic Review Form Container -->
+          <div id="review-form-container" style="margin-bottom: 2rem;"></div>
+
+          <div class="reviews-list" id="reviews-list-container">
             <div class="review-item">
               <div class="review-header">
                 <span class="review-author">Alex M.</span>

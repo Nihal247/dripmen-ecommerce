@@ -74,6 +74,27 @@ export function updateHeaderCounts() {
   });
 }
 
+export function updateNavbarProfile() {
+  const userStr = localStorage.getItem("dripmen_user");
+  const userNameNav = document.getElementById("user-name-nav");
+  
+  if (userStr && userNameNav) {
+    try {
+      const user = JSON.parse(userStr);
+      if (user && user.name) {
+        // Get first name for more professional fit
+        const firstName = user.name.split(" ")[0];
+        userNameNav.textContent = `Hi, ${firstName}`;
+        userNameNav.style.display = "inline-block";
+      }
+    } catch (err) {
+      console.warn("Could not parse user for navbar", err);
+    }
+  } else if (userNameNav) {
+    userNameNav.style.display = "none";
+  }
+}
+
 // ==========================================
 // PRODUCT DATA EXTRACTION
 // ==========================================
@@ -138,78 +159,50 @@ export function initializeWishlistState() {
 
 
 export async function toggleWishlist(btn) {
+  if (!checkAuth("Please login to manage your wishlist")) return;
+  
   const product = getProductDataFromElement(btn);
   if (!product) return;
 
   const token = localStorage.getItem("token");
 
-  if (token) {
-    // check if already in API wishlist
-    const wishlistItems = await getWishlistFromAPI();
-    const exists = wishlistItems.find(
-      item => (item.product?._id || item.product) === product.id
-    );
+  // Since checkAuth passed, token MUST exist
+  // check if already in API wishlist
+  const wishlistItems = await getWishlistFromAPI();
+  const exists = wishlistItems.find(
+    item => (item.product?._id || item.product) === product.id
+  );
 
-    if (exists) {
-      // remove from API
-      await removeFromWishlistAPI(product.id);
-      btn.classList.remove("active");
-      const icon = btn.querySelector("i");
-      if (icon) {
-        icon.classList.remove("ph-fill", "ph-heart");
-        icon.classList.add("ph-heart");
-      }
-      showToast("Removed from wishlist");
-    } else {
-      // add to API
-      await addToWishlistAPI(product.id);
-      btn.classList.add("active");
-      const icon = btn.querySelector("i");
-      if (icon) {
-        icon.classList.remove("ph-heart");
-        icon.classList.add("ph-fill", "ph-heart");
-      }
-      showToast("Added to wishlist ❤️");
+  if (exists) {
+    // remove from API
+    await removeFromWishlistAPI(product.id);
+    btn.classList.remove("active");
+    const icon = btn.querySelector("i");
+    if (icon) {
+      icon.classList.remove("ph-fill", "ph-heart");
+      icon.classList.add("ph-heart");
     }
-
-    // update badge count
-    const items = await getWishlistFromAPI();
-    document.querySelectorAll(
-      ".wishlist-count, .header-wishlist-badge, .wishlist-badge"
-    ).forEach(badge => {
-      badge.textContent   = items.length;
-      badge.style.display = items.length > 0 ? "flex" : "none";
-    });
-
+    showToast("Removed from wishlist");
   } else {
-    // fallback localStorage
-    let wishlist  = getWishlist();
-    const index   = wishlist.findIndex(item => item.id === product.id);
-
-    if (index === -1) {
-      wishlist.push(product);
-      btn.classList.add("active");
-      const icon = btn.querySelector("i");
-      if (icon) {
-        icon.classList.remove("ph-heart");
-        icon.classList.add("ph-fill", "ph-heart");
-      }
-      showToast("Added to wishlist ❤️");
-    } else {
-      wishlist.splice(index, 1);
-      btn.classList.remove("active");
-      const icon = btn.querySelector("i");
-      if (icon) {
-        icon.classList.remove("ph-fill", "ph-heart");
-        icon.classList.add("ph-heart");
-      }
-      showToast("Removed from wishlist");
+    // add to API
+    await addToWishlistAPI(product.id);
+    btn.classList.add("active");
+    const icon = btn.querySelector("i");
+    if (icon) {
+      icon.classList.remove("ph-heart");
+      icon.classList.add("ph-fill", "ph-heart");
     }
-
-    saveWishlist(wishlist);
-    updateHeaderCounts();
-    window.dispatchEvent(new Event("wishlist-updated"));
+    showToast("Added to wishlist ❤️");
   }
+
+  // update badge count
+  const items = await getWishlistFromAPI();
+  document.querySelectorAll(
+    ".wishlist-count, .header-wishlist-badge, .wishlist-badge"
+  ).forEach(badge => {
+    badge.textContent   = items.length;
+    badge.style.display = items.length > 0 ? "flex" : "none";
+  });
 }
 
 // ==========================================
@@ -252,6 +245,8 @@ export function addToCart(product) {
 // ==========================================
 
 export async function handleGridAddToCart(btn) {
+  if (!checkAuth("Please login to add to cart")) return;
+
   const product = getProductDataFromElement(btn);
   if (!product) return;
 
@@ -271,24 +266,19 @@ export async function handleGridAddToCart(btn) {
   }
 
   // no size modal — call backend API directly
-  const token = localStorage.getItem("token");
-  if (token) {
-    const data = await addToCartAPI(product.id, 1);
-    if (data?.success) {
-      const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
-      document.querySelectorAll(
-        ".cart-count, .header-cart-badge, .cart-badge"
-      ).forEach(badge => {
-        badge.textContent   = count;
-        badge.style.display = count > 0 ? "flex" : "none";
-      });
-    }
-  } else {
-    // not logged in — fallback to localStorage
-    addToCart({ ...product, size: "L", quantity: 1 });
+  const data = await addToCartAPI(product.id, 1);
+  if (data?.success) {
+    const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+    document.querySelectorAll(
+      ".cart-count, .header-cart-badge, .cart-badge"
+    ).forEach(badge => {
+      badge.textContent   = count;
+      badge.style.display = count > 0 ? "flex" : "none";
+    });
+    showCartConfirmModal(product);
+  } else if (data?.message) {
+    showToast(data.message, "error");
   }
-
-  showCartConfirmModal(product);
 }
 
 // ==========================================
@@ -390,7 +380,7 @@ export async function getCartFromAPI() {
   }
 }
 
-export async function addToCartAPI(productId, quantity = 1) {
+export async function addToCartAPI(productId, quantity = 1, size = "N/A", color = "Black") {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
@@ -400,7 +390,7 @@ export async function addToCartAPI(productId, quantity = 1) {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ productId, quantity })
+      body: JSON.stringify({ productId, quantity, size, color })
     });
     return res.json();
   } catch (err) {
@@ -409,11 +399,11 @@ export async function addToCartAPI(productId, quantity = 1) {
   }
 }
 
-export async function removeFromCartAPI(productId) {
+export async function removeFromCartAPI(itemId) {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
-    const res = await fetch(`${API}/api/cart/${productId}`, {
+    const res = await fetch(`${API}/api/cart/${itemId}`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` }
     });
@@ -424,11 +414,11 @@ export async function removeFromCartAPI(productId) {
   }
 }
 
-export async function updateCartItemAPI(productId, quantity) {
+export async function updateCartItemAPI(itemId, quantity) {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
-    const res = await fetch(`${API}/api/cart/${productId}`, {
+    const res = await fetch(`${API}/api/cart/${itemId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

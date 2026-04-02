@@ -1,4 +1,6 @@
 import User from "../models/userModel.js";
+import Order from "../models/orderModel.js";
+import Product from "../models/Product.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -96,5 +98,35 @@ export const deleteUser = async (req, res) => {
     res.json({ success: true, message: "User deleted" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ DASHBOARD STATS
+export const getDashboardStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalProducts = await Product.countDocuments();
+    const totalOrders = await Order.countDocuments();
+
+    const orders = await Order.find({ orderStatus: { $ne: "cancelled" } });
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+
+    const recentOrders = await Order.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("user", "name email");
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalUsers,
+        totalProducts,
+        totalOrders,
+        totalRevenue: Math.round(totalRevenue)
+      },
+      recentOrders
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -48,7 +48,9 @@ const orderSchema = new mongoose.Schema({
   total:         { type: Number, required: true },
   couponCode:    { type: String },
   discount:      { type: Number, default: 0 },
-  notes:         { type: String }
+  notes:         { type: String },
+  paymentId:       { type: String },
+razorpayOrderId: { type: String }
 }, { timestamps: true });
 
 const Order = mongoose.model("Order", orderSchema);

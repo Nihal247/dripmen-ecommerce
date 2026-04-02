@@ -1,4 +1,11 @@
-import { showToast, checkAuth, addToCart, addToCartAPI, showCartConfirmModal } from "../core.js";
+import {
+  showToast,
+  checkAuth,
+  addToCart,
+  addToCartAPI,
+  showCartConfirmModal,
+  initializeWishlistState
+} from "../core.js";
 
 const API_BASE = "http://localhost:4000";
 
@@ -21,12 +28,175 @@ export async function initProductPage() {
     if (product) {
       const categoryName = product.categoryId?.name || "";
       loadRecommended(productId, categoryName);
+      loadReviews(productId); // NEW: Load real reviews
+      checkReviewEligibility(productId); // NEW: Check if user can review
+      initializeWishlistState();
     }
   }
 
   initGallery();
   initTabs();
   initCartButtons();
+}
+
+// ==========================================
+// REVIEWS SYSTEM
+// ==========================================
+async function loadReviews(productId) {
+  const listContainer = document.getElementById("reviews-list-container");
+  const avgRatingEl   = document.getElementById("avg-rating");
+  const reviewCountEl = document.getElementById("review-count");
+
+  if (!listContainer) return;
+
+  try {
+    const res  = await fetch(`${API_BASE}/api/reviews/${productId}`);
+    const data = await res.json();
+
+    if (data.success) {
+      avgRatingEl.textContent   = data.averageRating.toFixed(1);
+      reviewCountEl.textContent = data.count;
+
+      if (data.reviews.length === 0) {
+        listContainer.innerHTML = `<p class="text-muted" style="padding: 2rem; text-align: center;">No reviews yet. Be the first to share your experience!</p>`;
+        return;
+      }
+
+      listContainer.innerHTML = data.reviews.map(rev => `
+        <div class="review-item">
+          <div class="review-header">
+            <span class="review-author">${rev.user?.name || "Customer"}</span>
+            <span class="review-date">${new Date(rev.createdAt).toLocaleDateString()}</span>
+          </div>
+          <div class="stars review-stars">
+            ${renderStars(rev.rating)}
+          </div>
+          <p class="review-body">${rev.comment}</p>
+        </div>
+      `).join("");
+    }
+  } catch (err) {
+    console.error("Load reviews failed", err);
+  }
+}
+
+function renderStars(rating) {
+  let stars = "";
+  for (let i = 1; i <= 5; i++) {
+    if (i <= Math.floor(rating)) stars += `<i class="ph-fill ph-star"></i>`;
+    else if (i - 0.5 <= rating)   stars += `<i class="ph-fill ph-star-half"></i>`;
+    else                         stars += `<i class="ph ph-star"></i>`;
+  }
+  return stars;
+}
+
+async function checkReviewEligibility(productId) {
+  const container = document.getElementById("review-form-container");
+  const token     = localStorage.getItem("token");
+
+  if (!container || !token) {
+    if (container) container.innerHTML = `<p class="text-muted" style="background:#f8f9fa; padding:1rem; border-radius:8px;">Please <a href="login.html" style="color:var(--primary);">login</a> to check if you are eligible to leave a review.</p>`;
+    return;
+  }
+
+  try {
+    const res  = await fetch(`${API_BASE}/api/reviews/check/${productId}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (data.eligible) {
+      container.innerHTML = `
+        <div class="review-form-box" style="background:#f8f9fa; padding:1.5rem; border-radius:12px;">
+          <h4 style="margin-bottom:1rem;">Write a Review</h4>
+          <form id="submit-review-form">
+            <div style="margin-bottom:1rem;">
+              <label style="display:block; margin-bottom:0.5rem;">Your Rating</label>
+              <div class="rating-stars-input" style="font-size:1.5rem; color:#facc15; cursor:pointer;">
+                <i class="ph ph-star" data-val="1"></i>
+                <i class="ph ph-star" data-val="2"></i>
+                <i class="ph ph-star" data-val="3"></i>
+                <i class="ph ph-star" data-val="4"></i>
+                <i class="ph ph-star" data-val="5"></i>
+              </div>
+              <input type="hidden" name="rating" id="review-rating-val" value="0">
+            </div>
+            <div style="margin-bottom:1rem;">
+              <textarea name="comment" placeholder="What did you like or dislike? How was the fit?" required style="width:100%; border:1px solid #ddd; padding:10px; border-radius:8px; min-height:100px; font-family:inherit;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+          </form>
+        </div>
+      `;
+      initReviewFormLogic(productId);
+    } else {
+      container.innerHTML = `<p class="text-muted" style="background:#f8f9fa; padding:1rem; border-radius:8px; font-size:0.9rem;">
+        <i class="ph ph-info" style="vertical-align:middle; margin-right:5px;"></i>
+        ${data.message || "Only verified purchasers of this item can leave a review."}
+      </p>`;
+    }
+  } catch (err) {
+    console.error("Check eligibility failed", err);
+  }
+}
+
+function initReviewFormLogic(productId) {
+  const form  = document.getElementById("submit-review-form");
+  const stars = document.querySelectorAll(".rating-stars-input i");
+  const input = document.getElementById("review-rating-val");
+
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      const val = parseInt(star.dataset.val);
+      input.value = val;
+      stars.forEach(s => {
+        const sVal = parseInt(s.dataset.val);
+        if (sVal <= val) {
+          s.classList.remove("ph");
+          s.classList.add("ph-fill");
+        } else {
+          s.classList.remove("ph-fill");
+          s.classList.add("ph");
+        }
+      });
+    });
+  });
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    const val   = parseInt(input.value);
+
+    if (val === 0) {
+      showToast("Please select a star rating", "error");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          productId,
+          rating: val,
+          comment: form.comment.value
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("Review submitted! Thank you. ✅");
+        loadReviews(productId);
+        document.getElementById("review-form-container").innerHTML = `<p class="text-success" style="padding:1rem; background:#ecfdf5; border-radius:8px;">Your review has been submitted. Thank you for your feedback!</p>`;
+      } else {
+        showToast(data.message || "Failed to submit review", "error");
+      }
+    } catch (err) {
+      showToast("Network error", "error");
+    }
+  };
 }
 
 // ==========================================
@@ -56,6 +226,7 @@ function populatePage(p) {
   container.dataset.name  = p.name;
   container.dataset.price = displayPrice;
   container.dataset.image = p.images?.[0] || "";
+  container.dataset.stock = p.stock || "0";
 
   document.title = `DripMen | ${p.name}`;
   const bc = document.querySelector(".breadcrumb .current");
@@ -276,28 +447,46 @@ function initTabs() {
 // ==========================================
 function initCartButtons() {
   const qtyInput = document.querySelector(".qty-input-main");
+  const MAX_LIMIT_PER_ITEM = 10;
 
   document.querySelector(".qty-minus-main")?.addEventListener("click", () => {
     let v = parseInt(qtyInput.value);
     if (v > 1) qtyInput.value = v - 1;
   });
+
   document.querySelector(".qty-plus-main")?.addEventListener("click", () => {
+    const container = document.querySelector(".single-product-section");
+    // We could store stock in a data attribute during populatePage
+    const stock = parseInt(container?.dataset.stock || "999"); 
     let v = parseInt(qtyInput.value);
-    if (v < 99) qtyInput.value = v + 1;
+
+    if (v >= MAX_LIMIT_PER_ITEM) {
+      showToast(`Maximum ${MAX_LIMIT_PER_ITEM} items allowed`, "error");
+      return;
+    }
+    if (v >= stock) {
+      showToast(`Only ${stock} items in stock`, "error");
+      return;
+    }
+
+    qtyInput.value = v + 1;
   });
 
   const getSelection = () => {
     const container   = document.querySelector(".single-product-section");
     const activeSize  = document.querySelector(".size-pill-btn.active");
     const activeColor = document.querySelector(".color-swatch-circle.active");
-    if (!activeSize) { showToast("Please select a size", "error"); return null; }
+    if (!activeSize && document.querySelectorAll(".size-pill-btn").length > 0) { 
+      showToast("Please select a size", "error"); 
+      return null; 
+    }
     return {
       id:       container?.dataset.id    || "",
       name:     container?.dataset.name  || "",
       price:    parseFloat(container?.dataset.price) || 0,
       image:    container?.dataset.image || "",
-      size:     activeSize.textContent.trim(),
-      color:    activeColor?.dataset.color || "",
+      size:     activeSize ? activeSize.textContent.trim() : "N/A",
+      color:    activeColor?.dataset.color || "Black",
       quantity: qtyInput ? parseInt(qtyInput.value) : 1
     };
   };
@@ -308,24 +497,18 @@ function initCartButtons() {
     const item = getSelection();
     if (!item) return;
 
-    const token = localStorage.getItem("token");
-    if (token) {
-      const data = await addToCartAPI(item.id, item.quantity);
-      if (data?.success) {
-        const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
-        document.querySelectorAll(
-          ".cart-count, .header-cart-badge, .cart-badge"
-        ).forEach(badge => {
-          badge.textContent   = count;
-          badge.style.display = count > 0 ? "flex" : "none";
-        });
-        showCartConfirmModal(item);
-      } else {
-        showToast("Failed to add to cart", "error");
-      }
-    } else {
-      addToCart(item);
+    const data = await addToCartAPI(item.id, item.quantity, item.size, item.color);
+    if (data?.success) {
+      const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+      document.querySelectorAll(
+        ".cart-count, .header-cart-badge, .cart-badge"
+      ).forEach(badge => {
+        badge.textContent   = count;
+        badge.style.display = count > 0 ? "flex" : "none";
+      });
       showCartConfirmModal(item);
+    } else {
+      showToast(data?.message || "Failed to add to cart", "error");
     }
   };
 
@@ -335,13 +518,12 @@ function initCartButtons() {
     const item = getSelection();
     if (!item) return;
 
-    const token = localStorage.getItem("token");
-    if (token) {
-      await addToCartAPI(item.id, item.quantity);
+    const data = await addToCartAPI(item.id, item.quantity, item.size, item.color);
+    if (data?.success) {
+      window.location.href = "checkout.html";
     } else {
-      addToCart(item);
+      showToast(data?.message || "Failed to initiate checkout", "error");
     }
-    window.location.href = "checkout.html";
   };
 
   document.getElementById("add-to-cart-btn")?.addEventListener("click", handleAddToCart);

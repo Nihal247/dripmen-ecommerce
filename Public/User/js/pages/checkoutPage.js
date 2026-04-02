@@ -9,8 +9,8 @@ import {
   showToast,
   openModal
 } from "../core.js";
+
 import { isValidEmail, isValidPhone } from "../utils/validators.js";
-import { formatDate } from "../utils/helpers.js";
 
 const API = "http://localhost:4000";
 
@@ -46,30 +46,59 @@ export function initCheckoutPage() {
 
   // ── address management ───────────────────
   const addressListContainer = document.getElementById("checkout-address-list");
-  const addresses = JSON.parse(localStorage.getItem("dripmen_addresses") || "[]");
+  let savedAddresses = [];
 
-  function renderCheckoutAddresses() {
-    if (!addressListContainer || addresses.length === 0) {
-      const parentSection = document.querySelector(".checkout-address-selection");
-      if (parentSection) parentSection.style.display = "none";
-      const divider = document.getElementById("address-form-divider");
-      if (divider) divider.style.display = "none";
-      return;
-    }
+  async function renderCheckoutAddresses() {
+    const token = localStorage.getItem("token");
+    if (!token || !addressListContainer) return;
 
-    addressListContainer.innerHTML = addresses.map((addr, idx) => `
-      <div class="checkout-address-card" data-index="${idx}">
-        <div class="radio-indicator"></div>
-        <h4 class="address-name">${addr.name}</h4>
-        <div class="address-details">
-          <p>${addr.street}</p>
-          <p>${addr.city}${addr.zip ? `, ${addr.zip}` : ""}</p>
-          <p>${addr.email || ""}</p>
-          <p>${addr.mobile}</p>
+    try {
+      const res = await fetch(`${API}/api/address`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      
+      if (!data.success || data.addresses.length === 0) {
+        const parentSection = document.querySelector(".checkout-address-selection");
+        if (parentSection) parentSection.style.display = "none";
+        const divider = document.getElementById("address-form-divider");
+        if (divider) divider.style.display = "none";
+        return;
+      }
+
+      savedAddresses = data.addresses;
+      addressListContainer.innerHTML = savedAddresses.map((addr, idx) => `
+        <div class="checkout-address-card ${addr.isDefault ? 'active' : ''}" data-id="${addr._id}">
+          <div class="radio-indicator"></div>
+          <h4 class="address-name">${addr.name}</h4>
+          <div class="address-details">
+            <p>${addr.street}</p>
+            <p>${addr.city}, ${addr.zip}</p>
+            <p>${addr.email || ""}</p>
+            <p>${addr.mobile}</p>
+          </div>
         </div>
-      </div>
-    `).join("");
+      `).join("");
+
+      // Pre-fill if there's a default
+      const defaultAddr = savedAddresses.find(a => a.isDefault);
+      if (defaultAddr) {
+        fillAddressForm(defaultAddr);
+      }
+
+    } catch (err) {
+      console.error("Failed to load checkout addresses", err);
+    }
   }
+
+  function fillAddressForm(addr) {
+    document.getElementById("checkout-name").value   = addr.name   || "";
+    document.getElementById("checkout-mobile").value = addr.mobile || "";
+    document.getElementById("checkout-street").value = addr.street || "";
+    document.getElementById("checkout-city").value   = addr.city   || "";
+    document.getElementById("checkout-email").value  = addr.email  || "";
+  }
+
   renderCheckoutAddresses();
 
   if (addressListContainer) {
@@ -79,26 +108,23 @@ export function initCheckoutPage() {
 
       addressListContainer.querySelectorAll(".checkout-address-card")
         .forEach(c => c.classList.remove("active"));
+
       card.classList.add("active");
 
-      const addr = addresses[card.dataset.index];
+      const addr = savedAddresses.find(a => a._id === card.dataset.id);
       if (addr) {
-        document.getElementById("checkout-name").value   = addr.name   || "";
-        document.getElementById("checkout-mobile").value = addr.mobile || "";
-        document.getElementById("checkout-street").value = addr.street || "";
-        document.getElementById("checkout-city").value   = addr.city   || "";
-        document.getElementById("checkout-email").value  = addr.email  || "";
+        fillAddressForm(addr);
       }
     });
   }
 
   // ── place order button ───────────────────
   const placeOrderBtn = document.getElementById("place-order-btn-modern");
+
   if (placeOrderBtn) {
     placeOrderBtn.addEventListener("click", async (e) => {
       e.preventDefault();
 
-      // --- FORM VALIDATION ---
       const name   = document.getElementById("checkout-name");
       const email  = document.getElementById("checkout-email");
       const street = document.getElementById("checkout-street");
@@ -120,161 +146,156 @@ export function initCheckoutPage() {
         if (errEl) errEl.style.display = "none";
       };
 
-      if (!name.value.trim())
-        showError(name, "error-name");   else clearError(name, "error-name");
-      if (!isValidEmail(email.value.trim()))
-        showError(email, "error-email"); else clearError(email, "error-email");
-      if (!street.value.trim())
-        showError(street, "error-street"); else clearError(street, "error-street");
-      if (!city.value.trim())
-        showError(city, "error-city");   else clearError(city, "error-city");
-      if (!isValidPhone(mobile.value.replace(/\D/g, "")))
-        showError(mobile, "error-mobile"); else clearError(mobile, "error-mobile");
+      if (!name.value.trim()) showError(name, "error-name"); else clearError(name, "error-name");
+      if (!isValidEmail(email.value.trim())) showError(email, "error-email"); else clearError(email, "error-email");
+      if (!street.value.trim()) showError(street, "error-street"); else clearError(street, "error-street");
+      if (!city.value.trim()) showError(city, "error-city"); else clearError(city, "error-city");
+      if (!isValidPhone(mobile.value.replace(/\D/g, ""))) showError(mobile, "error-mobile"); else clearError(mobile, "error-mobile");
 
       if (!isValid) {
         showToast("Please fix the errors in the form", "error");
         return;
       }
 
-      // --- SAVE ADDRESS ---
-      const saveInfo = document.getElementById("checkout-save-info");
-      if (saveInfo?.checked) {
-        const newAddr = {
-          name:   name.value,
-          email:  email.value,
-          mobile: mobile.value,
-          street: street.value,
-          city:   city.value
-        };
-        const isDuplicate = addresses.some(
-          a => a.name === newAddr.name && a.street === newAddr.street
-        );
-        if (!isDuplicate) {
-          addresses.push(newAddr);
-          localStorage.setItem("dripmen_addresses", JSON.stringify(addresses));
-        }
-      }
-
-      // --- PAYMENT METHOD ---
-      const paymentMethodInput = document.querySelector(
-        'input[name="payment_method"]:checked'
-      );
+      const paymentMethodInput = document.querySelector('input[name="payment_method"]:checked');
       const paymentMethod = paymentMethodInput?.value || "cod";
-      const paymentLabel  =
-        paymentMethod === "cod"    ? "Cash on Delivery" :
-        paymentMethod === "wallet" ? "Wallet" : "Online Payment";
 
-      // --- PLACE ORDER ---
       placeOrderBtn.textContent = "Placing order...";
-      placeOrderBtn.disabled    = true;
+      placeOrderBtn.disabled = true;
 
       const token = localStorage.getItem("token");
 
-      if (token) {
-        // ✅ call backend API
-        try {
-          const res  = await fetch(`${API}/api/orders`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
+      if (!token) return;
+
+      try {
+        // 🧾 CREATE ORDER
+        const orderRes = await fetch(`${API}/api/orders`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            address: {
+              fullName: name.value,
+              phone: mobile.value,
+              street: street.value,
+              city: city.value,
+              country: "India"
             },
-            body: JSON.stringify({
-              address: {
-                fullName: name.value,
-                phone:    mobile.value,
-                street:   street.value,
-                city:     city.value,
-                country:  "India"
-              },
-              paymentMethod: paymentMethod,
-              couponCode:    document.getElementById("promo-input")?.value || ""
-            })
-          });
+            paymentMethod
+          })
+        });
 
-          const data = await res.json();
+        const orderData = await orderRes.json();
 
-          if (!data.success) {
-            showToast(data.message || "Failed to place order", "error");
-            placeOrderBtn.textContent = "Place Order";
-            placeOrderBtn.disabled    = false;
-            return;
-          }
-
-          // success — show modal
-          showSuccessModal(data.order.id || data.order._id);
-
-        } catch (err) {
-          console.error("Order failed:", err);
-          showToast("Network error. Please try again.", "error");
-          placeOrderBtn.textContent = "Place Order";
-          placeOrderBtn.disabled    = false;
+        if (!orderData.success) {
+          showToast(orderData.message, "error");
+          return;
         }
 
-      } else {
-        // fallback — save to localStorage
-        const allOrders = JSON.parse(
-          localStorage.getItem("dripmen_orders") || "[]"
-        );
-        const newOrder = {
-          id:          "#" + Math.floor(100000 + Math.random() * 900000),
-          date:        formatDate(new Date()),
-          status:      "Processing",
-          statusClass: "status-processing",
-          total:       parseFloat(
-            document.getElementById("checkout-total")
-              .textContent.replace("$", "")
-          ),
-          items:         getCart(),
-          address: {
-            name:   name.value,
-            street: street.value,
-            city:   city.value,
-            mobile: mobile.value,
-            email:  email.value
+        const orderId = orderData.order._id;
+
+        // 💵 COD
+        if (paymentMethod === "cod") {
+          showSuccessModal(orderId);
+          return;
+        }
+
+        // 💳 RAZORPAY
+        const rzpRes = await fetch(`${API}/api/payment/create-order`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
           },
-          paymentMethod: paymentLabel
+          body: JSON.stringify({ orderId })
+        });
+
+        const rzpData = await rzpRes.json();
+
+        const options = {
+          key: rzpData.keyId,
+          amount: rzpData.amount,
+          currency: rzpData.currency,
+          name: "DripMen",
+          description: "Order Payment",
+          order_id: rzpData.razorpayOrderId,
+
+          handler: async (response) => {
+            const verifyRes = await fetch(`${API}/api/payment/verify`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderId
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.success) {
+              showSuccessModal(orderId);
+            } else {
+              showToast("Payment failed", "error");
+            }
+          },
+
+          prefill: {
+            name: name.value,
+            contact: mobile.value,
+            email: email.value
+          }
         };
-        allOrders.unshift(newOrder);
-        localStorage.setItem("dripmen_orders", JSON.stringify(allOrders));
-        showSuccessModal(newOrder.id);
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+
+      } catch (err) {
+        console.error(err);
+        showToast("Something went wrong", "error");
+      } finally {
+        placeOrderBtn.textContent = "Place Order";
+        placeOrderBtn.disabled = false;
       }
     });
   }
 
   // ── success modal ────────────────────────
   function showSuccessModal(orderId) {
-    const totalAmount  = document.getElementById("checkout-total").textContent;
-    const successModal = document.getElementById("order-success-modal");
+    saveCart([]);
+    updateHeaderCounts();
 
-    if (successModal) {
-      const idEl    = document.getElementById("success-order-id");
-      const totalEl = document.getElementById("success-order-total");
-if (idEl) idEl.textContent = "#" + String(orderId).slice(-6).toUpperCase();
-      if (totalEl) totalEl.textContent = totalAmount;
+    // Populate Modal
+    const idEl    = document.getElementById("success-order-id");
+    const totalEl = document.getElementById("success-order-total");
+    const totalVal = document.getElementById("checkout-total").textContent;
 
-      const viewOrderBtn = document.getElementById("order-success-view-btn");
-      if (viewOrderBtn) viewOrderBtn.onclick = () =>
+    if (idEl)    idEl.textContent    = `#ORD-${orderId.slice(-8).toUpperCase()}`;
+    if (totalEl) totalEl.textContent = totalVal;
+
+    // Open Modal
+    const modal = document.getElementById("order-success-modal");
+    if (modal) {
+      openModal(modal);
+      
+      // Button listeners
+      document.getElementById("order-success-view-btn")?.addEventListener("click", () => {
         window.location.href = "orders.html";
-
-      const homeBtn = document.getElementById("order-success-home-btn");
-      if (homeBtn) homeBtn.onclick = () =>
+      });
+      document.getElementById("order-success-home-btn")?.addEventListener("click", () => {
         window.location.href = "index.html";
-
-      // clear cart
-      saveCart([]);
-      updateHeaderCounts();
-      openModal(successModal);
-
+      });
     } else {
-      showToast("Order placed successfully! 🎉");
-      saveCart([]);
-      updateHeaderCounts();
+      // Fallback if modal not found
+      showToast("Order placed successfully 🎉");
       setTimeout(() => window.location.href = "orders.html", 1500);
     }
-
-    placeOrderBtn.textContent = "Place Order";
-    placeOrderBtn.disabled    = false;
   }
 
   // ── init ─────────────────────────────────
