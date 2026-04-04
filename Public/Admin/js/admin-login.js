@@ -7,7 +7,7 @@ async function adminLogin(event) {
 
   try {
 
-    const res = await fetch("http://localhost:4000/api/admin/login", {
+    const res = await fetch("http://127.0.0.1:4000/api/admin/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -18,8 +18,7 @@ async function adminLogin(event) {
     const data = await res.json();
 
     if (data.success) {
-
-localStorage.setItem("token", data.token);
+      localStorage.setItem("adminToken", data.token);
 
       window.location.href = "admin.html";
 

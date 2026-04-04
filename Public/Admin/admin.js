@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // Dashboard Stats & Recent Orders
     // ==========================================
-    const API = "http://localhost:4000";
+    const API = "http://127.0.0.1:4000";
     const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
 
     async function fetchDashboardStats() {

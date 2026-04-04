@@ -1,7 +1,7 @@
-const API = "http://localhost:4000";
+const API = "http://127.0.0.1:4000";
 
 function getToken() {
-  return localStorage.getItem("adminToken") || localStorage.getItem("token");
+  return localStorage.getItem("adminToken");
 }
 
 function showToast(message, type = "success") {
@@ -103,9 +103,12 @@ function renderUsers(users) {
     const email   = user.email || "";
     const role    = user.isAdmin ? "Admin" : "User";
     const blocked = user.isBlocked;
-    const joined  = new Date(user.createdAt).toLocaleDateString("en-US", {
-      year: "numeric", month: "short", day: "numeric"
-    });
+    const authMethod = user.isGoogleUser ? `<span style="background:#ea433520;color:#ea4335;padding:3px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;">G Google</span>` : `<span style="background:#22c55e20;color:#16a34a;padding:3px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;">✉ Email</span>`;
+    const joined = user.createdAt
+      ? new Date(user.createdAt).toLocaleDateString("en-US", {
+          year: "numeric", month: "short", day: "numeric"
+        })
+      : "N/A";
 
     const roleColor   = user.isAdmin ? "#8b5cf6" : "#3b82f6";
     const statusColor = blocked ? "#ef4444" : "#10b981";
@@ -137,6 +140,7 @@ function renderUsers(users) {
           </div>
         </td>
         <td>${email}</td>
+        <td>${authMethod}</td>
         <td>
           <span style="background:${roleColor}20;color:${roleColor};
                        padding:4px 10px;border-radius:20px;

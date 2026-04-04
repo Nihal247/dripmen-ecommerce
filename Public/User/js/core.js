@@ -52,12 +52,28 @@ export function showToast(message, type = "success") {
   }, 3000);
 }
 
-export function updateHeaderCounts() {
-  const cart     = getCart();
-  const wishlist = getWishlist();
-
-  const cartCount     = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const wishlistCount = wishlist.length;
+export async function updateHeaderCounts() {
+  let cartCount = 0;
+  let wishlistCount = 0;
+  
+  const token = localStorage.getItem("token");
+  if (token) {
+    try {
+      const [cartItems, wishlistItems] = await Promise.all([
+        getCartFromAPI(),
+        getWishlistFromAPI()
+      ]);
+      cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+      wishlistCount = wishlistItems.length;
+    } catch (err) {
+      console.warn("Failed to fetch header counts from API");
+    }
+  } else {
+    const cart = getCart();
+    const wishlist = getWishlist();
+    cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    wishlistCount = wishlist.length;
+  }
 
   document.querySelectorAll(
     ".cart-count, .header-cart-badge, .cart-badge"
@@ -126,6 +142,8 @@ export function getProductDataFromElement(el) {
       container.querySelector(".rating-text, .rating-value")
         ?.textContent.split("/")[0] || "4.5"
     ),
+    stock: parseInt(container.dataset.stock || "0"),
+    sizes: container.dataset.sizes ? JSON.parse(decodeURIComponent(container.dataset.sizes)) : []
   };
 
   if (!data.id || !data.name || data.price <= 0 || !data.image) {
@@ -250,17 +268,44 @@ export async function handleGridAddToCart(btn) {
   const product = getProductDataFromElement(btn);
   if (!product) return;
 
+  // 📝 Stock Check
+  if (product.stock <= 0) {
+    showToast(`${product.name} is out of stock`, "error");
+    return;
+  }
+
   window.currentSelection = product;
 
-  // if size modal exists — open it first
+  // if size modal exists and product has sizes — open it first
   const sizeModal = document.getElementById("size-selection-modal");
-  if (sizeModal) {
+  if (sizeModal && product.sizes && product.sizes.length > 0) {
     const imgEl   = document.getElementById("size-modal-img");
     const nameEl  = document.getElementById("size-modal-name");
     const priceEl = document.getElementById("size-modal-price");
     if (imgEl)   imgEl.src           = product.image;
     if (nameEl)  nameEl.textContent  = product.name;
     if (priceEl) priceEl.textContent = `$${product.price}`;
+
+    // Populating Sizes dynamically
+    const sizeContainer = sizeModal.querySelector(".size-options-grid");
+    if (sizeContainer && product.sizes && product.sizes.length > 0) {
+      sizeContainer.innerHTML = "";
+      
+      const availableSizes = product.sizes.filter(s => s.stock > 0);
+      
+      if (availableSizes.length > 0) {
+        availableSizes.forEach((s, index) => {
+          const btn = document.createElement("button");
+          btn.className = `size-btn ${index === 0 ? "active" : ""}`;
+          btn.dataset.size = s.size;
+          btn.textContent = s.size;
+          sizeContainer.appendChild(btn);
+        });
+      } else {
+        sizeContainer.innerHTML = `<p class="text-muted text-sm" style="color:var(--danger)">No sizes in stock.</p>`;
+      }
+    }
+
     openModal(sizeModal);
     return;
   }
@@ -363,7 +408,7 @@ export function showCartConfirmModal(item) {
 // CART API FUNCTIONS
 // ==========================================
 
-const API = "http://localhost:4000";
+const API = "http://127.0.0.1:4000";
 
 export async function getCartFromAPI() {
   const token = localStorage.getItem("token");

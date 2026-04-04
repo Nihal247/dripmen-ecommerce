@@ -7,7 +7,7 @@ import {
   initializeWishlistState
 } from "../core.js";
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = "http://127.0.0.1:4000";
 
 const COLOR_MAP = {
   black:"bg-black", white:"bg-white", blue:"bg-blue", green:"bg-green",
@@ -251,12 +251,15 @@ function populatePage(p) {
 
   const stockEl = document.querySelector(".stock-status");
   if (stockEl) {
-    if (p.status === "out_of_stock" || p.stock === 0) {
+    if (p.status === "out_of_stock" || p.stock <= 0) {
       stockEl.className = "stock-status out-of-stock";
       stockEl.innerHTML = `<span class="status-dot"></span> Out of Stock`;
+    } else if (p.stock <= 5) {
+      stockEl.className = "stock-status low-stock";
+      stockEl.innerHTML = `<span class="status-dot"></span> Only ${p.stock} left!`;
     } else {
       stockEl.className = "stock-status in-stock";
-      stockEl.innerHTML = `<span class="status-dot"></span> In Stock — Only ${p.stock} left`;
+      stockEl.innerHTML = `<span class="status-dot"></span> In Stock`;
     }
   }
 
@@ -322,21 +325,50 @@ function populatePage(p) {
 
 function updateStockStatus(size, stock) {
   const stockEl = document.querySelector(".stock-status");
-  if (!stockEl) return;
-
+  const cartBtn = document.getElementById("add-to-cart-btn");
+  const buyBtn  = document.getElementById("buy-now-btn");
+  const stickyCartBtn = document.querySelector(".add-to-cart-main-btn-sticky");
+  const stickyBuyBtn  = document.querySelector(".buy-now-main-btn-sticky");
+  
   const s = parseInt(stock);
-  if (s <= 0) {
-    stockEl.className = "stock-status out-of-stock";
-    stockEl.innerHTML = `<span class="status-dot"></span> Size ${size} Out of Stock`;
-  } else if (s < 5) {
-    stockEl.className = "stock-status low-stock"; // Assuming low-stock CSS exists or style directly
-    stockEl.innerHTML = `<span class="status-dot"></span> Only ${s} left in Size ${size}!`;
-    stockEl.style.color = "#f97316"; // Orange for urgency
-  } else {
-    stockEl.className = "stock-status in-stock";
-    stockEl.innerHTML = `<span class="status-dot"></span> Size ${size} is In Stock (${s} available)`;
-    stockEl.style.color = "#10b981"; // Green
+  const isOutOfStock = s <= 0;
+
+  if (stockEl) {
+    if (isOutOfStock) {
+      stockEl.className = "stock-status out-of-stock";
+      stockEl.innerHTML = `<span class="status-dot"></span> Out of Stock`;
+      stockEl.style.color = "#ef4444";
+    } else if (s <= 5) {
+      stockEl.className = "stock-status low-stock";
+      stockEl.innerHTML = `<span class="status-dot"></span> Only ${s} left!`;
+      stockEl.style.color = "#f97316";
+    } else {
+      stockEl.className = "stock-status in-stock";
+      stockEl.innerHTML = `<span class="status-dot"></span> In Stock`;
+      stockEl.style.color = "#10b981";
+    }
   }
+
+  // Update button states
+  const updateBtn = (btn, out) => {
+    if (!btn) return;
+    btn.disabled = out;
+    if (out) {
+      if (!btn.dataset.originalText) btn.dataset.originalText = btn.innerHTML;
+      btn.innerHTML = `<i class="ph ph-prohibit"></i> Out of Stock`;
+      btn.style.opacity = "0.6";
+      btn.style.cursor = "not-allowed";
+    } else {
+      if (btn.dataset.originalText) btn.innerHTML = btn.dataset.originalText;
+      btn.style.opacity = "1";
+      btn.style.cursor = "pointer";
+    }
+  };
+
+  updateBtn(cartBtn, isOutOfStock);
+  updateBtn(buyBtn, isOutOfStock);
+  updateBtn(stickyCartBtn, isOutOfStock);
+  updateBtn(stickyBuyBtn, isOutOfStock);
 }
 
 // ==========================================
@@ -401,8 +433,9 @@ function renderCard(p) {
 
   return `
     <div class="product-card"
-      data-id="${p._id}" data-name="${p.name}"
-      data-price="${displayPrice}" data-image="${image}">
+      data-id="${p._id}" data-name="${p.name}" data-stock="${p.stock}"
+      data-price="${displayPrice}" data-image="${image}"
+      data-sizes="${encodeURIComponent(JSON.stringify(p.sizes || []))}">
       <div class="product-image-container">
         <img src="${image}" alt="${p.name}" class="product-image" />
         <button class="wishlist-btn" aria-label="Add to wishlist">
@@ -557,18 +590,24 @@ function initCartButtons() {
     }
   };
 
-  // ✅ Buy Now — calls backend API then redirects
+  // ✅ Buy Now — isolates item for checkout
   const handleBuyNow = async () => {
     if (!checkAuth("Please login to continue")) return;
     const item = getSelection();
     if (!item) return;
 
-    const data = await addToCartAPI(item.id, item.quantity, item.size, item.color);
-    if (data?.success) {
-      window.location.href = "checkout.html";
-    } else {
-      showToast(data?.message || "Failed to initiate checkout", "error");
-    }
+    // 🚀 Isolation: Store in special 'buy_now' key for checkoutPage.js
+    localStorage.setItem("dripmen_buy_now_item", JSON.stringify({
+      product:  item.id,
+      name:     item.name,
+      price:    item.price,
+      image:    item.image,
+      size:     item.size,
+      color:    item.color,
+      quantity: item.quantity
+    }));
+
+    window.location.href = "checkout.html";
   };
 
   document.getElementById("add-to-cart-btn")?.addEventListener("click", handleAddToCart);

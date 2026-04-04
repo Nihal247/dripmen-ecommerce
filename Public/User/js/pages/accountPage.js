@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config.js";
+import { initPasswordToggles } from "../utils/helpers.js";
 
 export async function initAccountPage() {
   const token = localStorage.getItem("token");
@@ -8,8 +9,22 @@ export async function initAccountPage() {
     return;
   }
 
+  // ==============================
+  // CLEAR ANY BROWSER-AUTOFILLED PASSWORDS
+  // Browsers sometimes ignore autocomplete="off" — this ensures fields
+  // start empty on page load (the professional standard).
+  // ==============================
+  setTimeout(() => {
+    ["currentPassword", "newPassword", "confirmPassword"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+  }, 100);
 
-  
+  // ==============================
+  // PASSWORD SHOW / HIDE TOGGLES
+  // ==============================
+  initPasswordToggles();
 
   // ==============================
   // LOAD USER DATA

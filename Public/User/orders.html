@@ -53,6 +53,7 @@
                             <a href="account.html">My Profile</a>
                             <a href="address.html">Address Book</a>
                             <a href="payment.html">My Payment Options</a>
+                            <a href="wallet.html">My Wallet</a>
                         </div>
                     </div>
                     <div class="account-nav-section">
@@ -117,6 +118,55 @@
                 <p>Subtotal: <span id="modal-order-subtotal">$0.00</span></p>
                 <p>Shipping: <span>Free</span></p>
                 <p>Total: <span id="modal-order-total">$0.00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Request Overlay (standalone, no .modal class) -->
+    <div id="return-request-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); z-index:999999; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
+        <div style="background:#fff; width:92%; max-width:460px; padding:2.5rem; border-radius:28px; box-shadow:0 30px 60px rgba(0,0,0,0.3); position:relative;">
+            <!-- Header -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <h2 style="font-weight:800; font-family:Inter; margin:0; font-size:1.6rem;">Request Return</h2>
+                <button onclick="document.getElementById('return-request-modal').style.display='none'" style="background:#f3f4f6; border:none; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#6b7280;"><i class="ph ph-x" style="font-size:1.2rem;"></i></button>
+            </div>
+            <p style="color:#666; margin-bottom:2rem; font-size:0.95rem; font-family:Inter;">Please tell us why you'd like to return this order.</p>
+
+            <input type="hidden" id="return-order-id">
+
+            <!-- Reason -->
+            <div style="margin-bottom:1.5rem;">
+                <label style="display:block; margin-bottom:0.6rem; font-weight:600; font-family:Inter;">Reason for Return</label>
+                <select id="return-reason" style="width:100%; padding:0.85rem 1rem; border-radius:12px; border:1px solid #e5e7eb; font-family:Inter; font-size:0.95rem; outline:none; cursor:pointer; appearance:none; background:#f9fafb;">
+                    <option value="Sizing Issues">Sizing Issues</option>
+                    <option value="Damaged Product">Damaged Product</option>
+                    <option value="Defective / Quality Issue">Defective / Quality Issue</option>
+                    <option value="Wrong Item Received">Wrong Item Received</option>
+                    <option value="Changed My Mind">Changed My Mind</option>
+                </select>
+            </div>
+
+            <!-- Refund Method -->
+            <div style="margin-bottom:2rem;">
+                <label style="display:block; margin-bottom:0.6rem; font-weight:600; font-family:Inter;">Refund Destination</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                    <label style="border:2px solid #e5e7eb; padding:1rem; border-radius:16px; cursor:pointer; text-align:center; transition:all 0.2s ease; display:flex; flex-direction:column; align-items:center;">
+                        <input type="radio" name="refund-method" value="wallet" checked style="margin-bottom:0.5rem; accent-color:#111;">
+                        <span style="font-size:0.85rem; font-weight:700; font-family:Inter;">DripMen Wallet</span>
+                        <small style="font-size:0.75rem; color:#16a34a; font-weight:600; font-family:Inter;">Instant Refund</small>
+                    </label>
+                    <label style="border:2px solid #e5e7eb; padding:1rem; border-radius:16px; cursor:pointer; text-align:center; transition:all 0.2s ease; display:flex; flex-direction:column; align-items:center;">
+                        <input type="radio" name="refund-method" value="original" style="margin-bottom:0.5rem; accent-color:#111;">
+                        <span style="font-size:0.85rem; font-weight:700; font-family:Inter;">Original Method</span>
+                        <small style="font-size:0.75rem; color:#888; font-family:Inter;">5–7 Days</small>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div style="display:flex; gap:0.75rem;">
+                <button class="btn btn-outline" style="flex:1;" onclick="document.getElementById('return-request-modal').style.display='none'">Cancel</button>
+                <button class="btn btn-primary" style="flex:1;" id="confirm-return-btn">Submit Request</button>
             </div>
         </div>
     </div>

@@ -7,7 +7,7 @@ import {
   closeAllModals
 } from "../core.js";
 
-const API = "http://localhost:4000";
+const API = "http://127.0.0.1:4000";
 
 // ==========================================
 // HELPER: FORMAT DATE
@@ -28,7 +28,9 @@ function getStatusClass(status) {
     confirmed:  "status-confirmed",
     shipped:    "status-shipped",
     delivered:  "status-delivered",
-    cancelled:  "status-cancelled"
+    cancelled:  "status-cancelled",
+    returned:   "status-returned",
+    requested:  "status-pending"
   };
   return map[status?.toLowerCase()] || "status-processing";
 }
@@ -86,11 +88,15 @@ function openOrderDetailsModal(order) {
         Cancel Order
       </button>`;
   } else if (status.toLowerCase() === "delivered") {
-    actionBtnHtml = `
-      <button class="btn btn-outline full-width"
-              id="modal-return-btn" style="margin-top:1rem;">
-        Return Order
-      </button>`;
+    if (order.returnStatus && order.returnStatus !== "none") {
+        actionBtnHtml = `<button class="btn btn-outline full-width" disabled style="margin-top:1rem; opacity:0.6;">Return ${order.returnStatus}</button>`;
+    } else {
+        actionBtnHtml = `
+          <button class="btn btn-outline full-width"
+                  id="modal-return-btn" style="margin-top:1rem;">
+            Return Order
+          </button>`;
+    }
   }
 
   if (actionBtnHtml) {
@@ -108,8 +114,8 @@ function openOrderDetailsModal(order) {
 
     actionsDiv.querySelector("#modal-return-btn")
       ?.addEventListener("click", () => {
-        showToast("Return request submitted");
         closeAllModals();
+        openReturnModal(orderId);
       });
   }
 
@@ -199,11 +205,19 @@ function renderOrders(orders) {
           Cancel Order
         </button>`;
     } else if (status.toLowerCase() === "delivered") {
-      actionButtons = `
-        <button class="btn btn-outline return-order-btn"
-                data-id="${orderId}">
-          Return Order
-        </button>`;
+      if (order.returnStatus && order.returnStatus !== "none") {
+        const returnLabel = order.returnStatus.charAt(0).toUpperCase() + order.returnStatus.slice(1);
+        actionButtons = `
+          <button class="btn btn-outline" disabled style="background:#f8f9fa; color:#888; border-color:#eee;">
+            Return ${returnLabel}
+          </button>`;
+      } else {
+        actionButtons = `
+          <button class="btn btn-outline return-order-btn"
+                  data-id="${orderId}">
+            Return Order
+          </button>`;
+      }
     }
 
     return `
@@ -305,34 +319,43 @@ export function initOrdersPage() {
 
   // click handler
   container.addEventListener("click", async (e) => {
-    const target = e.target;
+    // 🛡 Robust Target Detection
+    const cancelBtn = e.target.closest(".cancel-order-btn");
+    const returnBtn = e.target.closest(".return-order-btn");
+    const viewBtn   = e.target.closest(".view-details-btn");
+
+    console.log("Orders List Clicked:", { 
+      target: e.target.tagName, 
+      isReturn: !!returnBtn,
+      id: returnBtn?.dataset?.id 
+    });
 
     // cancel
-    if (target.classList.contains("cancel-order-btn")) {
+    if (cancelBtn) {
       if (confirm("Are you sure you want to cancel this order?")) {
-        await cancelOrder(target.dataset.id);
+        await cancelOrder(cancelBtn.dataset.id);
       }
       return;
     }
 
     // return
-    if (target.classList.contains("return-order-btn")) {
-      showToast("Return request submitted");
+    if (returnBtn) {
+      openReturnModal(returnBtn.dataset.id);
       return;
     }
 
     // view details
-    if (target.classList.contains("view-details-btn")) {
-      const orderId = target.dataset.id;
+    if (viewBtn) {
+      const orderId = viewBtn.dataset.id;
       const token   = localStorage.getItem("token");
 
       if (token && orderId) {
         window.location.href = `order-details.html?id=${orderId}`;
-      } else {
+      } else if (viewBtn.dataset.index !== undefined) {
         const orders = JSON.parse(
           localStorage.getItem("dripmen_orders") || "[]"
         );
-        openOrderDetailsModal(orders[target.dataset.index]);
+        openOrderDetailsModal(orders[viewBtn.dataset.index]);
       }
       return;
     }
@@ -359,4 +382,79 @@ export function initOrdersPage() {
       }
     }, 200);
   }
+}
+
+// ==========================================
+// RETURN MODAL LOGIC
+// ==========================================
+function openReturnModal(orderId) {
+  const modal     = document.getElementById("return-request-modal");
+  const idInput   = document.getElementById("return-order-id");
+  const submitBtn = document.getElementById("confirm-return-btn");
+
+  if (!modal || !idInput || !submitBtn) {
+    console.error("Return modal elements missing");
+    return;
+  }
+  
+  idInput.value = orderId;
+  
+  // 🛡 Strong Layout Override
+  modal.style.setProperty("display", "flex", "important");
+  modal.style.setProperty("position", "fixed", "important");
+  modal.style.setProperty("top", "0", "important");
+  modal.style.setProperty("left", "0", "important");
+  modal.style.setProperty("width", "100vw", "important");
+  modal.style.setProperty("height", "100vh", "important");
+  modal.style.setProperty("z-index", "999999", "important");
+  modal.style.setProperty("align-items", "center", "important");
+  modal.style.setProperty("justify-content", "center", "important");
+  modal.style.setProperty("opacity", "1", "important");
+  modal.style.setProperty("visibility", "visible", "important");
+
+  console.log("Opening Return Modal for Order:", orderId);
+
+  // Reset button state
+  submitBtn.disabled  = false;
+  submitBtn.innerText = "Submit Request";
+
+  // Setup submit handler (remove old one first)
+  submitBtn.onclick = async () => {
+    const reasonEl       = document.getElementById("return-reason");
+    const refundMethodEl = document.querySelector('input[name="refund-method"]:checked');
+
+    if (!reasonEl || !refundMethodEl) return;
+
+    const reason       = reasonEl.value;
+    const refundMethod = refundMethodEl.value;
+
+    submitBtn.disabled  = true;
+    submitBtn.innerText = "Submitting...";
+
+    try {
+      const token = localStorage.getItem("token");
+      const res   = await fetch(`${API}/api/orders/${orderId}/return`, {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ reason, refundMethod })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast("Return request submitted successfully");
+        modal.style.display = "none";
+        loadOrders(); // Refresh table
+      } else {
+        showToast(data.message || "Failed to submit return", "error");
+      }
+    } catch (err) {
+      showToast("Network error", "error");
+    } finally {
+      submitBtn.disabled  = false;
+      submitBtn.innerText = "Submit Request";
+    }
+  };
 }

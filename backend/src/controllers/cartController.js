@@ -19,14 +19,14 @@ export const addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // 🚀 Stock & Limit Validation (Size-Specific)
+    // 🚀 Stock & Limit Validation (Size-Specific with Fallback)
     const sizeObj = product.sizes.find(s => s.size === (size || "L"));
-    const availableStock = sizeObj ? sizeObj.stock : 0;
+    const availableStock = sizeObj ? sizeObj.stock : product.stock || 0;
 
     if (availableStock <= 0) {
       return res.status(400).json({ 
         success: false, 
-        message: `${product.name} (Size: ${size || "L"}) is out of stock` 
+        message: `${product.name}${size ? ` (Size: ${size})` : ""} is out of stock` 
       });
     }
 
@@ -144,12 +144,12 @@ export const updateCartItem = async (req, res) => {
     const product = await Product.findById(item.product);
     if (product) {
       const sizeObj = product.sizes.find(s => s.size === item.size);
-      const availableStock = sizeObj ? sizeObj.stock : 0;
+      const availableStock = sizeObj ? sizeObj.stock : product.stock || 0;
 
       if (quantity > availableStock) {
         return res.status(400).json({ 
           success: false, 
-          message: `Only ${availableStock} left in stock for size ${item.size}` 
+          message: `Only ${availableStock} left in stock${item.size ? ` for size ${item.size}` : ""}` 
         });
       }
     }

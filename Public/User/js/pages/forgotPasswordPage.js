@@ -1,6 +1,9 @@
 import { showToast } from "../core.js";
+import { initPasswordToggles } from "../utils/helpers.js";
 
 export function initForgotPasswordPage() {
+  // Wire up eye toggles (shown on step 3 — Reset Password)
+  initPasswordToggles();
 
   const form = document.getElementById("fp-email-form");
 
@@ -14,7 +17,7 @@ export function initForgotPasswordPage() {
 
     try {
 
-      const res = await fetch("http://localhost:4000/api/auth/forgot-password", {
+      const res = await fetch("http://127.0.0.1:4000/api/auth/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

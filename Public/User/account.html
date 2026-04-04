@@ -58,6 +58,7 @@
               <a href="account.html" class="active">Profile</a>
               <a href="address.html">Address Book</a>
               <a href="payment.html">Payment Options</a>
+              <a href="wallet.html">My Wallet</a>
             </div>
           </div>
 
@@ -83,13 +84,14 @@
   <a href="account.html" class="tab active">Profile</a>
   <a href="address.html" class="tab">Address</a>
   <a href="payment.html" class="tab">Payment</a>
+  <a href="wallet.html" class="tab">Wallet</a>
   <a href="orders.html" class="tab">Orders</a>
   <a href="returns.html" class="tab">Returns</a>
   <a href="cancellations.html" class="tab">Cancel</a>
 </div>
 
           <!-- FORM -->
-          <form id="account-form" class="account-form" novalidate>
+          <form id="account-form" class="account-form" novalidate autocomplete="off">
 
             <div class="form-row">
 
@@ -120,17 +122,51 @@
             <!-- PASSWORD -->
             <div class="password-change-section">
               <h2 class="section-subtitle">Change Password</h2>
+              <p class="password-hint-text">Leave these fields blank if you don't want to change your password.</p>
 
               <div class="form-group">
-                <input id="currentPassword" type="password" placeholder="Current Password">
+                <label for="currentPassword">Current Password</label>
+                <div class="password-input-wrapper">
+                  <input
+                    id="currentPassword"
+                    type="password"
+                    placeholder="Enter current password"
+                    autocomplete="current-password"
+                  >
+                  <button type="button" class="toggle-password-btn" aria-label="Show password" data-target="currentPassword">
+                    <i class="ph ph-eye"></i>
+                  </button>
+                </div>
               </div>
 
               <div class="form-group">
-                <input id="newPassword" type="password" placeholder="New Password">
+                <label for="newPassword">New Password</label>
+                <div class="password-input-wrapper">
+                  <input
+                    id="newPassword"
+                    type="password"
+                    placeholder="Enter new password"
+                    autocomplete="new-password"
+                  >
+                  <button type="button" class="toggle-password-btn" aria-label="Show password" data-target="newPassword">
+                    <i class="ph ph-eye"></i>
+                  </button>
+                </div>
               </div>
 
               <div class="form-group">
-                <input id="confirmPassword" type="password" placeholder="Confirm New Password">
+                <label for="confirmPassword">Confirm New Password</label>
+                <div class="password-input-wrapper">
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Re-enter new password"
+                    autocomplete="new-password"
+                  >
+                  <button type="button" class="toggle-password-btn" aria-label="Show password" data-target="confirmPassword">
+                    <i class="ph ph-eye"></i>
+                  </button>
+                </div>
               </div>
             </div>
 

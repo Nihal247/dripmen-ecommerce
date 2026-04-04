@@ -20,9 +20,22 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
       minlength: 6,
       select: false, // hide password by default
+    },
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    isGoogleUser: {
+      type: Boolean,
+      default: false,
     },
 
     resetPasswordToken: {
@@ -37,10 +50,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
     isAdmin: {
-  type: Boolean,
-  default: false
-}
+      type: Boolean,
+      default: false,
+    }
   },
   { timestamps: true }
 );

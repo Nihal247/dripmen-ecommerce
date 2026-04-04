@@ -3,7 +3,7 @@
 // ==========================================
 import { showToast, openModal, closeAllModals } from "../core.js";
 
-const API = "http://localhost:4000";
+const API = "http://127.0.0.1:4000";
 
 // ==========================================
 // HELPER: FORMAT DATE
@@ -16,52 +16,16 @@ function formatDate(dateStr) {
 }
 
 // ==========================================
-// HELPER: ORDER DETAILS MODAL
-// (shared between returns and cancellations)
+// HELPER: STATUS CLASS (Returns Specific)
 // ==========================================
-export function openOrderDetailsModal(order) {
-  const modal = document.getElementById("order-details-modal");
-  if (!modal || !order) return;
-
-  const idEl     = document.getElementById("modal-order-id");
-  const dateEl   = document.getElementById("modal-order-date");
-  const totalEl  = document.getElementById("modal-order-total");
-  const statusEl = document.getElementById("modal-order-status");
-
-  const orderId = order._id  || order.id  || "";
-  const status  = order.orderStatus || order.status || "";
-
-  if (idEl)    idEl.textContent    = "#" + String(orderId).slice(-6).toUpperCase();
-  if (dateEl)  dateEl.textContent  = formatDate(order.createdAt || order.date);
-  if (totalEl) totalEl.textContent = `$${Number(order.total).toFixed(2)}`;
-
-  if (statusEl) {
-    statusEl.className   = `order-status ${order.statusClass || "status-refunded"}`;
-    statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-  }
-
-  const itemsContainer = document.getElementById("modal-order-items");
-  if (itemsContainer) {
-    itemsContainer.innerHTML = (order.items || []).map(item => `
-      <div class="modal-product-inline" style="margin-bottom:0.5rem;">
-        <img src="${item.image || item.product?.images?.[0] || ""}"
-             class="modal-product-img-small">
-        <div class="modal-product-details-small">
-          <h4 class="modal-product-name">
-            ${item.name || item.product?.name || ""}
-          </h4>
-          <p class="modal-product-price">
-            Qty: ${item.quantity} | Size: ${item.size || "N/A"}
-          </p>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  // remove old dynamic actions
-  modal.querySelector(".modal-actions-dynamic")?.remove();
-
-  openModal(modal);
+function getReturnStatusClass(status) {
+    const map = {
+        requested: "status-pending",
+        approved:  "status-delivered", // Using delivered color for approved
+        rejected:  "status-cancelled",
+        none:      "status-processing"
+    };
+    return map[status?.toLowerCase()] || "status-pending";
 }
 
 // ==========================================
@@ -79,8 +43,9 @@ function renderReturns(orders) {
         </div>
         <h3 style="font-size:1.2rem;margin-bottom:0.5rem;">No returns yet</h3>
         <p style="margin-bottom:1.5rem;">
-          You haven't returned any orders yet.
+          You haven't requested any returns yet.
         </p>
+        <a href="orders.html" class="btn btn-primary">View My Orders</a>
       </div>`;
     return;
   }
@@ -89,8 +54,8 @@ function renderReturns(orders) {
 
     const orderId = order._id  || order.id  || "";
     const shortId = "#" + String(orderId).slice(-6).toUpperCase();
-    const date    = formatDate(order.createdAt || order.date);
-    const status  = order.orderStatus || order.status || "refunded";
+    const date    = formatDate(order.updatedAt || order.createdAt || order.date);
+    const status  = order.returnStatus || "requested";
     const items   = order.items || [];
     const total   = Number(order.total || 0);
 
@@ -101,8 +66,8 @@ function renderReturns(orders) {
             <span class="order-id">Return ${shortId}</span>
             <span class="order-date">${date}</span>
           </div>
-          <span class="order-status status-refunded">
-            Refunded
+          <span class="order-status ${getReturnStatusClass(status)}">
+            ${status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
         </div>
 
@@ -126,8 +91,8 @@ function renderReturns(orders) {
 
         <div class="order-footer">
           <div>
-            <span class="order-total-label">Refund Amount:</span>
-            <span class="order-total-value">$${total.toFixed(2)}</span>
+            <span class="order-total-label">Return Amount:</span>
+            <span class="order-total-value">₹${total.toFixed(2)}</span>
           </div>
           <button class="btn btn-outline view-details-btn"
                   data-id="${orderId}" data-index="${index}">
@@ -169,10 +134,9 @@ async function loadReturns() {
       const data = await res.json();
 
       if (data.success) {
-        // for now show delivered orders as returnable
-        // when you build a returns system, filter by return status
+        // ✅ FILTER BY RETURN STATUS
         const returned = data.orders.filter(
-          o => o.orderStatus === "delivered"
+          o => o.returnStatus && o.returnStatus !== "none"
         );
         renderReturns(returned);
       } else {
@@ -186,10 +150,7 @@ async function loadReturns() {
 
   } else {
     // fallback localStorage
-    const returns = JSON.parse(
-      localStorage.getItem("dripmen_returns") || "[]"
-    );
-    renderReturns(returns);
+    renderReturns([]);
   }
 }
 
@@ -200,7 +161,6 @@ export function initReturnsPage() {
   const container = document.getElementById("returns-list");
   if (!container) return;
 
-  // smart auth wait then load
   const token = localStorage.getItem("token");
   if (token) {
     loadReturns();

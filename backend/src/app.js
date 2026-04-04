@@ -12,8 +12,16 @@ import addressRoutes from "./routes/addressRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import walletRoutes from "./routes/walletRoutes.js";
+
+import passport from "./config/passportConfig.js";
 
 const app = express();
+
+// ==============================
+// ✅ PASSPORT INITIALIZATION
+// ==============================
+app.use(passport.initialize());
 
 // ==============================
 // ✅ GLOBAL MIDDLEWARES
@@ -51,12 +59,16 @@ app.use("/api/orders", orderRoutes);
 // wishlist routes
 app.use("/api/wishlist", wishlistRoutes);
 
+// wallet routes
+app.use("/api/wallet", walletRoutes);
+
 // payment routes
 
 app.use("/api/payment", paymentRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // ==============================
 

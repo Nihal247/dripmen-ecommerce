@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DripMen Admin | Return Requests</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../User/css/style.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="sidebar-overlay"></div>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">DRIPMEN</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="admin.html" class="nav-item"><i class="ph ph-squares-four"></i> Dashboard</a>
+                <a href="admin-users.html" class="nav-item"><i class="ph ph-users"></i> Users</a>
+                <a href="admin-products.html" class="nav-item"><i class="ph ph-t-shirt"></i> Products</a>
+                <a href="admin-inventory.html" class="nav-item"><i class="ph ph-stack"></i> Inventory</a>
+                <a href="admin-returns.html" class="nav-item active"><i class="ph ph-arrow-u-up-left"></i> Returns</a>
+                <a href="admin-categories.html" class="nav-item"><i class="ph ph-tag"></i> Categories</a>
+                <a href="admin-orders.html" class="nav-item"><i class="ph ph-shopping-cart"></i> Orders</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="index.html" class="nav-item"><i class="ph ph-sign-out"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="menu-toggle"><i class="ph ph-list"></i></button>
+                    <h2 class="page-title">Return Requests</h2>
+                </div>
+                <div class="header-actions">
+                    <div class="admin-profile">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=000&color=fff" alt="Admin">
+                        <span>Admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats Overview -->
+            <div class="admin-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;"><i class="ph ph-clock-counter-clockwise"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Pending Returns</span>
+                        <h3 class="stat-value" id="pending-returns-count">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dcfce7; color: #16a34a;"><i class="ph ph-check-circle"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Approved Today</span>
+                        <h3 class="stat-value" id="approved-today-count">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Return Requests Table -->
+            <div class="recent-orders-section">
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Reason</th>
+                                <th>Refund To</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="returns-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 3rem; color: #888;">
+                                    Loading return requests...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:white; padding:2rem; border-radius:16px; width:90%; max-width:400px;">
+            <h3 style="margin-bottom:1rem;">Reject Return Request</h3>
+            <textarea id="reject-reason" placeholder="Reason for rejection (sent to customer)" style="width:100%; height:100px; padding:0.8rem; border-radius:8px; border:1px solid #ddd; margin-bottom:1.5rem;"></textarea>
+            <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                <button onclick="closeRejectModal()" class="btn btn-outline">Cancel</button>
+                <button id="confirm-reject-btn" class="btn btn-primary" style="background:#ef4444;">Confirm Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+    <script src="js/admin-returns.js"></script>
+</body>
+</html>

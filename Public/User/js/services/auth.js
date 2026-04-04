@@ -1,5 +1,6 @@
 // ==========================================
 import { openModal, closeAllModals, showToast } from "../core.js";
+import { initPasswordToggles } from "../utils/helpers.js";
 
 export function initAuthSystem() {
     const authModal   = document.getElementById('auth-modal');
@@ -16,6 +17,20 @@ export function initAuthSystem() {
     }
 
     // ── Inject Updated Modal HTML ─────────────────────────────────────
+    // ── Check for token in URL (Google Auth Success) ──────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleToken = urlParams.get("token");
+
+    if (googleToken) {
+        localStorage.setItem("token", googleToken);
+        localStorage.setItem("dripmen_token", "true");
+        showToast("Logged in with Google ✅");
+        
+        // Remove token from URL to keep it clean
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // ── Inject Updated Modal HTML ─────────────────────────────────────
     if (authModal) {
         authModal.innerHTML = `
         <button class="close-modal"><i class="ph ph-x"></i></button>
@@ -26,12 +41,17 @@ export function initAuthSystem() {
                     <h2>Log In</h2>
                     <p>Welcome back to DripMen</p>
                 </div>
-                <form id="modal-login-form" class="auth-form-stack">
+                <form id="modal-login-form" class="auth-form-stack" autocomplete="off">
                     <div class="form-group">
-                        <input type="email" id="modal-login-email" placeholder="Email Address" required class="auth-input">
+                        <input type="email" id="modal-login-email" placeholder="Email Address" required class="auth-input" autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <input type="password" id="modal-login-password" placeholder="Password" required class="auth-input">
+                        <div class="password-input-wrapper">
+                            <input type="password" id="modal-login-password" placeholder="Password" required class="auth-input" autocomplete="new-password">
+                            <button type="button" class="toggle-password-btn" aria-label="Show password" data-target="modal-login-password">
+                                <i class="ph ph-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary full-width">Log In</button>
@@ -39,6 +59,17 @@ export function initAuthSystem() {
                     <div class="form-footer" style="text-align: center; margin-top: 1rem;">
                         <a href="forgot-password.html" class="text-muted text-sm">Forgot Password?</a>
                     </div>
+                    <div class="auth-divider">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="social-auth-buttons">
+                        <a href="http://127.0.0.1:4000/api/auth/google" class="btn btn-google full-width">
+                            <i class="ph ph-google-logo"></i>
+                            Continue with Google
+                        </a>
+                    </div>
+
                     <div class="auth-footer-text" style="margin-top: 1.5rem;">
                         <p>Don't have an account? <a href="#" class="switch-to-signup">Sign up</a></p>
                     </div>
@@ -54,22 +85,43 @@ export function initAuthSystem() {
                         <h2>Sign Up</h2>
                         <p>Create an account to get started</p>
                     </div>
-                    <form id="modal-signup-form" class="auth-form-stack">
+                    <form id="modal-signup-form" class="auth-form-stack" autocomplete="off">
                         <div class="form-group">
-                            <input type="text" id="modal-signup-name" placeholder="Full Name" required class="auth-input">
+                            <input type="text" id="modal-signup-name" placeholder="Full Name" required class="auth-input" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <input type="email" id="modal-signup-email" placeholder="Email Address" required class="auth-input">
+                            <input type="email" id="modal-signup-email" placeholder="Email Address" required class="auth-input" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <input type="password" id="modal-signup-password" placeholder="Password" required class="auth-input" minlength="6" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}" title="Must contain at least 6 characters including uppercase, lowercase and number">
+                            <div class="password-input-wrapper">
+                                <input type="password" id="modal-signup-password" placeholder="Password" required class="auth-input" minlength="6" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}" title="Must contain at least 6 characters including uppercase, lowercase and number" autocomplete="new-password">
+                                <button type="button" class="toggle-password-btn" aria-label="Show password" data-target="modal-signup-password">
+                                    <i class="ph ph-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <input type="password" id="modal-signup-confirm-password" placeholder="Confirm Password" required class="auth-input">
+                            <div class="password-input-wrapper">
+                                <input type="password" id="modal-signup-confirm-password" placeholder="Confirm Password" required class="auth-input" autocomplete="new-password">
+                                <button type="button" class="toggle-password-btn" aria-label="Show password" data-target="modal-signup-confirm-password">
+                                    <i class="ph ph-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary full-width">Sign Up</button>
                         </div>
+                        <div class="auth-divider">
+                            <span>OR</span>
+                        </div>
+
+                        <div class="social-auth-buttons">
+                            <a href="http://127.0.0.1:4000/api/auth/google" class="btn btn-google full-width">
+                                <i class="ph ph-google-logo"></i>
+                                Continue with Google
+                            </a>
+                        </div>
+
                         <div class="auth-footer-text" style="margin-top: 1.5rem;">
                             <p>Already have an account? <a href="#" class="switch-to-login">Log in</a></p>
                         </div>
@@ -96,6 +148,24 @@ export function initAuthSystem() {
                 </div>
             </div>
         </div>`;
+
+        // Wire up eye toggles inside the injected modal
+        initPasswordToggles();
+    }
+
+    // ── Clear Auth Fields (prevent browser autofill) ──────────────────
+    function clearAuthFields() {
+        setTimeout(() => {
+            const ids = [
+                'modal-login-email', 'modal-login-password',
+                'modal-signup-name', 'modal-signup-email',
+                'modal-signup-password', 'modal-signup-confirm-password'
+            ];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        }, 50);
     }
 
     // ── Check Auth State ──────────────────────────────────────────────
@@ -108,14 +178,17 @@ export function initAuthSystem() {
             if (accountIcon) {
                 accountIcon.onclick = (e) => {
                     e.preventDefault();
-                    if (authModal) openModal(authModal);
+                    if (authModal) {
+                        openModal(authModal);
+                        clearAuthFields();
+                    }
                 };
             }
             return;
         }
 
         try {
-            const res  = await fetch("http://localhost:4000/api/auth/me", {
+            const res  = await fetch("http://127.0.0.1:4000/api/auth/me", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -158,7 +231,10 @@ export function initAuthSystem() {
                 if (accountIcon) {
                     accountIcon.onclick = (e) => {
                         e.preventDefault();
-                        if (authModal) openModal(authModal);
+                        if (authModal) {
+                            openModal(authModal);
+                            clearAuthFields();
+                        }
                     };
                 }
             }
@@ -188,6 +264,7 @@ export function initAuthSystem() {
                 document.getElementById('signup-form-wrapper').classList.add('active');
                 document.getElementById('modal-signup-step-1').style.display  = 'block';
                 document.getElementById('modal-signup-step-otp').style.display = 'none';
+                clearAuthFields();
             });
         }
 
@@ -196,6 +273,7 @@ export function initAuthSystem() {
                 e.preventDefault();
                 document.getElementById('signup-form-wrapper').classList.remove('active');
                 document.getElementById('login-form-wrapper').classList.add('active');
+                clearAuthFields();
             });
         }
 
@@ -217,7 +295,7 @@ export function initAuthSystem() {
                 const password = document.getElementById("modal-login-password").value;
 
                 try {
-                    const response = await fetch("http://localhost:4000/api/auth/login", {
+                    const response = await fetch("http://127.0.0.1:4000/api/auth/login", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, password })
@@ -266,7 +344,7 @@ export function initAuthSystem() {
                 }
 
                 try {
-                    const response = await fetch("http://localhost:4000/api/auth/signup", {
+                    const response = await fetch("http://127.0.0.1:4000/api/auth/signup", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email }),
@@ -305,7 +383,7 @@ export function initAuthSystem() {
                         return;
                     }
 
-                    const response = await fetch("http://localhost:4000/api/auth/verify-signup-otp", {
+                    const response = await fetch("http://127.0.0.1:4000/api/auth/verify-signup-otp", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ ...storedData, otp }),

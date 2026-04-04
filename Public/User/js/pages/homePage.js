@@ -3,7 +3,7 @@
 // Loads products from API into homepage sections
 // ==========================================
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = "http://127.0.0.1:4000";
 
 // ==========================================
 // RENDER CARD — matches exact CSS classes in style.css
@@ -45,9 +45,11 @@ function renderCard(p) {
     <div class="product-card"
       data-id="${p._id}"
       data-name="${p.name}"
+      data-stock="${p.stock}"
       data-price="${displayPrice}"
       data-image="${image}"
-      data-rating="4.5/5">
+      data-rating="4.5/5"
+      data-sizes="${encodeURIComponent(JSON.stringify(p.sizes || []))}">
       <div class="product-image-container">
         <img src="${image}" alt="${p.name}" class="product-image" />
         <button class="wishlist-btn" aria-label="Add to wishlist">

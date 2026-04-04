@@ -80,7 +80,7 @@ Login to access your exclusive drops and saved items.
 <h1 class="auth-heading">Log in to DripMen</h1>
 <p class="auth-subheading">Enter your details below</p>
 
-<form class="auth-form" id="loginForm">
+<form class="auth-form" id="loginForm" autocomplete="off">
 
 <div class="input-group-underlined">
 <input
@@ -88,16 +88,23 @@ type="email"
 id="email"
 placeholder="Email"
 required
+autocomplete="off"
 >
 </div>
 
 <div class="input-group-underlined">
+<div class="password-input-wrapper">
 <input
 type="password"
 id="password"
 placeholder="Password"
 required
+autocomplete="new-password"
 >
+<button type="button" class="toggle-password-btn" aria-label="Show password" data-target="password">
+  <i class="ph ph-eye"></i>
+</button>
+</div>
 </div>
 
 <div class="form-actions-row">
@@ -110,6 +117,17 @@ Log In
 Forget Password?
 </a>
 
+</div>
+
+<div class="auth-divider">
+<span>OR</span>
+</div>
+
+<div class="social-auth-buttons">
+<a href="http://127.0.0.1:4000/api/auth/google" class="btn btn-google">
+<i class="ph ph-google-logo"></i>
+Continue with Google
+</a>
 </div>
 
 </form>

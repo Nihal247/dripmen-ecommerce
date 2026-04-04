@@ -1,7 +1,7 @@
-const API = "http://localhost:4000/api/coupons";
+const API = "http://127.0.0.1:4000/api/coupons";
 
 function getToken() {
-  return localStorage.getItem("token") || localStorage.getItem("adminToken");
+  return localStorage.getItem("adminToken");
 }
 
 async function loadCoupons() {

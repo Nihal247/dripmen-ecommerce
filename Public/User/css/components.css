@@ -366,12 +366,14 @@
 }
 
 .size-options-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.75rem;
 }
 
 .size-btn {
+    flex: 1;
+    min-width: 60px;
     padding: 0.75rem;
     border: 1px solid var(--border-color);
     background: transparent;

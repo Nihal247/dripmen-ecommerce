@@ -12,7 +12,7 @@ import {
 
 import { isValidEmail, isValidPhone } from "../utils/validators.js";
 
-const API = "http://localhost:4000";
+const API = "http://127.0.0.1:4000";
 
 // ==========================================
 // PAGE: CHECKOUT
@@ -22,9 +22,18 @@ export function initCheckoutPage() {
   // ── calculate totals ─────────────────────
   async function calculateTotals() {
     const token = localStorage.getItem("token");
-    const cart  = token ? await getCartFromAPI() : getCart();
+    let cart = [];
 
-    if (cart.length === 0) {
+    // 🚀 Check for Buy Now isolation
+    const buyNowStr = localStorage.getItem("dripmen_buy_now_item");
+    if (buyNowStr) {
+      cart = [JSON.parse(buyNowStr)];
+      // Show isolation notice if needed
+    } else {
+      cart = token ? await getCartFromAPI() : getCart();
+    }
+
+    if (!cart || cart.length === 0) {
       window.location.href = "cart.html";
       return;
     }
@@ -183,7 +192,11 @@ export function initCheckoutPage() {
               city: city.value,
               country: "India"
             },
-            paymentMethod
+            paymentMethod,
+            // 🚀 Pass Buy Now items if they exist
+            items: localStorage.getItem("dripmen_buy_now_item") 
+              ? [JSON.parse(localStorage.getItem("dripmen_buy_now_item"))]
+              : undefined
           })
         });
 
@@ -270,6 +283,8 @@ export function initCheckoutPage() {
   function showSuccessModal(orderId) {
     saveCart([]);
     updateHeaderCounts();
+    // 🧹 Clear Buy Now context
+    localStorage.removeItem("dripmen_buy_now_item");
 
     // Populate Modal
     const idEl    = document.getElementById("success-order-id");

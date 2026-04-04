@@ -30,6 +30,13 @@ export function initCartPage() {
     if (cart.length === 0) {
       document.getElementById("empty-cart-state").style.display = "block";
       document.getElementById("cart-layout").style.display      = "none";
+      
+      const progressContainer = document.getElementById("shipping-progress-container");
+      if (progressContainer) progressContainer.style.display = "none";
+      
+      const mobileSticky = document.getElementById("mobile-sticky-checkout");
+      if (mobileSticky) mobileSticky.style.display = "none";
+      
       return;
     }
 

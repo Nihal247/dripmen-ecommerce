@@ -35,12 +35,12 @@ const orderSchema = new mongoose.Schema({
   paymentMethod:  { type: String, default: "COD" },
   paymentStatus:  {
     type: String,
-    enum: ["pending", "paid", "failed"],
+    enum: ["pending", "paid", "failed", "refunded"],
     default: "pending"
   },
   orderStatus: {
     type: String,
-    enum: ["processing", "confirmed", "shipped", "delivered", "cancelled"],
+    enum: ["processing", "confirmed", "shipped", "delivered", "cancelled", "returned"],
     default: "processing"
   },
   subtotal:      { type: Number, required: true },
@@ -49,6 +49,17 @@ const orderSchema = new mongoose.Schema({
   couponCode:    { type: String },
   discount:      { type: Number, default: 0 },
   notes:         { type: String },
+  returnStatus: {
+    type: String,
+    enum: ["none", "requested", "approved", "rejected"],
+    default: "none"
+  },
+  returnReason:  { type: String },
+  refundMethod: {
+    type: String,
+    enum: ["wallet", "original"],
+    default: "wallet"
+  },
   paymentId:       { type: String },
 razorpayOrderId: { type: String }
 }, { timestamps: true });

@@ -1,4 +1,8 @@
+import { initPasswordToggles } from "../utils/helpers.js";
+
 export function initResetPasswordPage() {
+  // Wire up eye toggles
+  initPasswordToggles();
 
   const form = document.getElementById("reset-password-form");
 
@@ -14,7 +18,7 @@ export function initResetPasswordPage() {
 
     try {
 
-      const res = await fetch("http://localhost:4000/api/auth/reset-password", {
+      const res = await fetch("http://127.0.0.1:4000/api/auth/reset-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

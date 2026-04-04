@@ -3,11 +3,15 @@
 // ==========================================
 import { showToast } from "../core.js";
 import { isStrongPassword } from "../utils/validators.js";
+import { initPasswordToggles } from "../utils/helpers.js";
 
 // ==========================================
 // PAGE: SIGN UP
 // ==========================================
 export function initSignupPage() {
+  // Wire up eye toggles on password fields
+  initPasswordToggles();
+
   const signupForm = document.getElementById("signup-form");
   const otpForm = document.getElementById("signup-otp-form");
   const step1 = document.getElementById("signup-step-1");
@@ -47,7 +51,7 @@ export function initSignupPage() {
       }
 
       try {
-        const response = await fetch("http://localhost:4000/api/auth/signup", {
+        const response = await fetch("http://127.0.0.1:4000/api/auth/signup", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -103,7 +107,7 @@ export function initSignupPage() {
         }
 
         const response = await fetch(
-          "http://localhost:4000/api/auth/verify-signup-otp",
+          "http://127.0.0.1:4000/api/auth/verify-signup-otp",
           {
             method: "POST",
             headers: {

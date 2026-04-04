@@ -1,12 +1,19 @@
 import Order from "../models/orderModel.js";
 import Cart  from "../models/cartModel.js";
 import Product from "../models/Product.js";
+import { addMoneyToWallet } from "./walletController.js";
+import Razorpay from "razorpay";
+
+const razorpay = new Razorpay({
+  key_id:     process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 // ✅ PLACE ORDER
 export const placeOrder = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { address, paymentMethod, couponCode, notes } = req.body;
+    const { address, paymentMethod, couponCode, notes, items: customItems } = req.body;
     if (!paymentMethod) {
   return res.status(400).json({
     message: "Payment method is required",
@@ -17,28 +24,37 @@ export const placeOrder = async (req, res) => {
       return res.status(400).json({ message: "Address is required" });
     }
 
-    // get user cart
-    const cart = await Cart.findOne({ user: userId }).populate("items.product");
-    const productIds = cart.items.map(item => item.product._id);
+    // 🛒 FETCH ITEMS (Priority: Custom Items > Cart)
+    let finalItems = [];
 
-const products = await Product.find({
-  _id: { $in: productIds }
-});
-
-const productMap = {};
-
-products.forEach(p => {
-  productMap[p._id.toString()] = p;
-});
-
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
+    if (customItems && customItems.length > 0) {
+      // Direct checkout (e.g. Buy Now)
+      finalItems = customItems;
+    } else {
+      // Checkout from cart
+      const cart = await Cart.findOne({ user: userId }).populate("items.product");
+      if (!cart || cart.items.length === 0) {
+        return res.status(400).json({ message: "Cart is empty" });
+      }
+      finalItems = cart.items;
     }
 
-const orderItems = [];
+    const productIds = finalItems.map(item => item.product?._id || item.product);
 
-for (const item of cart.items) {
-const product = productMap[item.product._id.toString()];
+    const products = await Product.find({
+      _id: { $in: productIds }
+    });
+
+    const productMap = {};
+    products.forEach(p => {
+      productMap[p._id.toString()] = p;
+    });
+
+    const orderItems = [];
+
+    for (const item of finalItems) {
+      const pId = item.product?._id ? item.product._id.toString() : item.product.toString();
+      const product = productMap[pId];
 
   if (item.quantity <= 0) {
   return res.status(400).json({
@@ -46,12 +62,13 @@ const product = productMap[item.product._id.toString()];
   });
 }
 
-    // ❌ SIZE-SPECIFIC STOCK VALIDATION
+    // ❌ SIZE-SPECIFIC STOCK VALIDATION (With Fallback)
     const sizeObj = product.sizes.find(s => s.size === (item.size || "L"));
+    const availableStock = sizeObj ? sizeObj.stock : product.stock || 0;
     
-    if (!sizeObj || sizeObj.stock < item.quantity) {
+    if (availableStock < item.quantity) {
       return res.status(400).json({
-        message: `${product.name} (Size: ${item.size || "L"}) is out of stock`,
+        message: `${product.name}${item.size ? ` (Size: ${item.size})` : ""} is out of stock`,
       });
     }
 
@@ -67,7 +84,7 @@ const product = productMap[item.product._id.toString()];
     });
 
     // ✅ REDUCE STOCK (Size-Specific and Global Summary)
-    sizeObj.stock -= item.quantity;
+    if (sizeObj) sizeObj.stock -= item.quantity;
     product.stock -= item.quantity;
     
     await product.save();
@@ -95,9 +112,14 @@ const product = productMap[item.product._id.toString()];
       notes: notes || ""
     });
 
-    // clear the cart after order placed
-    cart.items = [];
-    await cart.save();
+    // 🧹 CLEANUP: Clear cart ONLY if checking out from cart
+    if (!customItems || customItems.length === 0) {
+        const cart = await Cart.findOne({ user: userId });
+        if (cart) {
+            cart.items = [];
+            await cart.save();
+        }
+    }
 
     res.status(201).json({
       success: true,
@@ -226,5 +248,111 @@ export const updateOrderStatus = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ REQUEST RETURN (User)
+export const requestReturn = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason, refundMethod } = req.body;
+
+    const order = await Order.findOne({ _id: id, user: req.user.id });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    if (order.orderStatus.toLowerCase() !== "delivered") {
+      return res.status(400).json({ success: false, message: "Only delivered orders can be returned" });
+    }
+
+    order.returnStatus = "requested";
+    order.returnReason = reason || "No reason provided";
+    order.refundMethod = refundMethod || "wallet";
+
+    await order.save();
+
+    res.status(200).json({ success: true, message: "Return requested successfully", order });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ✅ APPROVE RETURN (Admin)
+export const approveReturn = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    if (order.returnStatus !== "requested") {
+      return res.status(400).json({ success: false, message: "No return request found for this order" });
+    }
+
+    // 1. REFUND LOGIC
+    if (order.refundMethod === "wallet") {
+        // Instant Wallet Refund
+        await addMoneyToWallet(
+            order.user, 
+            order.total, 
+            `Refund for Order #${order._id.toString().slice(-6).toUpperCase()}`,
+            order._id
+        );
+    } else if (order.refundMethod === "original") {
+        // Original Payment Refund (Razorpay)
+        if (order.paymentMethod === "Razorpay" && order.paymentId) {
+            await razorpay.payments.refund(order.paymentId, {
+                amount: Math.round(order.total * 100),
+                notes: { orderId: order._id.toString() }
+            });
+        }
+    }
+
+    // 2. UPDATE ORDER STATUS
+    order.returnStatus = "approved";
+    order.orderStatus  = "returned";
+    order.paymentStatus = "refunded";
+    
+    await order.save();
+
+    // 3. RESTORE STOCK
+    for (const item of order.items) {
+        const product = await Product.findById(item.product);
+        if (product) {
+            const sizeObj = product.sizes.find(s => s.size === item.size);
+            if (sizeObj) sizeObj.stock += item.quantity;
+            product.stock += item.quantity;
+            await product.save();
+        }
+    }
+
+    res.status(200).json({ success: true, message: "Return approved and refund processed", order });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ✅ REJECT RETURN (Admin)
+export const rejectReturn = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminNotes } = req.body;
+
+    const order = await Order.findById(id);
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+    order.returnStatus = "rejected";
+    if (adminNotes) order.notes = `Return Rejected: ${adminNotes}`;
+
+    await order.save();
+
+    res.status(200).json({ success: true, message: "Return request rejected", order });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };

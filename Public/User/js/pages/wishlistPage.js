@@ -14,7 +14,7 @@ import {
   updateHeaderCounts
 } from "../core.js";
 
-const API = "http://localhost:4000";
+const API = "http://127.0.0.1:4000";
 
 // ==========================================
 // BADGE UPDATE HELPER
@@ -70,6 +70,7 @@ export function initWishlistPage() {
           data-name="${name}"
           data-price="${price}"
           data-image="${image}"
+          data-sizes="${encodeURIComponent(JSON.stringify(item.product?.sizes || item.sizes || []))}"
           style="border:none;background:transparent;padding:0;">
 
           <button class="remove-wishlist-btn" data-id="${productId}" data-index="${index}">

@@ -1042,7 +1042,7 @@
     display: none !important;
 }
 
-.cart-container {}
+
 
 
 /* Shipping Progress */
@@ -1780,7 +1780,7 @@
     padding-bottom: 3rem;
 }
 
-.wishlist-container {}
+
 
 .wishlist-grid {
     display: grid;
@@ -2109,6 +2109,52 @@
     color: #ef4444;
     font-size: 0.8rem;
     font-weight: 500;
+}
+
+/* ---- Password Input with Eye Toggle ---- */
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    padding-right: 3rem !important; /* room for the eye button */
+    width: 100%;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted, #9ca3af);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s ease;
+    line-height: 1;
+}
+
+.toggle-password-btn:hover {
+    color: var(--text-main, #111827);
+}
+
+.toggle-password-btn:focus {
+    outline: none;
+}
+
+/* Hint text below "Change Password" heading */
+.password-hint-text {
+    font-size: 0.82rem;
+    color: var(--text-muted, #9ca3af);
+    margin-top: -0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .form-checkbox {
@@ -2463,11 +2509,15 @@
     gap: 2rem;
 }
 
+.input-group-underlined {
+    position: relative;
+}
+
 .input-group-underlined input {
     width: 100%;
     border: none;
     border-bottom: 1px solid #7D8184;
-    padding: 0.5rem 0;
+    padding: 0.5rem 2.5rem 0.5rem 0;
     font-size: 1rem;
     outline: none;
     transition: border-color 0.3s;
@@ -2477,6 +2527,15 @@
 
 .input-group-underlined input:focus {
     border-bottom-color: var(--primary-color);
+}
+
+/* Eye toggle inside underlined inputs (login / signup / forgot-password) */
+.input-group-underlined .toggle-password-btn {
+    position: absolute;
+    right: 0;
+    bottom: 0.4rem;
+    top: auto;
+    transform: none;
 }
 
 .google-btn {
@@ -3480,4 +3539,65 @@
   body {
     overflow-x: hidden;
   }
+}
+/* ===============================
+   GOOGLE AUTH STYLES
+================================ */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: var(--text-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.auth-divider:not(:empty)::before {
+    margin-right: 1rem;
+}
+
+.auth-divider:not(:empty)::after {
+    margin-left: 1rem;
+}
+
+.auth-divider span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.social-auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.btn-google {
+    background-color: #fff;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa;
+    border-color: #c1c1c1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.btn-google i {
+    font-size: 1.25rem;
+    color: #4285F4; /* Google Blue */
 }
