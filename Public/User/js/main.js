@@ -13,7 +13,8 @@ import {
   showToast,
   openModal,
   closeAllModals,
-  showCartConfirmModal
+  showCartConfirmModal,
+  getAvailableCouponsAPI
 } from "./core.js";
 
 import { renderLayout } from "./layout.js";
@@ -50,12 +51,17 @@ document.addEventListener("DOMContentLoaded", () => {
   renderLayout();
 
   // ----------------------------------------
-  // 2. AUTH: Set up login modal & account dropdown
+  // 2. TOPBAR: Load & rotate coupon announcements
+  // ----------------------------------------
+  initTopBarCoupons();
+
+  // ----------------------------------------
+  // 3. AUTH: Set up login modal & account dropdown
   // ----------------------------------------
   initAuthSystem();
 
   // ----------------------------------------
-  // 3. HEADER COUNTS: Always update cart/wishlist badges
+  // 4. HEADER COUNTS: Always update cart/wishlist badges
   // ----------------------------------------
   updateHeaderCounts();
   updateNavbarProfile();
@@ -307,3 +313,81 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+
+// ==========================================
+// TOP BAR: Dynamic Coupon Rotator
+// ==========================================
+async function initTopBarCoupons() {
+  const bar = document.getElementById("announcement-bar");
+  if (!bar) return;
+
+  let coupons = [];
+  try {
+    const allCoupons = await getAvailableCouponsAPI();
+    coupons = allCoupons.filter(c => c.showOnTopBar);
+  } catch (e) {
+    return; // Fail silently
+  }
+
+  if (!coupons.length) return; // Keep original static text
+
+  const span = bar.querySelector("span");
+  if (!span) return;
+
+  const tagColors = {
+    HOT:     { bg: "#FF4D4D", text: "#fff", glow: "rgba(255,77,77,0.5)" },
+    NEW:     { bg: "#6C63FF", text: "#fff", glow: "rgba(108,99,255,0.5)" },
+    LIMITED: { bg: "#F59E0B", text: "#fff", glow: "rgba(245,158,11,0.5)" },
+  };
+
+  function buildSlide(coupon) {
+    const t = coupon.tag;
+    const style = tagColors[t];
+    const tagHtml = (t && style)
+      ? `<span style="
+           display:inline-block; margin-right:8px;
+           background:${style.bg}; color:${style.text};
+           font-size:0.7rem; font-weight:800; letter-spacing:1px;
+           padding:2px 8px; border-radius:20px;
+           box-shadow: 0 0 8px ${style.glow};
+           animation: tagPulse 1.5s ease-in-out infinite;
+         ">${t}</span>`
+      : "";
+
+    const discountText = coupon.discountType === "percentage"
+      ? `${coupon.discountValue}% OFF`
+      : `$${coupon.discountValue} OFF`;
+
+    return `${tagHtml}Use <strong style="letter-spacing:1px;">${coupon.code}</strong> for ${discountText}${coupon.minPurchase ? ` on orders over $${coupon.minPurchase}` : ""}`;
+  }
+
+  let idx = 0;
+
+  function showSlide() {
+    span.style.opacity = "0";
+    span.style.transform = "translateY(8px)";
+    setTimeout(() => {
+      span.innerHTML = buildSlide(coupons[idx]);
+      span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+      span.style.opacity = "1";
+      span.style.transform = "translateY(0)";
+      idx = (idx + 1) % coupons.length;
+    }, 350);
+  }
+
+  // Inject CSS pulse keyframes once
+  if (!document.getElementById("coupon-tag-style")) {
+    const style = document.createElement("style");
+    style.id = "coupon-tag-style";
+    style.textContent = `
+      @keyframes tagPulse {
+        0%, 100% { box-shadow: 0 0 6px rgba(255,255,255,0.2); }
+        50%       { box-shadow: 0 0 14px rgba(255,255,255,0.6); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  showSlide();
+  setInterval(showSlide, 5000);
+}

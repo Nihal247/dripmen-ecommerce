@@ -102,9 +102,86 @@ async function loadSection(gridId, section, limit) {
 }
 
 // ==========================================
+// LOAD BANNERS FROM API
+// ==========================================
+async function loadBanners() {
+  const container = document.getElementById("hero-banner-container");
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/banners`);
+    const data = await res.json();
+
+    if (data.success && data.banners && data.banners.length > 0) {
+      container.innerHTML = data.banners.map(b => `
+          <a href="${b.link || 'products.html'}" class="hero-banner-link track-banner-click" data-id="${b._id}" style="position:relative; display:block;">
+            <img src="${b.image}" alt="${b.title || 'Banner'}" class="hero-banner-img" />
+          </a>
+      `).join("") + "<style>#hero-banner-container::-webkit-scrollbar { display: none; } .hero-banner-link img { width: 100%; height: auto; object-fit: cover; }</style>";
+
+      // Click Tracking
+      container.querySelectorAll('.track-banner-click').forEach(link => {
+        link.addEventListener('click', function(e) {
+          const bannerId = this.dataset.id;
+          if (bannerId) {
+            // Non-blocking fire and forget
+            fetch(`${API_BASE}/api/banners/${bannerId}/click`, { method: "POST" }).catch(console.error);
+          }
+        });
+      });
+
+      // View Tracking via IntersectionObserver
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const bannerId = entry.target.dataset.id;
+              if (bannerId && !entry.target.dataset.viewed) {
+                entry.target.dataset.viewed = "true";
+                fetch(`${API_BASE}/api/banners/${bannerId}/view`, { method: "POST" }).catch(console.error);
+              }
+            }
+          });
+        }, { threshold: 0.5 });
+        
+        container.querySelectorAll('.track-banner-click').forEach(link => {
+          observer.observe(link);
+        });
+      }
+
+      if (data.banners.length > 1) {
+        container.style.display = 'flex';
+        container.style.overflowX = 'auto';
+        container.style.scrollSnapType = 'x mandatory';
+        container.style.scrollBehavior = 'smooth';
+        container.style.scrollbarWidth = 'none'; // Firefox
+        
+        const links = container.querySelectorAll('.hero-banner-link');
+        links.forEach(link => {
+          link.style.flex = '0 0 100%';
+          link.style.scrollSnapAlign = 'start';
+        });
+
+        // Optional auto-scroll
+        let currentBannerIndex = 0;
+        setInterval(() => {
+          if(!container.matches(':hover')){
+             currentBannerIndex = (currentBannerIndex + 1) % data.banners.length;
+             container.scrollTo(currentBannerIndex * container.offsetWidth, 0);
+          }
+        }, 5000);
+      }
+    }
+  } catch (err) {
+    console.warn("[homePage] Could not load banners:", err.message);
+  }
+}
+
+// ==========================================
 // INIT — called by main.js
 // ==========================================
 export function initHomePage() {
+  loadBanners();
   loadSection("new-arrivals-grid", "new_arrivals", 4);
   loadSection("top-selling-grid",  "top_selling",  4);
   loadSection("explore-grid",      "explore",      8);

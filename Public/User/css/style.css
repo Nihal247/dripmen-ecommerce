@@ -1402,6 +1402,202 @@
     color: #EF4444;
 }
 
+/* =========================================================================
+   Available Coupons Panel
+   ========================================================================= */
+.available-coupons-section {
+    margin-bottom: 1.5rem;
+    border-top: 1px dashed var(--border-color, #e5e7eb);
+    padding-top: 1.25rem;
+}
+
+.available-coupons-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.available-coupons-header i {
+    font-size: 1.1rem;
+    color: #6C63FF;
+}
+
+.available-coupons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.available-coupons-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.available-coupons-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.available-coupons-list::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+
+/* Single coupon card */
+.coupon-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border: 1.5px dashed #e5e7eb;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    background: #fafafa;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.coupon-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #6C63FF, #FF4D4D);
+    border-radius: 4px 0 0 4px;
+}
+
+.coupon-card:hover {
+    border-color: #6C63FF;
+    box-shadow: 0 4px 16px rgba(108, 99, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.coupon-card--applied {
+    border-color: #10B981 !important;
+    background: #f0fdf4;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1) !important;
+}
+
+.coupon-card--applied::before {
+    background: linear-gradient(180deg, #10B981, #059669);
+}
+
+.coupon-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.coupon-code-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* Glowing tag badge */
+.coupon-tag-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    color: #fff;
+    text-transform: uppercase;
+    animation: couponTagPulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes couponTagPulse {
+    0%, 100% { opacity: 1;   transform: scale(1); }
+    50%       { opacity: 0.85; transform: scale(1.05); }
+}
+
+.coupon-code-text {
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    font-family: "Courier New", Courier, monospace;
+    color: var(--text-main);
+}
+
+.coupon-copy-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    color: #9ca3af;
+    font-size: 0.95rem;
+    line-height: 1;
+    border-radius: 4px;
+    transition: color 0.2s ease, background 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.coupon-copy-btn:hover {
+    color: #6C63FF;
+    background: #ede9fe;
+}
+
+.coupon-desc {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.coupon-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.coupon-discount-badge {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #EF4444;
+    background: #fef2f2;
+    border-radius: 20px;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+.coupon-apply-btn {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 5px 14px !important;
+    height: auto !important;
+    border-radius: 20px !important;
+    min-width: 60px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.coupon-applied-btn {
+    background: #10B981 !important;
+    border-color: #10B981 !important;
+    cursor: default;
+    pointer-events: none;
+}
+
 .go-checkout-btn {
     width: 100%;
     display: flex;

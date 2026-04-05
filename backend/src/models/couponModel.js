@@ -30,6 +30,15 @@ const couponSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    showOnTopBar: {
+      type: Boolean,
+      default: false,
+    },
+    tag: {
+      type: String,
+      enum: ["HOT", "NEW", "LIMITED", ""],
+      default: "HOT"
+    }
   },
   { timestamps: true }
 );

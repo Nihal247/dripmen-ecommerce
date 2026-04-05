@@ -22,7 +22,7 @@
 <body>
     <!-- Top Announcement Bar -->
     <div class="announcement-bar" id="announcement-bar">
-        <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+        <span id="announcement-text">Sign up and get 20% off to your first order. Sign Up Now</span>
         <button class="close-announcement" aria-label="Close">
             <i class="ph ph-x"></i>
         </button>
@@ -91,6 +91,17 @@
                             <button class="btn btn-primary apply-promo-btn" id="apply-promo-btn">Apply</button>
                         </div>
                         <p class="promo-message" id="promo-message"></p>
+
+                        <!-- ── Available Coupons ── -->
+                        <div class="available-coupons-section" id="available-coupons-section" style="display:none;">
+                            <div class="available-coupons-header">
+                                <i class="ph ph-ticket"></i>
+                                <span>Available Coupons</span>
+                            </div>
+                            <div class="available-coupons-list" id="available-coupons-list">
+                                <!-- Injected by JS -->
+                            </div>
+                        </div>
 
                         <button class="btn btn-primary go-checkout-btn" id="go-checkout-btn">
                             Go to Checkout <i class="ph ph-arrow-right"></i>

@@ -8,20 +8,28 @@ const bannerSchema = new mongoose.Schema(
       trim: true,
     },
     image: {
-      type: String, // URL/Path to the image
+      type: String,
       required: true,
     },
     link: {
-      type: String, // Redirect URL when clicked
-      default: "/products",
+      type: String,
+      default: "products.html",
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     order: {
       type: Number,
       default: 0,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
+    clicks: {
+      type: Number,
+      default: 0,
+    },
+    views: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }

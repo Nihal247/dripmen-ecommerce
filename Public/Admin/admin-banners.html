@@ -65,16 +65,22 @@
                     <input type="text" name="title" required>
                 </div>
                 <div class="form-group">
-                    <label>Banner Image</label>
-                    <input type="file" name="image" accept="image/*">
+                    <label>Desktop Image (Required)</label>
+                    <input type="file" name="image" accept="image/*" id="banner-img">
+                    <img id="img-preview" src="" style="max-height: 80px; margin-top: 10px; display: none; border-radius: 4px;">
                 </div>
                 <div class="form-group">
                     <label>Redirect Link</label>
-                    <input type="text" name="link" placeholder="/products" value="/products">
+                    <input type="text" name="link" placeholder="products.html" value="products.html">
                 </div>
                 <div class="form-group">
                     <label>Display Order</label>
                     <input type="number" name="order" value="0">
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; cursor: pointer;">
+                        <input type="checkbox" name="isActive" id="banner-active" checked> Active Status
+                    </label>
                 </div>
                 <button type="submit" class="btn btn-primary full-width">Save Banner</button>
             </form>

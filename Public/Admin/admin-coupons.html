@@ -3,88 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>DripMen Admin | Coupons</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <link rel="stylesheet" href="../User/css/style.css">
 <link rel="stylesheet" href="admin.css">
 
+<style>
+  /* ── Tag badge chips in table ── */
+  .tag-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+  .tag-HOT     { background: #FF4D4D; box-shadow: 0 0 6px rgba(255,77,77,.4); }
+  .tag-NEW     { background: #6C63FF; box-shadow: 0 0 6px rgba(108,99,255,.4); }
+  .tag-LIMITED { background: #F59E0B; box-shadow: 0 0 6px rgba(245,158,11,.4); }
+
+  /* toggle switch */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .toggle-switch {
+    position: relative;
+    width: 42px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #d1d5db;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: .3s;
+  }
+  .toggle-slider::before {
+    content: "";
+    position: absolute;
+    width: 16px; height: 16px;
+    left: 3px; top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: .3s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: #10b981; }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  /* inline topbar chip next to edit button */
+  .topbar-indicator {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+    background: #ecfdf5;
+    color: #10b981;
+    border: 1px solid #10b981;
+  }
+  .topbar-indicator.off {
+    background: #f9fafb;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+  }
+
+  /* action buttons row */
+  .action-btns { display: flex; gap: 6px; align-items: center; }
+  .action-btn.edit { background: #eff6ff; color: #3b82f6; border-radius: 8px; }
+  .action-btn.edit:hover { background: #dbeafe; }
+</style>
 </head>
 
 <body>
-
 <div class="admin-container">
-
 <div class="sidebar-overlay"></div>
 
 <!-- Sidebar -->
 <aside class="admin-sidebar">
-
 <div class="sidebar-header">
-<div class="logo">DRIPMEN</div>
+  <div class="logo">DRIPM EN</div>
 </div>
-
 <nav class="sidebar-nav">
-
-<a href="admin.html" class="nav-item">
-<i class="ph ph-squares-four"></i> Dashboard
-</a>
-
-<a href="admin-users.html" class="nav-item">
-<i class="ph ph-users"></i> Users
-</a>
-
-<a href="admin-products.html" class="nav-item">
-<i class="ph ph-t-shirt"></i> Products
-</a>
-
-<a href="admin-inventory.html" class="nav-item">
-<i class="ph ph-stack"></i> Inventory
-</a>
-
-<a href="admin-returns.html" class="nav-item">
-<i class="ph ph-arrow-u-up-left"></i> Returns
-</a>
-
-<a href="admin-categories.html" class="nav-item">
-<i class="ph ph-tag"></i> Categories
-</a>
-
-<a href="admin-orders.html" class="nav-item">
-<i class="ph ph-shopping-cart"></i> Orders
-</a>
-
-<a href="admin-coupons.html" class="nav-item active">
-<i class="ph ph-ticket"></i> Coupons
-</a>
-
-<a href="admin-banners.html" class="nav-item">
-<i class="ph ph-image"></i> Banners
-</a>
-
-<a href="admin-transactions.html" class="nav-item">
-<i class="ph ph-receipt"></i> Transactions
-</a>
-
-<a href="admin-sales-report.html" class="nav-item">
-<i class="ph ph-chart-bar"></i> Sales Report
-</a>
-
+  <a href="admin.html" class="nav-item"><i class="ph ph-squares-four"></i> Dashboard</a>
+  <a href="admin-users.html" class="nav-item"><i class="ph ph-users"></i> Users</a>
+  <a href="admin-products.html" class="nav-item"><i class="ph ph-t-shirt"></i> Products</a>
+  <a href="admin-inventory.html" class="nav-item"><i class="ph ph-stack"></i> Inventory</a>
+  <a href="admin-returns.html" class="nav-item"><i class="ph ph-arrow-u-up-left"></i> Returns</a>
+  <a href="admin-categories.html" class="nav-item"><i class="ph ph-tag"></i> Categories</a>
+  <a href="admin-orders.html" class="nav-item"><i class="ph ph-shopping-cart"></i> Orders</a>
+  <a href="admin-coupons.html" class="nav-item active"><i class="ph ph-ticket"></i> Coupons</a>
+  <a href="admin-banners.html" class="nav-item"><i class="ph ph-image"></i> Banners</a>
+  <a href="admin-transactions.html" class="nav-item"><i class="ph ph-receipt"></i> Transactions</a>
+  <a href="admin-sales-report.html" class="nav-item"><i class="ph ph-chart-bar"></i> Sales Report</a>
 </nav>
-
 <div class="sidebar-footer">
-<a href="index.html" class="nav-item">
-<i class="ph ph-sign-out"></i> Logout
-</a>
+  <a href="index.html" class="nav-item"><i class="ph ph-sign-out"></i> Logout</a>
 </div>
-
 </aside>
 
 <!-- Main Content -->
@@ -92,92 +118,131 @@
 
 <!-- Header -->
 <header class="admin-header">
-
-<div class="header-left">
-
-<button class="menu-toggle">
-<i class="ph ph-list"></i>
-</button>
-
-<h2 class="page-title">Coupons</h2>
-
-</div>
-
-<div class="header-actions">
-<button class="btn btn-primary" id="open-coupon-modal">
-<i class="ph ph-plus"></i> Create Coupon
-</button>
-</div>
-
+  <div class="header-left">
+    <button class="menu-toggle"><i class="ph ph-list"></i></button>
+    <h2 class="page-title">Coupons</h2>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-primary" id="open-coupon-modal">
+      <i class="ph ph-plus"></i> Create Coupon
+    </button>
+  </div>
 </header>
 
 <!-- Coupons Table -->
 <div class="recent-orders-section">
-<div class="table-responsive">
-<table class="admin-table">
-<thead>
-<tr>
-<th>Code</th>
-<th>Discount</th>
-<th>Min Purchase</th>
-<th>Expiry Date</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody id="coupons-table-body">
-<!-- Injected via JS -->
-</tbody>
-</table>
-</div>
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Discount</th>
+          <th>Min Purchase</th>
+          <th>Expiry Date</th>
+          <th>Tag</th>
+          <th>Top Bar</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="coupons-table-body">
+        <!-- Injected via JS -->
+      </tbody>
+    </table>
+  </div>
 </div>
 
 </main>
-
 </div>
 
-<!-- Create Coupon Modal -->
+<!-- Create / Edit Coupon Modal -->
 <div id="coupon-modal" class="admin-modal">
-<div class="admin-modal-content">
-<div class="modal-header">
-<h3>Create New Coupon</h3>
-<button class="close-modal-btn"><i class="ph ph-x"></i></button>
-</div>
-<form id="coupon-form" class="admin-form">
-<div class="form-group">
-<label>Coupon Code</label>
-<input type="text" name="code" placeholder="e.g. SUMMER20" required style="text-transform: uppercase;">
-</div>
-<div class="form-row">
-<div class="form-group">
-<label>Discount Type</label>
-<select name="discountType">
-<option value="percentage">Percentage (%)</option>
-<option value="fixed">Fixed Amount ($)</option>
-</select>
-</div>
-<div class="form-group">
-<label>Value</label>
-<input type="number" name="discountValue" required>
-</div>
-</div>
-<div class="form-row">
-<div class="form-group">
-<label>Min Purchase ($)</label>
-<input type="number" name="minPurchase" value="0">
-</div>
-<div class="form-group">
-<label>Expiry Date</label>
-<input type="date" name="expiryDate" required>
-</div>
-</div>
-<button type="submit" class="btn btn-primary full-width">Save Coupon</button>
-</form>
-</div>
+  <div class="admin-modal-content">
+    <div class="modal-header">
+      <h3 id="modal-title">Create New Coupon</h3>
+      <button class="close-modal-btn"><i class="ph ph-x"></i></button>
+    </div>
+
+    <form id="coupon-form" class="admin-form">
+      <!-- Hidden edit ID -->
+      <input type="hidden" id="edit-coupon-id" value="">
+
+      <!-- Code -->
+      <div class="form-group">
+        <label>Coupon Code</label>
+        <input type="text" name="code" id="f-code" placeholder="e.g. SUMMER20" required style="text-transform:uppercase;">
+      </div>
+
+      <!-- Discount type + value -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Discount Type</label>
+          <select name="discountType" id="f-discountType">
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixed">Fixed Amount ($)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Value</label>
+          <input type="number" name="discountValue" id="f-discountValue" min="1" required>
+        </div>
+      </div>
+
+      <!-- Min purchase + Expiry -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Min Purchase ($)</label>
+          <input type="number" name="minPurchase" id="f-minPurchase" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Expiry Date</label>
+          <input type="date" name="expiryDate" id="f-expiryDate" required>
+        </div>
+      </div>
+
+      <!-- Tag -->
+      <div class="form-group">
+        <label>Tag</label>
+        <select name="tag" id="f-tag">
+          <option value="HOT">🔥 HOT</option>
+          <option value="NEW">✨ NEW</option>
+          <option value="LIMITED">⏳ LIMITED</option>
+          <option value="">None</option>
+        </select>
+      </div>
+
+      <!-- Toggles row -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Show on Top Bar</label>
+          <div class="toggle-wrap">
+            <label class="toggle-switch">
+              <input type="checkbox" id="f-showOnTopBar" name="showOnTopBar">
+              <span class="toggle-slider"></span>
+            </label>
+            <span id="topbar-label" style="font-size:0.85rem; color:#6b7280;">Off</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Active</label>
+          <div class="toggle-wrap">
+            <label class="toggle-switch">
+              <input type="checkbox" id="f-isActive" name="isActive" checked>
+              <span class="toggle-slider"></span>
+            </label>
+            <span id="active-label" style="font-size:0.85rem; color:#6b7280;">On</span>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary full-width" id="form-submit-btn">
+        <i class="ph ph-floppy-disk"></i> Save Coupon
+      </button>
+    </form>
+  </div>
 </div>
 
 <script src="admin.js"></script>
 <script src="js/admin-coupons.js"></script>
-
 </body>
 </html>

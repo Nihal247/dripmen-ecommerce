@@ -545,3 +545,37 @@ export async function clearWishlistAPI() {
     return null;
   }
 }
+
+// ==========================================
+// COUPON API FUNCTIONS
+// ==========================================
+
+export async function getAvailableCouponsAPI() {
+  try {
+    const res = await fetch(`${API}/api/coupons/available`);
+    const data = await res.json();
+    return data.success ? data.coupons : [];
+  } catch (err) {
+    console.error("getAvailableCouponsAPI failed:", err);
+    return [];
+  }
+}
+
+export async function applyCouponAPI(code, cartTotal) {
+  const token = localStorage.getItem("token");
+  if (!token) return { success: false, message: "Please login to apply coupon" };
+  try {
+    const res = await fetch(`${API}/api/coupons/apply`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ code, cartTotal })
+    });
+    return res.json();
+  } catch (err) {
+    console.error("applyCouponAPI failed:", err);
+    return { success: false, message: "Failed to apply coupon" };
+  }
+}
