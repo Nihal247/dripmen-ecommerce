@@ -101,14 +101,14 @@
                     <div class="stat-icon bg-orange-light text-orange"><i class="ph ph-clock"></i></div>
                     <div class="stat-info">
                         <h3>Pending Orders</h3>
-                        <p class="stat-value">12</p>
+                        <p id="stat-pending" class="stat-value">0</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon bg-blue-light text-blue"><i class="ph ph-warning-circle"></i></div>
                     <div class="stat-info">
                         <h3>Low Stock Items</h3>
-                        <p class="stat-value">5</p>
+                        <p id="stat-lowstock" class="stat-value">0</p>
                     </div>
                 </div>
             </div>
@@ -124,7 +124,9 @@
                             <option>This Year</option>
                         </select>
                     </div>
-                    <canvas id="revenueChart"></canvas>
+                    <div class="main-chart">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
                 </div>
                 <div class="chart-card">
                     <div class="card-header">

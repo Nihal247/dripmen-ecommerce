@@ -7,7 +7,8 @@ import {
   getCartFromAPI,
   updateHeaderCounts,
   showToast,
-  openModal
+  openModal,
+  getAvailableCouponsAPI
 } from "../core.js";
 
 import { isValidEmail, isValidPhone } from "../utils/validators.js";
@@ -18,6 +19,73 @@ const API = "http://127.0.0.1:4000";
 // PAGE: CHECKOUT
 // ==========================================
 export function initCheckoutPage() {
+  let appliedCouponCode = "";
+  let discountAmount = 0;
+  let discountDisplay = ""; // e.g. "-20%" or "-$50"
+  let walletBalance = 0;
+  let currentFinalTotal = 0;
+  const token = localStorage.getItem("token");
+
+  // DOM Elements
+  const promoInput     = document.getElementById("checkout-promo-input");
+  const promoMsg       = document.getElementById("checkout-promo-message");
+  const applyBtn       = document.getElementById("checkout-apply-promo");
+  const appliedCard    = document.getElementById("applied-promo-card");
+  const inputContainer = document.getElementById("promo-input-container");
+  const cardCode       = document.getElementById("applied-promo-code-text");
+  const cardDesc       = document.getElementById("applied-promo-desc-text");
+
+  // ── fetch wallet balance ─────────────────
+  async function fetchWalletBalance() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API}/api/wallet`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        walletBalance = data.wallet.balance;
+        updateWalletUI();
+      }
+    } catch (err) {
+      console.error("Failed to fetch wallet balance", err);
+    }
+  }
+
+  function updateWalletUI() {
+    const balanceEl = document.getElementById("wallet-balance-amount");
+    const warningEl = document.getElementById("wallet-insufficient-msg");
+    if (balanceEl) balanceEl.textContent = `$${walletBalance.toFixed(2)}`;
+    
+    checkWalletViability();
+  }
+
+  function checkWalletViability() {
+    const paymentMethodInput = document.querySelector('input[name="payment_method"]:checked');
+    const warningEl = document.getElementById("wallet-insufficient-msg");
+    const placeOrderBtn = document.getElementById("place-order-btn-modern");
+
+    if (paymentMethodInput?.value === "wallet") {
+      if (walletBalance < currentFinalTotal) {
+        if (warningEl) warningEl.style.display = "inline";
+        if (placeOrderBtn) placeOrderBtn.disabled = true;
+        if (placeOrderBtn) placeOrderBtn.style.opacity = "0.5";
+      } else {
+        if (warningEl) warningEl.style.display = "none";
+        if (placeOrderBtn) placeOrderBtn.disabled = false;
+        if (placeOrderBtn) placeOrderBtn.style.opacity = "1";
+      }
+    } else {
+      // If not wallet, enable button (assuming other methods are always viable)
+      if (warningEl) warningEl.style.display = "none";
+      if (placeOrderBtn) {
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.style.opacity = "1";
+      }
+    }
+  }
 
   // ── calculate totals ─────────────────────
   async function calculateTotals() {
@@ -44,13 +112,31 @@ export function initCheckoutPage() {
     }, 0);
 
     const delivery = subtotal >= 200 ? 0 : 20;
+    const finalTotal = subtotal + delivery - discountAmount;
 
     document.getElementById("checkout-subtotal").textContent =
       `$${subtotal}`;
+    
+    // Update Discount Row
+    const discountRow     = document.getElementById("checkout-discount-row");
+    const discountEl      = document.getElementById("checkout-discount");
+    const discountPercEl  = document.getElementById("checkout-discount-percent");
+
+    if (discountRow && discountAmount > 0) {
+      discountRow.style.display = "flex";
+      if (discountEl) discountEl.textContent = `-$${discountAmount}`;
+      if (discountPercEl) discountPercEl.textContent = discountDisplay;
+    } else if (discountRow) {
+      discountRow.style.display = "none";
+    }
+
     document.getElementById("checkout-delivery").textContent =
       delivery === 0 ? "Free" : `$${delivery}`;
     document.getElementById("checkout-total").textContent =
-      `$${subtotal + delivery}`;
+      `$${finalTotal}`;
+    
+    currentFinalTotal = finalTotal;
+    checkWalletViability();
   }
 
   // ── address management ───────────────────
@@ -127,6 +213,183 @@ export function initCheckoutPage() {
     });
   }
 
+  async function applyCheckoutCoupon(code) {
+    if (!token) {
+      showToast("Please login to apply coupons", "error");
+      return;
+    }
+
+    if (applyBtn) {
+      applyBtn.textContent = "Applying...";
+      applyBtn.disabled = true;
+    }
+
+    try {
+      // Recalculate subtotal for the request
+      let cart = [];
+      const buyNowStr = localStorage.getItem("dripmen_buy_now_item");
+      if (buyNowStr) {
+        cart = [JSON.parse(buyNowStr)];
+      } else {
+        cart = token ? await getCartFromAPI() : getCart();
+      }
+
+      const subtotal = cart.reduce((sum, item) => {
+        const price = item.product?.price || item.price || 0;
+        return sum + (price * (item.quantity || 1));
+      }, 0);
+
+      const res = await fetch(`${API}/api/coupons/apply`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ code, cartTotal: subtotal })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        appliedCouponCode = data.couponCode;
+        discountAmount = data.discount;
+        discountDisplay = data.discountType === "percentage" 
+          ? `-${data.discountValue}%` 
+          : `-$${data.discountValue}`;
+
+        // PERSIST FOR THE SESSION
+        localStorage.setItem("dripmen_applied_coupon", data.couponCode);
+
+        if (appliedCard && inputContainer) {
+          appliedCard.style.display = "flex";
+          inputContainer.style.display = "none";
+          if (cardCode) cardCode.textContent = data.couponCode;
+          if (cardDesc) cardDesc.textContent = `${data.discountType === 'percentage' ? data.discountValue + '%' : '$' + data.discountValue} Discount Applied`;
+        }
+
+        showToast(`Coupon "${data.couponCode}" applied!`, "success");
+        if (promoMsg) {
+          promoMsg.textContent = "";
+          promoMsg.className = "promo-message success";
+        }
+        calculateTotals();
+        loadAvailableCheckoutCoupons(); // Refresh the list checkmarks
+      } else {
+        showToast(data.message, "error");
+        if (promoMsg) {
+          promoMsg.textContent = data.message;
+          promoMsg.className = "promo-message error";
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to apply coupon", "error");
+    } finally {
+      if (applyBtn) {
+        applyBtn.textContent = "Apply";
+        applyBtn.disabled = false;
+      }
+    }
+  }
+  if (applyBtn) {
+    applyBtn.addEventListener("click", () => {
+      const promoInput = document.getElementById("checkout-promo-input");
+      const code = promoInput?.value.trim().toUpperCase();
+      if (!code) {
+        showToast("Please enter a coupon code", "error");
+        return;
+      }
+      applyCheckoutCoupon(code);
+    });
+  }
+
+  // ── available coupons logic ──────────────
+  async function loadAvailableCheckoutCoupons() {
+    const section = document.getElementById("checkout-available-coupons-section");
+    const list    = document.getElementById("checkout-available-coupons-list");
+    if (!section || !list) return;
+
+    const coupons = await getAvailableCouponsAPI();
+    if (!coupons.length) { section.style.display = "none"; return; }
+
+    section.style.display = "block";
+
+    const tagMeta = {
+      HOT:     { bg: "#FF4D4D", glow: "rgba(255,77,77,0.35)" },
+      NEW:     { bg: "#6C63FF", glow: "rgba(108,99,255,0.35)" },
+      LIMITED: { bg: "#F59E0B", glow: "rgba(245,158,11,0.35)" },
+    };
+
+    list.innerHTML = coupons.map(c => {
+      const discountText = c.discountType === "percentage"
+        ? `${c.discountValue}% OFF`
+        : `$${c.discountValue} OFF`;
+
+      const minText = c.minPurchase > 0
+        ? `Min order: $${c.minPurchase}`
+        : "No minimum order";
+
+      const expiry = new Date(c.expiryDate).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric"
+      });
+
+      const tm = tagMeta[c.tag];
+      const tagBadge = (c.tag && tm)
+        ? `<span class="coupon-tag-badge" style="background:${tm.bg};box-shadow:0 0 8px ${tm.glow};">${c.tag}</span>`
+        : "";
+
+      const isApplied = appliedCouponCode === c.code;
+
+      return `
+        <div class="coupon-card ${isApplied ? "coupon-card--applied" : ""}" data-code="${c.code}">
+          <div class="coupon-card-left">
+            <div class="coupon-code-row">
+              ${tagBadge}
+              <span class="coupon-code-text">${c.code}</span>
+              <button class="coupon-copy-btn" title="Copy code" data-copy="${c.code}">
+                <i class="ph ph-copy"></i>
+              </button>
+            </div>
+            <p class="coupon-desc">${minText} &bull; Expires ${expiry}</p>
+          </div>
+          <div class="coupon-card-right">
+            <span class="coupon-discount-badge">${discountText}</span>
+            <button class="coupon-apply-btn btn btn-primary ${isApplied ? "coupon-applied-btn" : ""}"
+                    data-code="${c.code}">
+              ${isApplied ? '<i class="ph ph-check"></i> Applied' : "Apply"}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // ── remove coupon ────────────────────────
+  const removePromoBtn = document.getElementById("checkout-remove-promo");
+  if (removePromoBtn) {
+    removePromoBtn.addEventListener("click", () => {
+      appliedCouponCode = "";
+      discountAmount = 0;
+      discountDisplay = "";
+      localStorage.removeItem("dripmen_applied_coupon");
+
+      const appliedCard    = document.getElementById("applied-promo-card");
+      const inputContainer = document.getElementById("promo-input-container");
+      
+      if (appliedCard && inputContainer) {
+        appliedCard.style.display = "none";
+        inputContainer.style.display = "flex";
+      }
+
+      if (promoInput) promoInput.value = "";
+      if (inputContainer) inputContainer.style.display = "flex";
+      
+      calculateTotals();
+      loadAvailableCheckoutCoupons(); // Reset checkmarks in available list
+      showToast("Coupon removed", "info");
+    });
+  }
+
   // ── place order button ───────────────────
   const placeOrderBtn = document.getElementById("place-order-btn-modern");
 
@@ -193,6 +456,7 @@ export function initCheckoutPage() {
               country: "India"
             },
             paymentMethod,
+            couponCode: appliedCouponCode,
             // 🚀 Pass Buy Now items if they exist
             items: localStorage.getItem("dripmen_buy_now_item") 
               ? [JSON.parse(localStorage.getItem("dripmen_buy_now_item"))]
@@ -208,6 +472,12 @@ export function initCheckoutPage() {
         }
 
         const orderId = orderData.order._id;
+
+        // 💰 WALLET PAYMENT (NEW)
+        if (paymentMethod === "wallet") {
+          showSuccessModal(orderId);
+          return;
+        }
 
         // 💵 COD
         if (paymentMethod === "cod") {
@@ -283,8 +553,9 @@ export function initCheckoutPage() {
   function showSuccessModal(orderId) {
     saveCart([]);
     updateHeaderCounts();
-    // 🧹 Clear Buy Now context
+    // 🧹 Clear navigation contexts
     localStorage.removeItem("dripmen_buy_now_item");
+    localStorage.removeItem("dripmen_applied_coupon");
 
     // Populate Modal
     const idEl    = document.getElementById("success-order-id");
@@ -314,5 +585,53 @@ export function initCheckoutPage() {
   }
 
   // ── init ─────────────────────────────────
+  renderCheckoutAddresses();
   calculateTotals();
+  fetchWalletBalance();
+  loadAvailableCheckoutCoupons();
+
+  // 🔄 Auto-apply saved coupon if any
+  const savedCoupon = localStorage.getItem("dripmen_applied_coupon");
+  if (savedCoupon) {
+    applyCheckoutCoupon(savedCoupon);
+  }
+
+  // ── payment method change listener ──────
+  document.querySelectorAll('input[name="payment_method"]').forEach(input => {
+    input.addEventListener("change", () => {
+      // Manage active class visually
+      document.querySelectorAll(".payment-option-modern").forEach(opt => opt.classList.remove("active"));
+      input.closest(".payment-option-modern")?.classList.add("active");
+      
+      checkWalletViability();
+    });
+  });
+
+  // ── copy & apply in list logic ──────────
+  document.addEventListener("click", async (e) => {
+    // Copy code logic
+    const copyBtn = e.target.closest(".coupon-copy-btn");
+    if (copyBtn) {
+      const code = copyBtn.dataset.copy;
+      try {
+        await navigator.clipboard.writeText(code);
+        const icon = copyBtn.querySelector("i");
+        if (icon) { icon.className = "ph ph-check"; setTimeout(() => { icon.className = "ph ph-copy"; }, 1500); }
+        showToast(`Copied "${code}" to clipboard!`);
+      } catch {
+        showToast("Failed to copy", "error");
+      }
+      return;
+    }
+
+    // Apply from card logic
+    const applyCardBtn = e.target.closest(".coupon-apply-btn");
+    if (applyCardBtn && !applyCardBtn.classList.contains("coupon-applied-btn")) {
+      const code = applyCardBtn.dataset.code;
+      const promoInput = document.getElementById("checkout-promo-input");
+      if (promoInput) promoInput.value = code;
+      await applyCheckoutCoupon(code);
+      return;
+    }
+  });
 }

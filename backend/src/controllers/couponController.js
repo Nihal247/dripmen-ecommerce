@@ -99,7 +99,9 @@ export const applyCoupon = async (req, res) => {
       success: true,
       discount: Math.round(discount),
       finalTotal: Math.round(cartTotal - discount),
-      couponCode: coupon.code
+      couponCode: coupon.code,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

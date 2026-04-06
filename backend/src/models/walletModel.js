@@ -5,11 +5,11 @@ const transactionSchema = new mongoose.Schema({
   type:   { type: String, enum: ["credit", "debit"], required: true },
   description: { type: String, required: true },
   orderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
-  date:   { type: Date, default: Date.now }
-}, { _id: false });
+  createdAt: { type: Date, default: Date.now }
+});
 
 const walletSchema = new mongoose.Schema({
-  user: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,

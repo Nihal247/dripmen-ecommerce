@@ -244,8 +244,30 @@ export function initCartPage() {
     if (applyBtn) { applyBtn.disabled = false; applyBtn.classList.remove("loading"); }
 
     if (data.success) {
-      appliedCoupon = { code: data.couponCode, discount: data.discount };
-      if (msg) { msg.textContent = `✅ "${data.couponCode}" applied — $${data.discount} saved!`; msg.className = "promo-message success"; }
+      appliedCoupon = { 
+        code: data.couponCode, 
+        discount: data.discount,
+        discountType: data.discountType,
+        discountValue: data.discountValue
+      };
+      
+      // PERSIST FOR CHECKOUT
+      localStorage.setItem("dripmen_applied_coupon", data.couponCode);
+
+      // Show Applied Card, Hide Input
+      const appliedCard    = document.getElementById("applied-promo-card");
+      const inputContainer = document.getElementById("promo-input-container");
+      const cardCode       = document.getElementById("applied-promo-code-text");
+      const cardDesc       = document.getElementById("applied-promo-desc-text");
+
+      if (appliedCard && inputContainer) {
+        appliedCard.style.display = "flex";
+        inputContainer.style.display = "none";
+        if (cardCode) cardCode.textContent = data.couponCode;
+        if (cardDesc) cardDesc.textContent = `${data.discountType === 'percentage' ? data.discountValue + '%' : '$' + data.discountValue} Discount Applied`;
+      }
+
+      if (msg) { msg.textContent = ""; msg.className = "promo-message success"; }
       if (promoInput) promoInput.value = data.couponCode;
       showToast(`Coupon ${data.couponCode} applied! 🎉`);
       updateSummary(cart);
@@ -254,6 +276,32 @@ export function initCartPage() {
       if (msg) { msg.textContent = data.message || "Invalid coupon"; msg.className = "promo-message error"; }
       showToast(data.message || "Invalid coupon", "error");
     }
+  }
+
+  // ── remove coupon ────────────────────────
+  async function removeAppliedCoupon() {
+    appliedCoupon = null;
+    localStorage.removeItem("dripmen_applied_coupon");
+    
+    const appliedCard    = document.getElementById("applied-promo-card");
+    const inputContainer = document.getElementById("promo-input-container");
+    const promoInput     = document.getElementById("promo-input");
+    const msg            = document.getElementById("promo-message");
+
+    if (appliedCard && inputContainer) {
+      appliedCard.style.display = "none";
+      inputContainer.style.display = "flex";
+    }
+
+    if (promoInput) promoInput.value = "";
+    if (msg) { msg.textContent = ""; msg.className = "promo-message"; }
+
+    const token = localStorage.getItem("token");
+    const cart = token ? await getCartFromAPI() : getCart();
+    
+    updateSummary(cart);
+    loadAvailableCoupons();
+    showToast("Coupon removed", "info");
   }
 
   // ── click handler ────────────────────────
@@ -360,10 +408,23 @@ export function initCartPage() {
       await applyPromoCode(code);
       return;
     }
+
+    // Remove promo from cart card
+    const removeBtn = e.target.closest("#cart-remove-promo");
+    if (removeBtn) {
+      await removeAppliedCoupon();
+      return;
+    }
   });
 
   // ── init ─────────────────────────────────
   renderCart();
+
+  // 🔄 Auto-apply saved coupon if any
+  const savedCoupon = localStorage.getItem("dripmen_applied_coupon");
+  if (savedCoupon) {
+    applyPromoCode(savedCoupon);
+  }
 
   // ── checkout buttons ─────────────────────
   const checkoutBtn = document.getElementById("go-checkout-btn");

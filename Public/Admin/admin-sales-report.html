@@ -39,8 +39,8 @@
                     <h2 class="page-title">Sales Report</h2>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-outline"><i class="ph ph-download-simple"></i> Download PDF</button>
-                    <button class="btn btn-primary"><i class="ph ph-file-xls"></i> Export Excel</button>
+                    <button id="downloadPDF" class="btn btn-outline"><i class="ph ph-download-simple"></i> Download PDF</button>
+                    <button id="downloadExcel" class="btn btn-primary"><i class="ph ph-file-xls"></i> Export Excel</button>
                 </div>
             </header>
 
@@ -48,22 +48,22 @@
                 <div class="filters" style="flex-wrap: wrap; align-items: flex-end; width: 100%;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Start Date</label>
-                        <input type="date" class="form-input" style="height: 42px; padding: 0 1rem;">
+                        <input type="date" id="startDate" class="form-input" style="height: 42px; padding: 0 1rem;">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">End Date</label>
-                        <input type="date" class="form-input" style="height: 42px; padding: 0 1rem;">
+                        <input type="date" id="endDate" class="form-input" style="height: 42px; padding: 0 1rem;">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                          <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Report Type</label>
-                        <select class="filter-select" style="height: 42px;">
-                            <option>Daily</option>
-                            <option>Weekly</option>
-                            <option>Monthly</option>
-                            <option>Yearly</option>
+                        <select id="reportType" class="filter-select" style="height: 42px;">
+                            <option value="Daily">Daily</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Yearly">Yearly</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary" style="height: 42px;">Generate Report</button>
+                    <button id="generateReport" class="btn btn-primary" style="height: 42px;">Generate Report</button>
                 </div>
             </div>
 
@@ -72,21 +72,21 @@
                     <div class="stat-icon bg-blue-light text-blue"><i class="ph ph-currency-dollar"></i></div>
                     <div class="stat-info">
                         <h3>Total Sales</h3>
-                        <p class="stat-value">$12,450</p>
+                        <p id="totalSales" class="stat-value">$0</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon bg-green-light text-green"><i class="ph ph-shopping-cart"></i></div>
                     <div class="stat-info">
                         <h3>Total Orders</h3>
-                        <p class="stat-value">154</p>
+                        <p id="totalOrders" class="stat-value">0</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon bg-orange-light text-orange"><i class="ph ph-tag"></i></div>
                     <div class="stat-info">
                         <h3>Total Discount</h3>
-                        <p class="stat-value">$1,205</p>
+                        <p id="totalDiscount" class="stat-value">$0</p>
                     </div>
                 </div>
             </div>
@@ -103,34 +103,21 @@
                                 <th>Net Sales</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Nov 12, 2023</td>
-                                <td>15</td>
-                                <td>$1,500.00</td>
-                                <td>$150.00</td>
-                                <td><strong>$1,350.00</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Nov 11, 2023</td>
-                                <td>12</td>
-                                <td>$1,200.00</td>
-                                <td>$100.00</td>
-                                <td><strong>$1,100.00</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Nov 10, 2023</td>
-                                <td>20</td>
-                                <td>$2,100.00</td>
-                                <td>$200.00</td>
-                                <td><strong>$1,900.00</strong></td>
-                            </tr>
+                        <tbody id="reportTableBody">
+                            <!-- Data will be injected here -->
                         </tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
+    
+    <!-- Libraries for Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script src="admin.js"></script>
+    <script src="js/admin-sales-report.js"></script>
 </body>
 </html>

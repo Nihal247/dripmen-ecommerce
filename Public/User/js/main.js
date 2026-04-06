@@ -10,6 +10,8 @@ import {
   checkAuth,
   addToCart,
   addToCartAPI,
+  addToWishlistAPI,
+  removeFromWishlistAPI,
   showToast,
   openModal,
   closeAllModals,
@@ -144,30 +146,46 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!activeSizeBtn) { showToast("Please select a size", "error"); return; }
 
       const size  = activeSizeBtn.dataset.size || activeSizeBtn.textContent.trim();
-      const color = "Black"; // Default for grid items if no color selection
+      const color = "Black"; // Default for grid items
       const token = localStorage.getItem("token");
 
-      if (token) {
-        // ✅ call backend API
+      if (!token) {
+        checkAuth("Please login to continue");
+        return;
+      }
+
+      if (window.wishlistAction) {
+        // 💖 WISHLIST ACTION
+        const data = await addToWishlistAPI(window.currentSelection.id, size);
+        if (data?.success) {
+          if (window.wishlistBtn) {
+            window.wishlistBtn.classList.add("active");
+            const icon = window.wishlistBtn.querySelector("i");
+            if (icon) {
+              icon.classList.remove("ph-heart");
+              icon.classList.add("ph-fill", "ph-heart");
+            }
+          }
+          showToast("Added to wishlist ❤️");
+          updateHeaderCounts();
+          closeAllModals();
+        } else {
+          showToast(data?.message || "Failed to add to wishlist", "error");
+        }
+        // Cleanup
+        window.wishlistAction = false;
+        window.wishlistBtn    = null;
+      } else {
+        // 🛒 CART ACTION
         const data = await addToCartAPI(window.currentSelection.id, 1, size, color);
         if (data?.success) {
-          const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
-          document.querySelectorAll(
-            ".cart-count, .header-cart-badge, .cart-badge"
-          ).forEach(badge => {
-            badge.textContent   = count;
-            badge.style.display = count > 0 ? "flex" : "none";
-          });
+          updateHeaderCounts();
           showToast("Added to cart 🛒");
           closeAllModals();
           setTimeout(() => showCartConfirmModal(window.currentSelection), 300);
         } else {
-          showToast("Failed to add to cart", "error");
+          showToast(data?.message || "Failed to add to cart", "error");
         }
-      } else {
-        // This case should theoretically not be hit due to checkAuth on the button click,
-        // but we'll provide a graceful redirect just in case.
-        checkAuth("Please login to add to cart");
       }
       return;
     }

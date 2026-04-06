@@ -6,7 +6,24 @@ const token = localStorage.getItem("adminToken");
 // ==============================
 document.addEventListener("DOMContentLoaded", () => {
     loadCategoryFilter();
-    loadInventory();
+    
+    // Check for query parameters e.g. ?status=low_stock
+    const urlParams  = new URLSearchParams(window.location.search);
+    const status     = urlParams.get('status') || "";
+    const search     = urlParams.get('search') || "";
+    const category   = urlParams.get('category') || "";
+
+    // Sync UI with query params if present
+    if (status) {
+        const statusSelect = document.getElementById("inventoryStatus");
+        if (statusSelect) statusSelect.value = status;
+    }
+    if (search) {
+        const searchInput = document.getElementById("inventorySearch");
+        if (searchInput) searchInput.value = search;
+    }
+
+    loadInventory(search, category, status);
     initFilters();
 });
 
@@ -56,9 +73,13 @@ function renderInventoryStats(allProducts) {
     const lowStock   = allProducts.filter(p => p.stock > 0 && p.stock < 5).length;
     const outOfStock = allProducts.filter(p => p.stock <= 0).length;
 
-    document.getElementById("total-inventory-count").textContent = totalItems;
-    document.getElementById("low-stock-count").textContent       = lowStock;
-    document.getElementById("out-of-stock-count").textContent   = outOfStock;
+    const totalCountEl = document.getElementById("total-inventory-count");
+    const lowStockEl = document.getElementById("low-stock-count");
+    const outOfStockEl = document.getElementById("out-of-stock-count");
+
+    if (totalCountEl) totalCountEl.textContent = totalItems;
+    if (lowStockEl) lowStockEl.textContent = lowStock;
+    if (outOfStockEl) outOfStockEl.textContent = outOfStock;
 }
 
 // ==============================
@@ -66,6 +87,7 @@ function renderInventoryStats(allProducts) {
 // ==============================
 function renderInventoryTable(products) {
     const tbody = document.getElementById("inventory-table-body");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     if (products.length === 0) {
@@ -145,6 +167,9 @@ async function loadCategoryFilter() {
         const data = await res.json();
         const select = document.getElementById("inventoryCategory");
         if (!select || !data.categories) return;
+
+        // Clear existing except first
+        select.innerHTML = '<option value="">All Categories</option>';
 
         data.categories.forEach(cat => {
             select.innerHTML += `<option value="${cat._id}">${cat.name}</option>`;

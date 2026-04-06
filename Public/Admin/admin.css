@@ -242,13 +242,23 @@ a.stat-card:hover {
     grid-template-columns: 2fr 1fr;
     gap: 1.5rem;
     margin-bottom: 2rem;
+    align-items: stretch;
 }
 
 .chart-card {
     background: #fff;
-    padding: 1.5rem;
+    padding: 1.25rem;
     border-radius: 16px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    height: 400px; /* FIXED HEIGHT TO PREVENT SCROLLING */
+}
+
+.main-chart {
+    flex: 1;
+    min-height: 0; /* Important for flex child with chart */
+    position: relative;
 }
 
 .card-header {
@@ -269,6 +279,25 @@ a.stat-card:hover {
     border-radius: 6px;
     font-size: 0.85rem;
     outline: none;
+    background: #fff;
+}
+
+.best-sellers-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom scrollbar for best sellers */
+.best-sellers-list::-webkit-scrollbar {
+    width: 4px;
+}
+.best-sellers-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.best-sellers-list::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 10px;
 }
 
 /* Best Sellers List */
@@ -1040,4 +1069,30 @@ input:checked + .slider:before {
 
 .close-modal-btn:hover {
     color: #f00;
+}
+
+/* =========================================================================
+   Notification Badges
+   ========================================================================= */
+.notification-badge {
+    background: #ef4444; /* Red-500 */
+    color: #ffffff !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    animation: badgePopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10;
+}
+
+@keyframes badgePopIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }

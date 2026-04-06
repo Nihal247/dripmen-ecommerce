@@ -158,9 +158,20 @@ export function getProductDataFromElement(el) {
 // WISHLIST STATE INITIALIZATION
 // ==========================================
 
-export function initializeWishlistState() {
-  const wishlist    = getWishlist();
-  const wishlistIds = new Set(wishlist.map(item => item.id));
+export async function initializeWishlistState() {
+  let wishlistIds = new Set();
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    const items = await getWishlistFromAPI();
+    items.forEach(item => {
+      const id = item.product?._id || item.product;
+      if (id) wishlistIds.add(id);
+    });
+  } else {
+    const wishlist = getWishlist();
+    wishlist.forEach(item => { if (item.id) wishlistIds.add(item.id); });
+  }
 
   document.querySelectorAll(".wishlist-btn, .wishlist-main").forEach(btn => {
     const product = getProductDataFromElement(btn);
@@ -171,6 +182,13 @@ export function initializeWishlistState() {
         icon.classList.remove("ph-heart");
         icon.classList.add("ph-fill", "ph-heart");
       }
+    } else if (product) {
+       btn.classList.remove("active");
+       const icon = btn.querySelector("i");
+       if (icon) {
+         icon.classList.remove("ph-fill", "ph-heart");
+         icon.classList.add("ph-heart");
+       }
     }
   });
 }
@@ -182,18 +200,10 @@ export async function toggleWishlist(btn) {
   const product = getProductDataFromElement(btn);
   if (!product) return;
 
-  const token = localStorage.getItem("token");
+  const isActive = btn.classList.contains("active");
 
-  // Since checkAuth passed, token MUST exist
-  // check if already in API wishlist
-  const wishlistItems = await getWishlistFromAPI();
-  const exists = wishlistItems.find(
-    item => (item.product?._id || item.product) === product.id
-  );
-
-  if (exists) {
-    // remove from API
-    await removeFromWishlistAPI(product.id);
+  // Optimistic UI for removal
+  if (isActive) {
     btn.classList.remove("active");
     const icon = btn.querySelector("i");
     if (icon) {
@@ -201,26 +211,92 @@ export async function toggleWishlist(btn) {
       icon.classList.add("ph-heart");
     }
     showToast("Removed from wishlist");
-  } else {
-    // add to API
-    await addToWishlistAPI(product.id);
+    
+    try {
+      await removeFromWishlistAPI(product.id);
+      updateHeaderCounts();
+    } catch (err) {
+      console.error("Removal failed", err);
+      // Revert if failed? Or just leave it. Usually better to stay quiet unless it's critical.
+    }
+    return;
+  }
+
+  // For addition, we might need a size if the product has sizes
+  // But first, check if it's already in wishlist just in case (though isActive check covers most)
+  let exists = false;
+  try {
+    const wishlistItems = await getWishlistFromAPI();
+    exists = wishlistItems.find(
+      item => (item.product?._id || item.product) === product.id
+    );
+  } catch (err) {
+    console.warn("Could not verify wishlist existence", err);
+  }
+
+  if (exists) {
+    // If somehow it was already in wishlist but button wasn't active
+    showToast("Already in wishlist ❤️");
     btn.classList.add("active");
     const icon = btn.querySelector("i");
     if (icon) {
       icon.classList.remove("ph-heart");
       icon.classList.add("ph-fill", "ph-heart");
     }
-    showToast("Added to wishlist ❤️");
+    return;
   }
 
-  // update badge count
-  const items = await getWishlistFromAPI();
-  document.querySelectorAll(
-    ".wishlist-count, .header-wishlist-badge, .wishlist-badge"
-  ).forEach(badge => {
-    badge.textContent   = items.length;
-    badge.style.display = items.length > 0 ? "flex" : "none";
-  });
+  // If has sizes, open modal first
+  const sizeModal = document.getElementById("size-selection-modal");
+  if (sizeModal && product.sizes && product.sizes.length > 0) {
+    window.currentSelection = product;
+    window.wishlistAction   = true;
+    window.wishlistBtn      = btn;
+
+    const imgEl   = document.getElementById("size-modal-img");
+    const nameEl  = document.getElementById("size-modal-name");
+    const priceEl = document.getElementById("size-modal-price");
+    const titleEl = sizeModal.querySelector(".modal-title");
+    const confirmBtn = document.getElementById("confirm-size-btn");
+
+    if (imgEl)   imgEl.src           = product.image;
+    if (nameEl)  nameEl.textContent  = product.name;
+    if (priceEl) priceEl.textContent = `$${product.price}`;
+    if (titleEl) titleEl.textContent = "Select Size for Wishlist";
+    if (confirmBtn) confirmBtn.textContent = "Add to Wishlist";
+
+    // Populate Sizes dynamically (reusing logic from handleGridAddToCart)
+    const sizeContainer = sizeModal.querySelector(".size-options-grid");
+    if (sizeContainer) {
+      sizeContainer.innerHTML = "";
+      const availableSizes = product.sizes.filter(s => s.stock > 0);
+      if (availableSizes.length > 0) {
+        availableSizes.forEach((s, index) => {
+          const btn = document.createElement("button");
+          btn.className = `size-btn ${index === 0 ? "active" : ""}`;
+          btn.dataset.size = s.size;
+          btn.textContent = s.size;
+          sizeContainer.appendChild(btn);
+        });
+      } else {
+        sizeContainer.innerHTML = `<p style="color:var(--danger)">No sizes in stock.</p>`;
+      }
+    }
+
+    openModal(sizeModal);
+    return;
+  }
+
+  // No sizes — add directly
+  await addToWishlistAPI(product.id);
+  btn.classList.add("active");
+  const icon = btn.querySelector("i");
+  if (icon) {
+    icon.classList.remove("ph-heart");
+    icon.classList.add("ph-fill", "ph-heart");
+  }
+  showToast("Added to wishlist ❤️");
+  updateHeaderCounts();
 }
 
 // ==========================================
@@ -497,7 +573,7 @@ export async function getWishlistFromAPI() {
   }
 }
 
-export async function addToWishlistAPI(productId) {
+export async function addToWishlistAPI(productId, size = "N/A") {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
@@ -507,7 +583,7 @@ export async function addToWishlistAPI(productId) {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ productId })
+      body: JSON.stringify({ productId, size })
     });
     return res.json();
   } catch (err) {
@@ -516,11 +592,12 @@ export async function addToWishlistAPI(productId) {
   }
 }
 
-export async function removeFromWishlistAPI(productId) {
+export async function removeFromWishlistAPI(productId, size = null) {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
-    const res = await fetch(`${API}/api/wishlist/${productId}`, {
+    const url = size ? `${API}/api/wishlist/${productId}?size=${size}` : `${API}/api/wishlist/${productId}`;
+    const res = await fetch(url, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` }
     });

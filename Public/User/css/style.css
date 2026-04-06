@@ -1402,6 +1402,102 @@
     color: #EF4444;
 }
 
+/* Applied Promo Card (New & Professional) */
+.applied-promo-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ecfdf5; /* emerald-50 */
+    border: 1px dashed #10b981; /* emerald-500 */
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideDownIn 0.4s ease-out;
+}
+
+@keyframes slideDownIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.applied-promo-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.applied-promo-icon {
+    font-size: 1.5rem;
+    color: #059669; /* emerald-600 */
+}
+
+.applied-promo-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.applied-promo-code {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #064e3b; /* emerald-900 */
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.applied-promo-desc {
+    font-size: 0.75rem;
+    color: #047857; /* emerald-700 */
+    font-weight: 600;
+}
+
+.remove-promo-btn {
+    background: #fff;
+    border: 1px solid #d1fae5;
+    color: #065f46;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.remove-promo-btn:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+    transform: rotate(90deg);
+}
+
+/* Polishing Summary Rows */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.summary-label {
+    color: var(--text-muted, #6b7280);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.summary-value {
+    font-weight: 600;
+    color: var(--text-main, #111827);
+}
+
+.total-row .summary-label {
+    font-size: 1.1rem;
+    color: var(--text-main);
+    font-weight: 700;
+}
+
 /* =========================================================================
    Available Coupons Panel
    ========================================================================= */

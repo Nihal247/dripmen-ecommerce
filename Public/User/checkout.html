@@ -127,7 +127,21 @@
                             style="font-size: 1.25rem; font-weight: 800; color: #111;">$0</span>
                     </div>
 
-                    <div class="promo-code-container">
+                    <!-- Applied Coupon Card (Hidden by default) -->
+                    <div class="applied-promo-card" id="applied-promo-card" style="display: none;">
+                        <div class="applied-promo-info">
+                            <i class="ph-fill ph-ticket applied-promo-icon"></i>
+                            <div class="applied-promo-details">
+                                <span class="applied-promo-code" id="applied-promo-code-text">FLASH50</span>
+                                <span class="applied-promo-desc" id="applied-promo-desc-text">50% Discount Applied</span>
+                            </div>
+                        </div>
+                        <button class="remove-promo-btn" id="checkout-remove-promo" title="Remove Coupon">
+                            <i class="ph ph-x"></i>
+                        </button>
+                    </div>
+
+                    <div class="promo-code-container" id="promo-input-container">
                         <div class="promo-input-group">
                             <i class="ph ph-tag promo-icon"></i>
                             <input type="text" id="checkout-promo-input" placeholder="Add coupon code">
@@ -136,16 +150,27 @@
                     </div>
                     <p class="promo-message" id="checkout-promo-message"></p>
 
+                    <!-- Available Coupons Section (New) -->
+                    <div class="available-coupons-section" id="checkout-available-coupons-section" style="display:none;">
+                        <div class="available-coupons-header">
+                            <i class="ph ph-ticket"></i>
+                            <span>Available Coupons</span>
+                        </div>
+                        <div class="available-coupons-list" id="checkout-available-coupons-list">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
                     <div class="payment-method-title">PAYMENT METHOD</div>
 
                     <div class="payment-methods-list">
                         <!-- My Wallet -->
                         <label class="payment-option-modern">
                             <div class="payment-label-wrapper">
-                                <input type="radio" name="payment_method" value="wallet" />
+                                <input type="radio" name="payment_method" value="wallet" id="payment-wallet" />
                                 <div class="payment-text-group">
                                     <span class="payment-label-text">My Wallet</span>
-                                    <span class="payment-balance-text">Balance: $0.00 <span class="text-red">(Insufficient)</span></span>
+                                    <span class="payment-balance-text">Balance: <span id="wallet-balance-amount">$0.00</span> <span class="text-red" id="wallet-insufficient-msg" style="display: none;">(Insufficient)</span></span>
                                 </div>
                             </div>
                             <i class="ph-fill ph-wallet payment-icon-modern"></i>

@@ -1,7 +1,8 @@
 import Order from "../models/orderModel.js";
 import Cart  from "../models/cartModel.js";
 import Product from "../models/Product.js";
-import { addMoneyToWallet } from "./walletController.js";
+import Coupon from "../models/couponModel.js";
+import { addMoneyToWallet, deductMoneyFromWallet } from "./walletController.js";
 import Razorpay from "razorpay";
 
 const razorpay = new Razorpay({
@@ -93,8 +94,28 @@ export const placeOrder = async (req, res) => {
     // calculate totals
     const subtotal       = orderItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
     const deliveryCharge = subtotal >= 200 ? 0 : 20;
-    const discount       = couponCode === "DRIP20" ? Math.round(subtotal * 0.2) : 0;
-    const total          = subtotal + deliveryCharge - discount;
+    
+    let discount = 0;
+    let appliedCoupon = null;
+
+    if (couponCode) {
+      const coupon = await Coupon.findOne({
+        code: couponCode.toUpperCase(),
+        isActive: true,
+        expiryDate: { $gt: new Date() }
+      });
+
+      if (coupon && subtotal >= coupon.minPurchase) {
+        if (coupon.discountType === "percentage") {
+          discount = Math.round((subtotal * coupon.discountValue) / 100);
+        } else {
+          discount = coupon.discountValue;
+        }
+        appliedCoupon = coupon.code;
+      }
+    }
+
+    const total = subtotal + deliveryCharge - discount;
 
     // create order
     const order = await Order.create({
@@ -111,6 +132,33 @@ export const placeOrder = async (req, res) => {
       total,
       notes: notes || ""
     });
+
+    // 💰 WALLET LOGIC
+    if (paymentMethod.toLowerCase() === "wallet") {
+      try {
+        await deductMoneyFromWallet(
+          userId,
+          total,
+          `Order Payment #${order._id.toString().slice(-6).toUpperCase()}`,
+          order._id
+        );
+        order.paymentStatus = "confirmed";
+        await order.save();
+      } catch (err) {
+        // Rollback stock if wallet payment fails
+        for (const item of orderItems) {
+          const product = await Product.findById(item.product);
+          if (product) {
+            const sizeObj = product.sizes.find(s => s.size === item.size);
+            if (sizeObj) sizeObj.stock += item.quantity;
+            product.stock += item.quantity;
+            await product.save();
+          }
+        }
+        await Order.findByIdAndDelete(order._id);
+        return res.status(400).json({ success: false, message: err.message });
+      }
+    }
 
     // 🧹 CLEANUP: Clear cart ONLY if checking out from cart
     if (!customItems || customItems.length === 0) {

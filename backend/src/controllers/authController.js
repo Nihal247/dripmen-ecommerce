@@ -3,6 +3,7 @@
 // ==============================
 import User from "../models/userModel.js";
 import OTP from "../models/otpModel.js";
+import Wallet from "../models/walletModel.js";
 import generateToken from "../utils/generateToken.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -104,6 +105,7 @@ export const verifySignupOtp = async (req, res) => {
     }
 
     const user = await User.create({ name, email, password });
+    await Wallet.create({ userId: user._id, balance: 0, transactions: [] });
     await OTP.deleteMany({ email });
 
     res.status(200).json({

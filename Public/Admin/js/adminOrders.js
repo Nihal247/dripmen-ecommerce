@@ -226,5 +226,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // load orders
-  loadAdminOrders();
+  const urlParams = new URLSearchParams(window.location.search);
+  const statusParam = urlParams.get('status');
+  
+  if (statusParam) {
+    currentFilter = statusParam;
+    // Update active button UI
+    document.querySelectorAll(".filters .btn").forEach(btn => {
+      const btnText = btn.textContent.trim().toLowerCase();
+      if (btnText === statusParam.toLowerCase()) {
+        document.querySelectorAll(".filters .btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+    });
+  }
+
+  loadAdminOrders(currentFilter, currentSearch);
 });

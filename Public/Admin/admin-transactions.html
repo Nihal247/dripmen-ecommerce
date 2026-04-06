@@ -53,37 +53,15 @@
                                 <th>Date</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>#TRX-9823</td>
-                                <td>John Doe</td>
-                                <td>$120.50</td>
-                                <td><span class="status-badge status-active">Credit</span></td>
-                                <td><span class="status-badge status-completed">Completed</span></td>
-                                <td>Nov 10, 2023</td>
-                            </tr>
-                            <tr>
-                                <td>#TRX-9822</td>
-                                <td>Jane Smith</td>
-                                <td>$45.00</td>
-                                <td><span class="status-badge status-blocked">Debit</span></td>
-                                <td><span class="status-badge status-completed">Completed</span></td>
-                                <td>Nov 09, 2023</td>
-                            </tr>
-                            <tr>
-                                <td>#TRX-9821</td>
-                                <td>Mike Ross</td>
-                                <td>$200.00</td>
-                                <td><span class="status-badge status-active">Credit</span></td>
-                                <td><span class="status-badge status-pending">Pending</span></td>
-                                <td>Nov 08, 2023</td>
-                            </tr>
+                        <tbody id="transactions-body">
+                            <!-- Transactions injected via JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
+    <script src="js/admin-transactions.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>

@@ -4,7 +4,10 @@ import {
   getAllUsers,
   toggleBlockUser,
   deleteUser,
-  getDashboardStats
+  getDashboardStats,
+  getSalesReport,
+  getNotifications,
+  getAllTransactions
 } from "../controllers/adminController.js";
 
 import { protect }   from "../middleware/authMiddleware.js";
@@ -16,6 +19,9 @@ router.post("/login", adminLogin);
 
 // Dashboard
 router.get("/stats",              protect, adminOnly, getDashboardStats);
+router.get("/sales-report",       protect, adminOnly, getSalesReport);
+router.get("/notifications",      protect, adminOnly, getNotifications);
+router.get("/transactions",       protect, adminOnly, getAllTransactions);
 
 // user management
 router.get("/users",              protect, adminOnly, getAllUsers);

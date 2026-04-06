@@ -5,6 +5,10 @@ const wishlistItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
     required: true
+  },
+  size: {
+    type: String,
+    default: "N/A"
   }
 }, { _id: false });
 

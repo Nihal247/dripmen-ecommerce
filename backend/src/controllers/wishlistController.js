@@ -27,7 +27,7 @@ export const getWishlist = async (req, res) => {
 export const addToWishlist = async (req, res) => {
   try {
     const userId    = req.user.id;
-    const { productId } = req.body;
+    const { productId, size } = req.body;
 
     if (!productId) {
       return res.status(400).json({ message: "Product ID is required" });
@@ -45,12 +45,12 @@ export const addToWishlist = async (req, res) => {
       // create new wishlist
       wishlist = new Wishlist({
         user:  userId,
-        items: [{ product: productId }]
+        items: [{ product: productId, size: size || "N/A" }]
       });
     } else {
       // check if already in wishlist
       const exists = wishlist.items.find(
-        item => item.product.toString() === productId
+        item => item.product.toString() === productId && item.size === (size || "N/A")
       );
 
       if (exists) {
@@ -61,7 +61,7 @@ export const addToWishlist = async (req, res) => {
         });
       }
 
-      wishlist.items.push({ product: productId });
+      wishlist.items.push({ product: productId, size: size || "N/A" });
     }
 
     await wishlist.save();
@@ -85,6 +85,7 @@ export const removeFromWishlist = async (req, res) => {
   try {
     const userId    = req.user.id;
     const { productId } = req.params;
+    const { size } = req.query; // optional size filter
 
     const wishlist = await Wishlist.findOne({ user: userId });
 
@@ -92,9 +93,15 @@ export const removeFromWishlist = async (req, res) => {
       return res.status(404).json({ message: "Wishlist not found" });
     }
 
-    wishlist.items = wishlist.items.filter(
-      item => item.product.toString() !== productId
-    );
+    if (size && size !== "all") {
+      wishlist.items = wishlist.items.filter(
+        item => !(item.product.toString() === productId && item.size === size)
+      );
+    } else {
+      wishlist.items = wishlist.items.filter(
+        item => item.product.toString() !== productId
+      );
+    }
 
     await wishlist.save();
     await wishlist.populate("items.product");

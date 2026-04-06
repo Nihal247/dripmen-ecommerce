@@ -70,6 +70,7 @@ export function initWishlistPage() {
           data-name="${name}"
           data-price="${price}"
           data-image="${image}"
+          data-size="${item.size || "N/A"}"
           data-sizes="${encodeURIComponent(JSON.stringify(item.product?.sizes || item.sizes || []))}"
           style="border:none;background:transparent;padding:0;">
 
@@ -100,6 +101,9 @@ export function initWishlistPage() {
             <div class="price-container" style="display:flex;align-items:center;gap:0.75rem;">
               <span class="product-price" style="font-size:1.4rem;font-weight:800;color:var(--text-main);">
                 $${price}
+              </span>
+              <span class="selected-size" style="font-size:0.8rem; font-weight:600; color:var(--text-muted); background:var(--bg-card); padding:2px 8px; border-radius:4px;">
+                Size: ${item.size || "N/A"}
               </span>
             </div>
 
@@ -137,8 +141,11 @@ export function initWishlistPage() {
       const productId = removeBtn.dataset.id;
       const token     = localStorage.getItem("token");
 
+      const card      = removeBtn.closest(".product-card");
+      const savedSize = card?.dataset.size || "N/A";
+
       if (token && productId) {
-        await removeFromWishlistAPI(productId);
+        await removeFromWishlistAPI(productId, savedSize);
         const items = await getWishlistFromAPI();
         render(items);
         updateWishlistBadge(items.length);
@@ -167,25 +174,28 @@ export function initWishlistPage() {
       addBtn.disabled    = true;
 
       // Since checkAuth passed, token & productId MUST exist for a professional flow
-      const data = await addToCartAPI(productId, 1);
-      if (data?.success) {
-        // 🚀 PROFESSIONAL FIX: Remove from wishlist after moving to cart
-        await removeFromWishlistAPI(productId);
+        // check if item has a size
+        const card      = addBtn.closest(".product-card");
+        const savedSize = card?.dataset.size || "N/A";
         
-        const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
-        updateCartBadge(count);
-        
-        // Refresh wishlist display
-        const items = await getWishlistFromAPI();
-        render(items);
-        updateWishlistBadge(items.length);
-        
-        showToast("Moved to cart 🛒");
-      } else {
-        showToast("Failed to move to cart", "error");
-        addBtn.textContent = "Add to Cart";
-        addBtn.disabled    = false;
-      }
+        const data = await addToCartAPI(productId, 1, savedSize);
+        if (data?.success) {
+          // 🚀 Remove specific item from wishlist after moving
+          await removeFromWishlistAPI(productId, savedSize); 
+          
+          const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+          updateCartBadge(count);
+          
+          const items = await getWishlistFromAPI();
+          render(items);
+          updateWishlistBadge(items.length);
+          
+          showToast(`Moved to cart (Size: ${savedSize}) 🛒`);
+        } else {
+          showToast(data?.message || "Failed to move to cart", "error");
+          addBtn.textContent = "Add to Cart";
+          addBtn.disabled    = false;
+        }
       return;
     }
   });

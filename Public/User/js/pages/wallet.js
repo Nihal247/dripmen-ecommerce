@@ -49,7 +49,7 @@ function renderWallet(wallet) {
 
     wallet.transactions.reverse().forEach(trx => {
         const iconClass = trx.type === "credit" ? "ph-trend-up" : "ph-trend-down";
-        const dateStr = new Date(trx.date).toLocaleDateString("en-IN", {
+        const dateStr = new Date(trx.createdAt).toLocaleDateString("en-IN", {
             day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
         });
 
@@ -90,7 +90,7 @@ function initTopupLogic() {
 
         try {
             // 1. Create Topup Order
-            const res = await fetch(`${API_BASE}/api/wallet/topup`, {
+            const res = await fetch(`${API_BASE}/api/wallet/add-money`, {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
@@ -129,7 +129,7 @@ function initTopupLogic() {
 
 async function verifyTopup(rzpResponse, amount) {
     try {
-        const res = await fetch(`${API_BASE}/api/wallet/verify`, {
+        const res = await fetch(`${API_BASE}/api/wallet/verify-payment`, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
