@@ -107,9 +107,43 @@ export function initCheckoutPage() {
     }
 
     const subtotal = cart.reduce((sum, item) => {
-      const price = item.product?.price || item.price || 0;
+      const originalPrice = item.product?.price || item.price || 0;
+      const salePrice     = item.product?.salePrice || null;
+      const price         = salePrice || originalPrice;
       return sum + (price * (item.quantity || 1));
     }, 0);
+
+    // Render Items Summary
+    const itemsList = document.getElementById("checkout-items-list");
+    if (itemsList) {
+      itemsList.innerHTML = cart.map(item => {
+        const originalPrice = item.product?.price || item.price || 0;
+        const salePrice     = item.product?.salePrice || null;
+        const currentPrice  = salePrice || originalPrice;
+        const qty           = item.quantity || 1;
+        const lineTotal     = currentPrice * qty;
+        const image         = item.product?.images?.[0] || item.image || "";
+
+        const priceHTML = salePrice 
+          ? `<span style="font-weight:600; color:#111;">$${salePrice}</span>
+             <span style="text-decoration:line-through; color:#888; font-size:0.75rem; margin-left:4px;">$${originalPrice}</span>`
+          : `<span style="font-weight:600; color:#111;">$${originalPrice}</span>`;
+
+        return `
+          <div class="checkout-item-mini" style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:1rem;">
+            <img src="${image}" style="width:50px; height:50px; border-radius:6px; object-fit:cover; border:1px solid #eee;">
+            <div style="flex:1;">
+              <h4 style="font-size:0.9rem; font-weight:600; margin-bottom:2px; color:#111;">${item.product?.name || item.name}</h4>
+              <p style="font-size:0.75rem; color:#666;">Size: ${item.size || "S"} | Qty: ${qty}</p>
+              <div style="margin-top:4px;">
+                ${priceHTML}
+                <div style="font-size:0.75rem; color:#888; margin-top:2px;">Total: <strong>$${lineTotal}</strong></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
 
     const delivery = subtotal >= 200 ? 0 : 20;
     const finalTotal = subtotal + delivery - discountAmount;
@@ -235,7 +269,9 @@ export function initCheckoutPage() {
       }
 
       const subtotal = cart.reduce((sum, item) => {
-        const price = item.product?.price || item.price || 0;
+        const originalPrice = item.product?.price || item.price || 0;
+        const salePrice     = item.product?.salePrice || null;
+        const price         = salePrice || originalPrice;
         return sum + (price * (item.quantity || 1));
       }, 0);
 

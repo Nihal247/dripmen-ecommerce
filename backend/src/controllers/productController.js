@@ -16,6 +16,18 @@ export const createProduct = async (req, res) => {
       });
     }
 
+    if (Number(price) <= 0) {
+      return res.status(400).json({ success: false, message: "Price must be greater than zero" });
+    }
+
+    if (salePrice && Number(salePrice) < 0) {
+      return res.status(400).json({ success: false, message: "Sale price cannot be negative" });
+    }
+
+    if (stock && Number(stock) < 0) {
+      return res.status(400).json({ success: false, message: "Stock cannot be negative" });
+    }
+
     const images = req.files ? req.files.map((f) => f.path) : [];
 
     // Parse section safely
@@ -203,6 +215,18 @@ export const updateProduct = async (req, res) => {
         success: false,
         message: "Product not found",
       });
+    }
+
+    if (price && Number(price) <= 0) {
+      return res.status(400).json({ success: false, message: "Price must be greater than zero" });
+    }
+
+    if (salePrice !== undefined && salePrice !== null && Number(salePrice) < 0) {
+      return res.status(400).json({ success: false, message: "Sale price cannot be negative" });
+    }
+
+    if (stock !== undefined && Number(stock) < 0) {
+      return res.status(400).json({ success: false, message: "Stock cannot be negative" });
     }
 
     if (req.files && req.files.length > 0) {

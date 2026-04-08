@@ -3,12 +3,12 @@ import {
   placeOrder,
   getMyOrders,
   getOrderById,
-  cancelOrder,
+  cancelOrderItem,
   getAllOrders,
   updateOrderStatus,
-  requestReturn,
-  approveReturn,
-  rejectReturn
+  requestReturnItem,
+  approveReturnItem,
+  rejectReturnItem
 } from "../controllers/orderController.js";
 
 import { protect }   from "../middleware/authMiddleware.js";
@@ -19,15 +19,18 @@ const router = express.Router();
 // user routes
 router.post("/",          protect, placeOrder);
 router.get("/my-orders",  protect, getMyOrders);
-
 router.get("/:id",        protect, getOrderById);
-router.patch("/:id/return", protect, requestReturn);
-router.put("/:id/cancel", protect, cancelOrder);
+
+// Item-level actions (User)
+router.post("/cancel-item", protect, cancelOrderItem);
+router.post("/return-item-request", protect, requestReturnItem);
 
 // admin routes
 router.get("/admin/all",        protect, adminOnly, getAllOrders);
 router.put("/admin/:id/status", protect, adminOnly, updateOrderStatus);
-router.patch("/admin/:id/approve-return", protect, adminOnly, approveReturn);
-router.patch("/admin/:id/reject-return", protect, adminOnly, rejectReturn);
+
+// Item-level actions (Admin)
+router.post("/admin/approve-return-item", protect, adminOnly, approveReturnItem);
+router.post("/admin/reject-return-item",  protect, adminOnly, rejectReturnItem);
 
 export default router;

@@ -54,17 +54,26 @@ export function initCartPage() {
       const prodId = item.product?._id || item.id    || "";
       
       const name  = item.product?.name   || item.name  || "Unknown Product";
-      const price = item.product?.price  || item.price || 0;
       const image = item.product?.images?.[0] || item.image || "";
       const qty   = item.quantity || 1;
       const size  = item.size  || "N/A";
       const color = item.color || "Black";
       const stock = item.product?.stock || 0;
 
+      const originalPrice = item.product?.price || item.price || 0;
+      const salePrice     = item.product?.salePrice || null;
+      const currentPrice  = salePrice || originalPrice;
+      const lineTotal     = currentPrice * qty;
+
       if (!prodId) return "";
 
       const isMaxReached   = qty >= MAX_LIMIT_PER_ITEM;
       const isStockReached = qty >= stock;
+
+      const priceHTML = salePrice 
+        ? `<span class="cart-item-price-current">$${salePrice}</span>
+           <span class="cart-item-price-original" style="text-decoration:line-through; color:#888; font-size:0.85rem; margin-left:5px;">$${originalPrice}</span>`
+        : `<span class="cart-item-price-current">$${originalPrice}</span>`;
 
       return `
         <div class="cart-item" data-id="${itemId}" data-index="${index}">
@@ -84,7 +93,12 @@ export function initCartPage() {
               ${stock < 5 ? `<br><small style="color:var(--accent-red);font-weight:600;">Only ${stock} left in stock!</small>` : ""}
             </p>
             <div class="cart-item-actions">
-              <span class="cart-item-price">$${price}</span>
+              <div class="cart-item-pricing">
+                <div class="price-unit">${priceHTML}</div>
+                <div class="line-total" style="font-size:0.8rem; color:#666; margin-top:2px;">
+                  $${currentPrice} × ${qty} = <strong style="color:#111;">$${lineTotal}</strong>
+                </div>
+              </div>
               <div class="qty-stepper">
                 <button class="qty-change"
                         data-id="${itemId}" data-index="${index}" data-delta="-1"
@@ -113,7 +127,9 @@ export function initCartPage() {
     cart = cart || getCart();
 
     const subtotal = cart.reduce((sum, item) => {
-      const price = item.product?.price || item.price || 0;
+      const originalPrice = item.product?.price || item.price || 0;
+      const salePrice     = item.product?.salePrice || null;
+      const price         = salePrice || originalPrice;
       return sum + (price * (item.quantity || 1));
     }, 0);
 

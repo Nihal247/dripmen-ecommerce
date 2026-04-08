@@ -30,7 +30,8 @@ export const getAvailableCoupons = async (req, res) => {
   try {
     const coupons = await Coupon.find({
       isActive: true,
-      expiryDate: { $gt: Date.now() }
+      startDate: { $lte: new Date() },
+      expiryDate: { $gt: new Date() }
     }).sort({ createdAt: -1 });
     res.json({ success: true, coupons });
   } catch (error) {
@@ -71,7 +72,8 @@ export const applyCoupon = async (req, res) => {
     const coupon = await Coupon.findOne({
       code: code.toUpperCase(),
       isActive: true,
-      expiryDate: { $gt: Date.now() }
+      startDate: { $lte: new Date() },
+      expiryDate: { $gt: new Date() }
     });
 
     if (!coupon) {

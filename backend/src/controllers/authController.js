@@ -24,6 +24,13 @@ function createTransporter() {
 }
 
 // ==============================
+// ✅ REGEX VALIDATORS
+// ==============================
+const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
+
+// ==============================
 // ✅ SEND SIGNUP OTP
 // ==============================
 export const sendSignupOtp = async (req, res) => {
@@ -34,12 +41,13 @@ export const sendSignupOtp = async (req, res) => {
       return res.status(400).json({ status: "error", message: "Email is required" });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ status: "error", message: "Invalid email format" });
+    const trimmedEmail = email.trim().toLowerCase();
+
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({ status: "error", message: "Only @gmail.com addresses are allowed" });
     }
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: trimmedEmail });
     if (userExists) {
       return res.status(400).json({ status: "error", message: "Email already registered" });
     }
@@ -47,7 +55,7 @@ export const sendSignupOtp = async (req, res) => {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
     await OTP.create({
-      email,
+      email: trimmedEmail,
       otp,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
@@ -98,24 +106,40 @@ export const verifySignupOtp = async (req, res) => {
       return res.status(400).json({ status: "error", message: "All fields are required" });
     }
 
-    const otpDoc = await OTP.findOne({ email, otp });
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+
+    if (!nameRegex.test(trimmedName)) {
+      return res.status(400).json({ status: "error", message: "Name must contain only letters and single spaces (2-50 chars)" });
+    }
+
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({ status: "error", message: "Only @gmail.com addresses are allowed" });
+    }
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ status: "error", message: "Password must be at least 6 characters and include an uppercase letter, lowercase letter, number, and special character" });
+    }
+
+    const otpDoc = await OTP.findOne({ email: trimmedEmail, otp });
 
     if (!otpDoc || otpDoc.expiresAt < new Date()) {
       return res.status(400).json({ status: "error", message: "Invalid or expired OTP" });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name: trimmedName, email: trimmedEmail, password });
     await Wallet.create({ userId: user._id, balance: 0, transactions: [] });
-    await OTP.deleteMany({ email });
+    await OTP.deleteMany({ email: trimmedEmail });
 
-    res.status(200).json({
+    res.status(201).json({
       status: "success",
       token: generateToken(user._id, user.is_Admin || false),
       message: "Account created successfully",
     });
 
   } catch (error) {
-    res.status(500).json({ status: "error", message: "Signup failed" });
+    console.error("SIGNUP ERROR:", error);
+    res.status(500).json({ status: "error", message: "Signup failed. Please try again." });
   }
 };
 
@@ -124,7 +148,13 @@ export const verifySignupOtp = async (req, res) => {
 // ==============================
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Email and password are required" });
+    }
+
+    email = email.trim().toLowerCase();
 
     const user = await User.findOne({ email }).select("+password");
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -248,12 +278,37 @@ export const resetPassword = async (req, res) => {
 // UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, phone } = req.body;
+    
+    let updates = {};
+
+    if (name) {
+      const trimmedName = name.trim();
+      if (!nameRegex.test(trimmedName)) {
+        return res.status(400).json({ success: false, message: "Name must contain only letters and single spaces (2-50 chars)" });
+      }
+      updates.name = trimmedName;
+    }
+    
+    if (email) {
+      const trimmedEmail = email.trim().toLowerCase();
+      if (!emailRegex.test(trimmedEmail)) {
+        return res.status(400).json({ success: false, message: "Only @gmail.com addresses are allowed" });
+      }
+      updates.email = trimmedEmail;
+    }
+    
+    if (phone) {
+      if (!/^\+?[\d\s-]{10,15}$/.test(phone)) {
+        return res.status(400).json({ success: false, message: "Invalid phone number format" });
+      }
+      updates.phone = phone;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { name, email },
-      { new: true }
+      updates,
+      { new: true, runValidators: true }
     ).select("-password");
 
     res.json({ success: true, user });
@@ -279,6 +334,13 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Current password is incorrect"
+      });
+    }
+    
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "New password must be at least 6 characters and include an uppercase letter, lowercase letter, number, and special character" 
       });
     }
 

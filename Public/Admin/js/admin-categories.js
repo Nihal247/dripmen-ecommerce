@@ -3,15 +3,11 @@ const API_BASE = "http://127.0.0.1:4000";
 // ==============================
 // GET ADMIN TOKEN
 // ==============================
-// Why: every admin API call needs this token to prove
-// the request is coming from a logged-in admin
 const token = localStorage.getItem("adminToken");
 
 // ==============================
 // LOAD ALL CATEGORIES ON PAGE LOAD
 // ==============================
-// Why: when admin opens the page, fetch all categories
-// from database and render them as cards
 async function loadCategories() {
   try {
     const res = await fetch(`${API_BASE}/api/categories/admin`, {
@@ -35,7 +31,7 @@ async function loadCategories() {
             <h3 class="admin-card-title">${cat.name}</h3>
             <p style="color: var(--text-gray); font-size: 0.9rem;">${cat.description || ""}</p>
             <div class="admin-card-actions">
-              <button class="action-btn" onclick="openEditModal('${cat._id}', '${cat.name}', '${cat.description || ""}')">
+              <button class="action-btn" onclick="openEditModal('${cat._id}', '${cat.name}', '${cat.description || ""}', '${cat.image || ""}')">
                 <i class="ph ph-pencil-simple"></i>
               </button>
               <button 
@@ -55,8 +51,6 @@ async function loadCategories() {
 // ==============================
 // TOGGLE ENABLE / DISABLE
 // ==============================
-// Why: matches the Enable/Disable button in your HTML
-// calls the backend toggleCategoryStatus function
 async function toggleStatus(id, btn) {
   try {
     const res = await fetch(`${API_BASE}/api/categories/${id}/toggle`, {
@@ -80,23 +74,34 @@ async function toggleStatus(id, btn) {
 }
 
 // ==============================
-// ADD CATEGORY MODAL
+// MODAL CONTROLS
 // ==============================
-// Why: admin clicks "Add Category" button → modal opens
 function openAddModal() {
   document.getElementById("modalTitle").textContent = "Add Category";
-document.getElementById("catName").value = "";
-document.getElementById("catDescription").value = "";
-document.getElementById("catImage").value = "";
+  document.getElementById("catName").value = "";
+  document.getElementById("catDescription").value = "";
+  document.getElementById("catImage").value = "";
   document.getElementById("categoryId").value = "";
+  const previewDiv = document.getElementById("catImagePreview");
+  if (previewDiv) previewDiv.innerHTML = "";
   document.getElementById("categoryModal").style.display = "flex";
 }
 
-function openEditModal(id, name, description) {
+function openEditModal(id, name, description, imageUrl = "") {
   document.getElementById("modalTitle").textContent = "Edit Category";
   document.getElementById("categoryId").value = id;
   document.getElementById("catName").value = name;
-  document.getElementById("catDescription").value = description;
+  document.getElementById("catDescription").value = description || "";
+
+  const previewDiv = document.getElementById("catImagePreview");
+  if (previewDiv) {
+    if (imageUrl && imageUrl !== "undefined" && imageUrl !== "null") {
+      previewDiv.innerHTML = `<img src="${imageUrl}" style="max-width:100%; max-height:120px; border-radius:8px; border:1px solid #ddd; object-fit:cover;">`;
+    } else {
+      previewDiv.innerHTML = "";
+    }
+  }
+
   document.getElementById("categoryModal").style.display = "flex";
 }
 
@@ -107,27 +112,31 @@ function closeModal() {
 // ==============================
 // SAVE CATEGORY (Add or Edit)
 // ==============================
-// Why FormData: we're sending an image file + text together
-// JSON can't send files, only FormData can
 async function saveCategory() {
   const id = document.getElementById("categoryId").value;
-  const name = document.getElementById("catName").value;
-  const description = document.getElementById("catDescription").value;
-  const image = document.getElementById("catImage").files[0];
+  const name = document.getElementById("catName").value.trim();
+  const description = document.getElementById("catDescription").value.trim();
+  const imageInput = document.getElementById("catImage");
+  const image = imageInput.files[0];
 
-  if (!name) {
-    alert("Category name is required");
+  // Robust Name Validation
+  if (!name || name.length < 2 || name.length > 50) {
+    alert("Category name must be between 2 and 50 characters");
+    return;
+  }
+
+  // No numbers or special chars except space and hyphen
+  const nameRegex = /^[A-Za-z\s-]+$/;
+  if (!nameRegex.test(name)) {
+    alert("Category name can only contain letters, spaces, and hyphens");
     return;
   }
 
   const formData = new FormData();
-// Why toLowerCase + replace: ensures category name saved to DB
-// matches exactly what products.html uses as data-category
-formData.append("name", name.toLowerCase().replace(/\s+/g, "-"));
+  formData.append("name", name);
   formData.append("description", description);
   if (image) formData.append("image", image);
 
-  // Why check id: if id exists → it's an edit, if not → it's a create
   const url = id
     ? `${API_BASE}/api/categories/${id}`
     : `${API_BASE}/api/categories`;
@@ -137,8 +146,6 @@ formData.append("name", name.toLowerCase().replace(/\s+/g, "-"));
     const res = await fetch(url, {
       method,
       headers: { Authorization: `Bearer ${token}` },
-      // Why no Content-Type header: browser sets it automatically
-      // with the correct boundary for FormData
       body: formData,
     });
     const data = await res.json();
@@ -155,9 +162,34 @@ formData.append("name", name.toLowerCase().replace(/\s+/g, "-"));
 }
 
 // ==============================
+// LIVE IMAGE PREVIEW
+// ==============================
+const catImageInput = document.getElementById("catImage");
+if (catImageInput) {
+  catImageInput.addEventListener("change", function () {
+    const file = this.files[0];
+    const previewDiv = document.getElementById("catImagePreview");
+    if (file && previewDiv) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        previewDiv.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:120px; border-radius:8px; border:1px solid #ddd; object-fit:cover;">`;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+// ==============================
 // BIND ADD CATEGORY BUTTON
 // ==============================
-document.querySelector(".btn-primary").addEventListener("click", openAddModal);
+document.querySelector(".btn-primary")?.addEventListener("click", openAddModal);
+
+// Expose functions to window
+window.openAddModal = openAddModal;
+window.openEditModal = openEditModal;
+window.toggleStatus = toggleStatus;
+window.saveCategory = saveCategory;
+window.closeModal = closeModal;
 
 // Load categories when page opens
 loadCategories();

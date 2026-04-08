@@ -8,11 +8,23 @@ const orderItemSchema = new mongoose.Schema({
   },
   name:     { type: String, required: true },
   image:    { type: String },
-  price:    { type: Number, required: true },
+  price:    { type: Number, required: true }, // This is the price at time of purchase
   quantity: { type: Number, required: true, default: 1 },
   size:     { type: String, default: "L" },
-  color:    { type: String, default: "Black" }
-}, { _id: false });
+  color:    { type: String, default: "Black" },
+  status: {
+    type: String,
+    enum: ["processing", "confirmed", "shipped", "delivered", "cancelled", "returned"],
+    default: "processing"
+  },
+  returnStatus: {
+    type: String,
+    enum: ["none", "requested", "approved", "rejected"],
+    default: "none"
+  },
+  returnReason: { type: String },
+  refundAmount: { type: Number, default: 0 }
+}, { _id: true });
 
 const addressSchema = new mongoose.Schema({
   fullName: { type: String, required: true },

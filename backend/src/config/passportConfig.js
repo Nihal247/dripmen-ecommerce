@@ -23,7 +23,13 @@ passport.use(
         }
 
         // If not, check if a user with the same email exists
-        user = await User.findOne({ email: profile.emails[0].value });
+        const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
+        
+        if (!email) {
+          return done(new Error("No email found from Google profile"), null);
+        }
+
+        user = await User.findOne({ email: email });
 
         if (user) {
           // Link Google ID to existing account
@@ -36,9 +42,10 @@ passport.use(
         // Create new user
         user = await User.create({
           name: profile.displayName,
-          email: profile.emails[0].value,
+          email: email,
           googleId: profile.id,
           isGoogleUser: true,
+          password: Math.random().toString(36).slice(-8) + "A1@", // Dummy strong password in case schema requires it
         });
 
         done(null, user);

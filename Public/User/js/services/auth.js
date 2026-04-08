@@ -64,7 +64,7 @@ export function initAuthSystem() {
                     </div>
 
                     <div class="social-auth-buttons">
-                        <a href="http://127.0.0.1:4000/api/auth/google" class="btn btn-google full-width">
+                        <a href="http://127.0.0.1:4000/api/auth/google?origin=${encodeURIComponent(window.location.origin)}" class="btn btn-google full-width">
                             <i class="ph ph-google-logo"></i>
                             Continue with Google
                         </a>
@@ -116,7 +116,7 @@ export function initAuthSystem() {
                         </div>
 
                         <div class="social-auth-buttons">
-                            <a href="http://127.0.0.1:4000/api/auth/google" class="btn btn-google full-width">
+                            <a href="http://127.0.0.1:4000/api/auth/google?origin=${encodeURIComponent(window.location.origin)}" class="btn btn-google full-width">
                                 <i class="ph ph-google-logo"></i>
                                 Continue with Google
                             </a>
@@ -333,9 +333,22 @@ export function initAuthSystem() {
                 const password    = document.getElementById('modal-signup-password').value;
                 const confirmPass = document.getElementById('modal-signup-confirm-password').value;
 
-                const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+                const nameRegex = /^[A-Za-z\s'\-]{2,50}$/;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+                
+                if (!nameRegex.test(name)) {
+                    showToast("Name must be 2-50 characters and only contain letters", "error");
+                    return;
+                }
+                
+                if (!emailRegex.test(email)) {
+                    showToast("Invalid email format", "error");
+                    return;
+                }
+                
                 if (!strongPasswordRegex.test(password)) {
-                    showToast("Password must be at least 6 characters and include uppercase, lowercase, and number", "error");
+                    showToast("Password must be at least 6 characters and include an uppercase letter, lowercase letter, number, and special character", "error");
                     return;
                 }
                 if (password !== confirmPass) {

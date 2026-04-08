@@ -18,13 +18,13 @@ import passport from "./config/passportConfig.js";
 
 const app = express();
 
-// ==============================
-// ✅ PASSPORT INITIALIZATION
-// ==============================
+
+
+
 app.use(passport.initialize());
 
-// ==============================
-// ✅ GLOBAL MIDDLEWARES
+
+
 // ==============================
 
 // enable CORS (important for frontend)

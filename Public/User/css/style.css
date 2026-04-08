@@ -3893,3 +3893,24 @@
     font-size: 1.25rem;
     color: #4285F4; /* Google Blue */
 }
+
+/* Validation Styles */
+.input-group-underlined input.is-valid {
+    border-bottom-color: #28a745 !important;
+}
+
+.input-group-underlined input.is-invalid {
+    border-bottom-color: #dc3545 !important;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 4px;
+    display: none;
+    font-weight: 500;
+}
+
+.input-group-underlined input.is-invalid + .error-message {
+    display: block;
+}

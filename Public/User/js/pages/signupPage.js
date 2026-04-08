@@ -24,21 +24,71 @@ export function initSignupPage() {
     signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById("signup-name")?.value?.trim();
-      const email = document.getElementById("signup-email")?.value?.trim();
-      const password = document.getElementById("signup-password")?.value;
-      const confirmPassword = document.getElementById("signup-confirm-password")?.value;
+      const nameInput = document.getElementById("signup-name");
+      const emailInput = document.getElementById("signup-email");
+      const passwordInput = document.getElementById("signup-password");
+      const confirmPasswordInput = document.getElementById("signup-confirm-password");
 
-      // Required fields
+      const name = nameInput?.value?.trim();
+      const email = emailInput?.value?.trim();
+      const password = passwordInput?.value;
+      const confirmPassword = confirmPasswordInput?.value;
+
+      // =========================
+      // VALIDATORS
+      // =========================
+      
+      // Professional name: Letters and single spaces only, 2-50 chars
+      const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
+      
+      // Strict Gmail only
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+      
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+      // Helper for real-time visual feedback
+      const setValidationUI = (input, isValid) => {
+        if (!input) return;
+        if (isValid) {
+          input.classList.remove("is-invalid");
+          input.classList.add("is-valid");
+        } else {
+          input.classList.remove("is-valid");
+          input.classList.add("is-invalid");
+        }
+      };
+
+      // Real-time listeners
+      [nameInput, emailInput].forEach(input => {
+        if (!input) return;
+        input.addEventListener("input", () => {
+          const val = input.value.trim();
+          const regex = input.id === "signup-name" ? nameRegex : emailRegex;
+          setValidationUI(input, regex.test(val));
+        });
+      });
+
+      // Submit checks
       if (!name || !email || !password || !confirmPassword) {
         showToast("All fields are required", "error");
         return;
       }
 
-      // Strong password validation
-      if (!isStrongPassword(password)) {
+      if (!nameRegex.test(name)) {
+        setValidationUI(nameInput, false);
+        showToast("Name must contain only letters and single spaces (2-50 chars)", "error");
+        return;
+      }
+
+      if (!emailRegex.test(email)) {
+        setValidationUI(emailInput, false);
+        showToast("Only @gmail.com addresses are allowed", "error");
+        return;
+      }
+
+      if (!passwordRegex.test(password)) {
         showToast(
-          "Password must be at least 6 characters and include uppercase, lowercase, and number",
+          "Password must be at least 6 characters and include an uppercase letter, lowercase letter, number, and special character",
           "error"
         );
         return;
