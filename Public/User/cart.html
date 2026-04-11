@@ -22,7 +22,7 @@
 <body>
     <!-- Top Announcement Bar -->
     <div class="announcement-bar" id="announcement-bar">
-        <span id="announcement-text">Sign up and get 20% off to your first order. Sign Up Now</span>
+        <span id="announcement-text">Welcome to DripMen | Premium Streetwear</span>
         <button class="close-announcement" aria-label="Close">
             <i class="ph ph-x"></i>
         </button>
@@ -44,7 +44,7 @@
 
             <!-- Free Shipping Progress -->
             <div class="shipping-progress-container" id="shipping-progress-container" style="display: none;">
-                <p class="shipping-message" id="shipping-message">🚚 Add $X more to get FREE shipping</p>
+                <p class="shipping-message" id="shipping-message">🚚 Add ₹X more to get FREE shipping</p>
                 <div class="progress-bar-bg">
                     <div class="progress-bar-fill" id="shipping-progress-fill"></div>
                 </div>
@@ -58,42 +58,61 @@
                     </div>
                 </div>
 
-                <!-- Order Summary -->
-                <div class="cart-summary-section">
+        <div class="cart-summary-section">
                     <div class="order-summary-card">
+                        <h3 class="summary-title" style="font-size: 1rem; color: #878787; font-weight: 600; text-transform: uppercase; margin-bottom: 1.5rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.75rem;">Price Details</h3>
+                        
                         <div class="summary-row">
-                            <span class="summary-label">Subtotal</span>
-                            <span class="summary-value" id="summary-subtotal">$0</span>
+                            <span class="summary-label" id="summary-price-label">Price (MRP)</span>
+                            <span class="summary-value" id="summary-total-mrp">₹0</span>
                         </div>
 
-                        <div class="summary-row discount-row" id="summary-discount-row" style="display: none;">
-                            <span class="summary-label">Discount (<span id="discount-percent">-0%</span>)</span>
-                            <span class="summary-value text-red" id="summary-discount">-$0</span>
+                        <div class="summary-row" id="summary-product-discount-row">
+                            <span class="summary-label">Product Discount</span>
+                            <span class="summary-value text-green" id="summary-product-discount">−₹0</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span class="summary-label">Subtotal</span>
+                            <span class="summary-value" id="summary-subtotal">₹0</span>
+                        </div>
+
+                        <div class="summary-row" id="summary-coupon-discount-row" style="display: none;">
+                            <span class="summary-label">Coupon Discount</span>
+                            <span class="summary-value text-green" id="summary-discount">−₹0</span>
                         </div>
 
                         <div class="summary-row">
                             <span class="summary-label">Delivery Fee</span>
-                            <span class="summary-value" id="summary-delivery">$0</span>
+                            <span class="summary-value" id="summary-delivery">₹0</span>
                         </div>
 
-                        <hr class="summary-divider" />
+                        <hr class="summary-divider" style="border-top: 1px dashed #e0e0e0;" />
 
-                        <div class="summary-row total-row">
-                            <span class="summary-label">Total</span>
-                            <span class="summary-value" id="summary-total">$0</span>
+                        <div class="summary-row total-row" style="padding: 1rem 0; font-size: 1.2rem; font-weight: 700;">
+                            <span class="summary-label" style="color: #212121;">Total Amount</span>
+                            <span class="summary-value" id="summary-total" style="color: #212121;">₹0</span>
                         </div>
+
+                        <hr class="summary-divider" style="border-top: 1px dashed #e0e0e0; margin-top: 0;" />
+
+                        <div class="savings-badge-flipkart" id="cart-total-savings" style="color: #388e3c; font-weight: 600; font-size: 0.95rem; margin-top: 0.5rem; display: none;">
+                             You will save ₹0 on this order
+                        </div>
+
+
 
                         <!-- Applied Coupon Card (Hidden by default) -->
                         <div class="applied-promo-card" id="applied-promo-card" style="display: none;">
                             <div class="applied-promo-info">
                                 <i class="ph-fill ph-ticket applied-promo-icon"></i>
                                 <div class="applied-promo-details">
-                                    <span class="applied-promo-code" id="applied-promo-code-text">FLASH50</span>
-                                    <span class="applied-promo-desc" id="applied-promo-desc-text">50% Discount Applied</span>
+                                    <span class="applied-promo-code" id="applied-promo-code-text">COUPON</span>
+                                    <span class="applied-promo-desc" id="applied-promo-desc-text">Discount Applied</span>
                                 </div>
                             </div>
-                            <button class="remove-promo-btn" id="cart-remove-promo" title="Remove Coupon">
-                                <i class="ph ph-x"></i>
+                            <button class="remove-promo-btn" id="cart-remove-promo" title="Remove Coupon" style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 0.75rem; font-weight: 600;">
+                                <i class="ph ph-x"></i> Remove
                             </button>
                         </div>
 
@@ -141,7 +160,7 @@
         <div class="mobile-sticky-content">
             <div class="mobile-sticky-total">
                 <span>Total</span>
-                <strong id="mobile-summary-total">$0</strong>
+                <strong id="mobile-summary-total">₹0</strong>
             </div>
             <button class="btn btn-primary go-checkout-btn-mobile" id="go-checkout-btn-mobile">
                 Go to Checkout <i class="ph ph-arrow-right"></i>

@@ -100,7 +100,7 @@ export function initWishlistPage() {
 
             <div class="price-container" style="display:flex;align-items:center;gap:0.75rem;">
               <span class="product-price" style="font-size:1.4rem;font-weight:800;color:var(--text-main);">
-                $${price}
+                ₹${price}
               </span>
               <span class="selected-size" style="font-size:0.8rem; font-weight:600; color:var(--text-muted); background:var(--bg-card); padding:2px 8px; border-radius:4px;">
                 Size: ${item.size || "N/A"}

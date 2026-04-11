@@ -19,9 +19,7 @@ const API = "http://127.0.0.1:4000";
 // PAGE: CHECKOUT
 // ==========================================
 export function initCheckoutPage() {
-  let appliedCouponCode = "";
-  let discountAmount = 0;
-  let discountDisplay = ""; // e.g. "-20%" or "-$50"
+  let appliedCoupon = null; // Stores { code, discount, discountType, discountValue, maxDiscountAmount, minPurchase }
   let walletBalance = 0;
   let currentFinalTotal = 0;
   const token = localStorage.getItem("token");
@@ -57,7 +55,7 @@ export function initCheckoutPage() {
   function updateWalletUI() {
     const balanceEl = document.getElementById("wallet-balance-amount");
     const warningEl = document.getElementById("wallet-insufficient-msg");
-    if (balanceEl) balanceEl.textContent = `$${walletBalance.toFixed(2)}`;
+    if (balanceEl) balanceEl.textContent = `₹${walletBalance.toFixed(2)}`;
     
     checkWalletViability();
   }
@@ -96,7 +94,6 @@ export function initCheckoutPage() {
     const buyNowStr = localStorage.getItem("dripmen_buy_now_item");
     if (buyNowStr) {
       cart = [JSON.parse(buyNowStr)];
-      // Show isolation notice if needed
     } else {
       cart = token ? await getCartFromAPI() : getCart();
     }
@@ -106,12 +103,74 @@ export function initCheckoutPage() {
       return;
     }
 
-    const subtotal = cart.reduce((sum, item) => {
+    // 1. Calculate MRP total (Sum of all original prices)
+    let totalMRP = 0;
+    let itemCount = 0;
+    cart.forEach(item => {
+      const qty = item.quantity || 1;
+      const originalPrice = item.product?.price || item.price || 0;
+      totalMRP += originalPrice * qty;
+      itemCount += qty;
+    });
+
+    // 2. Apply product-level discounts (Sum of MRP - Sale Price)
+    let productDiscount = 0;
+    cart.forEach(item => {
+      const qty = item.quantity || 1;
       const originalPrice = item.product?.price || item.price || 0;
       const salePrice     = item.product?.salePrice || null;
-      const price         = salePrice || originalPrice;
-      return sum + (price * (item.quantity || 1));
-    }, 0);
+      if (salePrice) {
+        productDiscount += (originalPrice - salePrice) * qty;
+      }
+    });
+
+    // 3. Get SUBTOTAL (MRP - Product Discount)
+    const subtotal = totalMRP - productDiscount;
+
+    // 4. Validate & Recalculate Coupon Logic
+    let couponDiscount = 0;
+    if (appliedCoupon) {
+      // Re-validate Minimum Purchase
+      if (subtotal < (appliedCoupon.minPurchase || 0)) {
+        appliedCoupon = null;
+        localStorage.removeItem("dripmen_applied_coupon");
+
+        // UI Reset
+        const appliedCard = document.getElementById("applied-promo-card");
+        const inputContainer = document.getElementById("promo-input-container");
+        if (appliedCard) appliedCard.style.display = "none";
+        if (inputContainer) inputContainer.style.display = "flex";
+
+        showToast("Coupon removed: Minimum order requirements not met", "info");
+      } else {
+        // Recalculate dynamic discount amount
+        if (appliedCoupon.discountType === "percentage") {
+          couponDiscount = (subtotal * appliedCoupon.discountValue) / 100;
+          if (appliedCoupon.maxDiscountAmount && couponDiscount > appliedCoupon.maxDiscountAmount) {
+            couponDiscount = appliedCoupon.maxDiscountAmount;
+          }
+        } else {
+          couponDiscount = appliedCoupon.discountValue;
+        }
+
+        couponDiscount = Math.round(couponDiscount);
+        couponDiscount = Math.min(couponDiscount, subtotal);
+        
+        // Update the cached discount
+        appliedCoupon.discount = couponDiscount;
+      }
+    }
+
+    // 5. Apply coupon discount (Step 3 - Step 4)
+    // Note: The actual discount value is calculated by the backend against the subtotal
+
+    // 6. Add delivery fee
+    const threshold = 1000;
+    const delivery = (subtotal >= threshold) ? 0 : 40;
+
+    // 7. Final total
+    const finalTotal = subtotal - couponDiscount + delivery;
+    const totalSavings = productDiscount + couponDiscount;
 
     // Render Items Summary
     const itemsList = document.getElementById("checkout-items-list");
@@ -125,9 +184,9 @@ export function initCheckoutPage() {
         const image         = item.product?.images?.[0] || item.image || "";
 
         const priceHTML = salePrice 
-          ? `<span style="font-weight:600; color:#111;">$${salePrice}</span>
-             <span style="text-decoration:line-through; color:#888; font-size:0.75rem; margin-left:4px;">$${originalPrice}</span>`
-          : `<span style="font-weight:600; color:#111;">$${originalPrice}</span>`;
+          ? `<span style="font-weight:600; color:#111;">₹${salePrice}</span>
+             <span style="text-decoration:line-through; color:#888; font-size:0.75rem; margin-left:4px;">₹${originalPrice}</span>`
+          : `<span style="font-weight:600; color:#111;">₹${originalPrice}</span>`;
 
         return `
           <div class="checkout-item-mini" style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:1rem;">
@@ -137,7 +196,7 @@ export function initCheckoutPage() {
               <p style="font-size:0.75rem; color:#666;">Size: ${item.size || "S"} | Qty: ${qty}</p>
               <div style="margin-top:4px;">
                 ${priceHTML}
-                <div style="font-size:0.75rem; color:#888; margin-top:2px;">Total: <strong>$${lineTotal}</strong></div>
+                <div style="font-size:0.75rem; color:#888; margin-top:2px;">Total: <strong>₹${lineTotal}</strong></div>
               </div>
             </div>
           </div>
@@ -145,29 +204,51 @@ export function initCheckoutPage() {
       }).join("");
     }
 
-    const delivery = subtotal >= 200 ? 0 : 20;
-    const finalTotal = subtotal + delivery - discountAmount;
+    // Update UI Elements (Flipkart style)
+    const priceLabel  = document.getElementById("checkout-price-label");
+    const mrpEl       = document.getElementById("checkout-total-mrp");
+    const prodDiscEl  = document.getElementById("checkout-discount-mrp");
+    const subtotalEl  = document.getElementById("checkout-subtotal");
+    const couponRow   = document.getElementById("checkout-discount-row");
+    const couponVal   = document.getElementById("checkout-discount");
+    const deliveryEl  = document.getElementById("checkout-delivery");
+    const totalEl     = document.getElementById("checkout-total");
+    const savingsEl   = document.getElementById("checkout-total-savings");
 
-    document.getElementById("checkout-subtotal").textContent =
-      `$${subtotal}`;
+    if (priceLabel) priceLabel.textContent = `Price (${itemCount} item${itemCount !== 1 ? 's' : ''})`;
+    if (mrpEl)      mrpEl.textContent      = `₹${totalMRP}`;
     
-    // Update Discount Row
-    const discountRow     = document.getElementById("checkout-discount-row");
-    const discountEl      = document.getElementById("checkout-discount");
-    const discountPercEl  = document.getElementById("checkout-discount-percent");
+    if (prodDiscEl) prodDiscEl.textContent = `−₹${productDiscount}`;
+    if (subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
 
-    if (discountRow && discountAmount > 0) {
-      discountRow.style.display = "flex";
-      if (discountEl) discountEl.textContent = `-$${discountAmount}`;
-      if (discountPercEl) discountPercEl.textContent = discountDisplay;
-    } else if (discountRow) {
-      discountRow.style.display = "none";
+    if (couponRow) {
+      if (couponDiscount > 0) {
+        couponRow.style.display = "flex";
+        if (couponVal) couponVal.textContent = `−₹${couponDiscount}`;
+      } else {
+        couponRow.style.display = "none";
+      }
     }
 
-    document.getElementById("checkout-delivery").textContent =
-      delivery === 0 ? "Free" : `$${delivery}`;
-    document.getElementById("checkout-total").textContent =
-      `$${finalTotal}`;
+    if (deliveryEl) {
+      if (delivery === 0) {
+        deliveryEl.innerHTML = `<span style="color:#388e3c; font-weight:500;">FREE</span>`;
+      } else {
+        deliveryEl.textContent = `₹${delivery}`;
+        deliveryEl.style.color = "#212121";
+      }
+    }
+
+    if (totalEl) totalEl.textContent = `₹${finalTotal}`;
+    
+    if (savingsEl) {
+      if (totalSavings > 0) {
+        savingsEl.style.display = "block";
+        savingsEl.textContent = `You will save ₹${totalSavings} on this order`;
+      } else {
+        savingsEl.style.display = "none";
+      }
+    }
     
     currentFinalTotal = finalTotal;
     checkWalletViability();
@@ -271,8 +352,8 @@ export function initCheckoutPage() {
       const subtotal = cart.reduce((sum, item) => {
         const originalPrice = item.product?.price || item.price || 0;
         const salePrice     = item.product?.salePrice || null;
-        const price         = salePrice || originalPrice;
-        return sum + (price * (item.quantity || 1));
+        const paidPrice     = salePrice || originalPrice;
+        return sum + (paidPrice * (item.quantity || 1));
       }, 0);
 
       const res = await fetch(`${API}/api/coupons/apply`, {
@@ -287,11 +368,14 @@ export function initCheckoutPage() {
       const data = await res.json();
 
       if (data.success) {
-        appliedCouponCode = data.couponCode;
-        discountAmount = data.discount;
-        discountDisplay = data.discountType === "percentage" 
-          ? `-${data.discountValue}%` 
-          : `-$${data.discountValue}`;
+        appliedCoupon = { 
+          code: data.couponCode, 
+          discount: data.discount,
+          discountType: data.discountType,
+          discountValue: data.discountValue,
+          maxDiscountAmount: data.maxDiscountAmount,
+          minPurchase: data.minPurchase
+        };
 
         // PERSIST FOR THE SESSION
         localStorage.setItem("dripmen_applied_coupon", data.couponCode);
@@ -300,7 +384,10 @@ export function initCheckoutPage() {
           appliedCard.style.display = "flex";
           inputContainer.style.display = "none";
           if (cardCode) cardCode.textContent = data.couponCode;
-          if (cardDesc) cardDesc.textContent = `${data.discountType === 'percentage' ? data.discountValue + '%' : '$' + data.discountValue} Discount Applied`;
+          if (cardDesc) {
+            const displayVal = data.discountType === 'percentage' ? data.discountValue + '%' : '₹' + data.discountValue;
+            cardDesc.textContent = `${displayVal} Discount Applied`;
+          }
         }
 
         showToast(`Coupon "${data.couponCode}" applied!`, "success");
@@ -350,6 +437,22 @@ export function initCheckoutPage() {
 
     section.style.display = "block";
 
+    // Recalculate subtotal for eligibility display
+    let cart = [];
+    const buyNowStr = localStorage.getItem("dripmen_buy_now_item");
+    if (buyNowStr) {
+      cart = [JSON.parse(buyNowStr)];
+    } else {
+      cart = token ? await getCartFromAPI() : getCart();
+    }
+
+    const currentSubtotal = cart.reduce((sum, item) => {
+      const originalPrice = item.product?.price || item.price || 0;
+      const salePrice     = item.product?.salePrice || null;
+      const paidPrice     = salePrice || originalPrice;
+      return sum + (paidPrice * (item.quantity || 1));
+    }, 0);
+
     const tagMeta = {
       HOT:     { bg: "#FF4D4D", glow: "rgba(255,77,77,0.35)" },
       NEW:     { bg: "#6C63FF", glow: "rgba(108,99,255,0.35)" },
@@ -359,11 +462,7 @@ export function initCheckoutPage() {
     list.innerHTML = coupons.map(c => {
       const discountText = c.discountType === "percentage"
         ? `${c.discountValue}% OFF`
-        : `$${c.discountValue} OFF`;
-
-      const minText = c.minPurchase > 0
-        ? `Min order: $${c.minPurchase}`
-        : "No minimum order";
+        : `₹${c.discountValue} OFF`;
 
       const expiry = new Date(c.expiryDate).toLocaleDateString("en-US", {
         month: "short", day: "numeric", year: "numeric"
@@ -374,10 +473,20 @@ export function initCheckoutPage() {
         ? `<span class="coupon-tag-badge" style="background:${tm.bg};box-shadow:0 0 8px ${tm.glow};">${c.tag}</span>`
         : "";
 
-      const isApplied = appliedCouponCode === c.code;
+      const isApplied = appliedCoupon?.code === c.code;
+      const isEligible = currentSubtotal >= c.minPurchase;
+      const moreNeeded = c.minPurchase - currentSubtotal;
+
+      let eligibilityHTML = "";
+      if (!isApplied && !isEligible) {
+        eligibilityHTML = `<p class="coupon-eligibility-msg">Add ₹${moreNeeded} more to apply</p>`;
+      } else {
+        const minText = c.minPurchase > 0 ? `Min order: ₹${c.minPurchase}` : "No minimum order";
+        eligibilityHTML = `<p class="coupon-desc">${minText} &bull; Expires ${expiry}</p>`;
+      }
 
       return `
-        <div class="coupon-card ${isApplied ? "coupon-card--applied" : ""}" data-code="${c.code}">
+        <div class="coupon-card ${isApplied ? "coupon-card--applied" : ""} ${!isEligible && !isApplied ? "coupon-card--locked" : ""}" data-code="${c.code}">
           <div class="coupon-card-left">
             <div class="coupon-code-row">
               ${tagBadge}
@@ -386,12 +495,12 @@ export function initCheckoutPage() {
                 <i class="ph ph-copy"></i>
               </button>
             </div>
-            <p class="coupon-desc">${minText} &bull; Expires ${expiry}</p>
+            ${eligibilityHTML}
           </div>
           <div class="coupon-card-right">
             <span class="coupon-discount-badge">${discountText}</span>
             <button class="coupon-apply-btn btn btn-primary ${isApplied ? "coupon-applied-btn" : ""}"
-                    data-code="${c.code}">
+                    data-code="${c.code}" ${!isEligible && !isApplied ? "disabled" : ""}>
               ${isApplied ? '<i class="ph ph-check"></i> Applied' : "Apply"}
             </button>
           </div>
@@ -404,9 +513,7 @@ export function initCheckoutPage() {
   const removePromoBtn = document.getElementById("checkout-remove-promo");
   if (removePromoBtn) {
     removePromoBtn.addEventListener("click", () => {
-      appliedCouponCode = "";
-      discountAmount = 0;
-      discountDisplay = "";
+      appliedCoupon = null;
       localStorage.removeItem("dripmen_applied_coupon");
 
       const appliedCard    = document.getElementById("applied-promo-card");
@@ -492,7 +599,7 @@ export function initCheckoutPage() {
               country: "India"
             },
             paymentMethod,
-            couponCode: appliedCouponCode,
+            couponCode: appliedCoupon ? appliedCoupon.code : "",
             // 🚀 Pass Buy Now items if they exist
             items: localStorage.getItem("dripmen_buy_now_item") 
               ? [JSON.parse(localStorage.getItem("dripmen_buy_now_item"))]

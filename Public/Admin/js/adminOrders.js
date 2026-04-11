@@ -119,7 +119,7 @@ function renderAdminOrders(orders) {
         <td><strong>${shortId}</strong></td>
         <td>${customer}</td>
         <td>${date}</td>
-        <td>$${total}</td>
+        <td>₹${total}</td>
         <td>${payment}</td>
         <td>
           <span style="background:${color}20;color:${color};
@@ -210,10 +210,19 @@ document.addEventListener("DOMContentLoaded", () => {
         b.classList.remove("active")
       );
       btn.classList.add("active");
-      currentFilter = btn.textContent.trim().toLowerCase();
-      if (currentFilter === "all") currentFilter = "all";
+      const btnText = btn.textContent.trim().toLowerCase();
+      
+      if (btnText === "all") {
+        currentFilter = "all";
+      } else if (btnText === "pending") {
+        currentFilter = "processing"; // Map "Pending" button to "processing" status
+      } else {
+        currentFilter = btnText;
+      }
+      
       loadAdminOrders(currentFilter, currentSearch);
     });
+
   });
 
   // search

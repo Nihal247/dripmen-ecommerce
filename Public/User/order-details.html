@@ -87,6 +87,34 @@
         </div>
     </main>
 
+    <!-- Refund Selection Modal -->
+    <div class="modal-overlay" id="refund-modal-overlay">
+        <div class="modal" id="refund-modal">
+            <button class="modal-close" id="close-refund-modal"><i class="ph ph-x"></i></button>
+            <div class="modal-body">
+                <h2 class="modal-title">Confirm Cancellation</h2>
+                <p class="text-muted" style="margin-bottom: 2rem;">Are you sure you want to cancel this item? The refund amount will be credited to your **DripMen Wallet**.</p>
+                
+                <div class="refund-options-stack" style="display: none;">
+                    <label class="refund-option-card">
+                        <input type="radio" name="refundMethod" value="wallet" checked>
+                    </label>
+                </div>
+
+
+                <div id="coupon-warning" class="alert alert-warning" style="display: none; margin-top: 1.5rem;">
+                    <i class="ph ph-warning-circle"></i>
+                    <span>Wait! Cancelling this will remove your coupon discount since the order total will fall below the limit.</span>
+                </div>
+
+                <div class="modal-actions-row" style="margin-top: 2rem;">
+                    <button class="btn btn-outline" id="cancel-modal-btn">Dismiss</button>
+                    <button class="btn btn-primary" id="confirm-refund-btn">Confirm Cancellation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast-container" class="toast-container"></div>
 <script type="module" src="js/main.js"></script>
 </body>

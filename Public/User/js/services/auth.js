@@ -434,7 +434,7 @@ export function initAuthSystem() {
             showToast("Signed out successfully");
             checkAuth();
 
-            const protectedPages = ['account.html', 'orders.html', 'address.html', 'payment.html', 'returns.html', 'cancellations.html'];
+            const protectedPages = ['account.html', 'orders.html', 'address.html', 'returns.html', 'cancellations.html'];
             const currentPage    = window.location.pathname.split('/').pop();
             if (protectedPages.includes(currentPage)) {
                 window.location.href = 'index.html';

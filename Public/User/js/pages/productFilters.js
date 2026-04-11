@@ -99,10 +99,10 @@ export function initProductFilters() {
             }
 
             const priceHTML = p.salePrice && p.salePrice < p.price
-                ? `<span class="current-price">$${p.salePrice}</span>
-                   <span class="original-price">$${p.price}</span>
+                ? `<span class="current-price">₹${p.salePrice}</span>
+                   <span class="original-price">₹${p.price}</span>
                    ${discountBadge}`
-                : `<span class="current-price">$${p.price}</span>`;
+                : `<span class="current-price">₹${p.price}</span>`;
 
             const stockBadge = isOutOfStock
                 ? `<span class="oos-badge">Out of Stock</span>` : "";
@@ -213,8 +213,8 @@ export function initProductFilters() {
         if (data.success) {
           if (minRange) { minRange.min = data.min; minRange.max = data.max; minRange.value = data.min; }
           if (maxRange) { maxRange.min = data.min; maxRange.max = data.max; maxRange.value = data.max; }
-          if (minVal) minVal.textContent = `$${data.min}`;
-          if (maxVal) maxVal.textContent = `$${data.max}`;
+          if (minVal) minVal.textContent = `₹${data.min}`;
+          if (maxVal) maxVal.textContent = `₹${data.max}`;
           state.minPrice = data.min;
           state.maxPrice = data.max;
           handlePriceChange(); // update slider track

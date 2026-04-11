@@ -41,7 +41,7 @@ export function showToast(message, type = "success") {
   const toast = document.createElement("div");
   toast.className = `toast-message ${type}`;
   toast.innerHTML = `<div class="toast-content">
-    <i class="ph-fill ph-${type === "success" ? "check-circle" : "warning-circle"}"></i>
+    <i class="ph-fill ph-₹{type === "success" ? "check-circle" : "warning-circle"}"></i>
     <span>${message}</span>
   </div>`;
   container.appendChild(toast);
@@ -261,7 +261,7 @@ export async function toggleWishlist(btn) {
 
     if (imgEl)   imgEl.src           = product.image;
     if (nameEl)  nameEl.textContent  = product.name;
-    if (priceEl) priceEl.textContent = `$${product.price}`;
+    if (priceEl) priceEl.textContent = `₹${product.price}`;
     if (titleEl) titleEl.textContent = "Select Size for Wishlist";
     if (confirmBtn) confirmBtn.textContent = "Add to Wishlist";
 
@@ -360,7 +360,7 @@ export async function handleGridAddToCart(btn) {
     const priceEl = document.getElementById("size-modal-price");
     if (imgEl)   imgEl.src           = product.image;
     if (nameEl)  nameEl.textContent  = product.name;
-    if (priceEl) priceEl.textContent = `$${product.price}`;
+    if (priceEl) priceEl.textContent = `₹${product.price}`;
 
     // Populating Sizes dynamically
     const sizeContainer = sizeModal.querySelector(".size-options-grid");
@@ -475,7 +475,7 @@ export function showCartConfirmModal(item) {
 
   if (nameEl)  nameEl.textContent = item.name  || "";
   if (imgEl)   imgEl.src          = item.image  || "";
-  if (priceEl) priceEl.textContent = `$${item.price}`;
+  if (priceEl) priceEl.textContent = `₹${item.price}`;
 
   openModal(modal);
 }

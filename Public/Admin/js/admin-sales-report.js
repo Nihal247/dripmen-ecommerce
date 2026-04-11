@@ -56,18 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Render Report to UI
     function renderReport() {
         // Update Summary Cards
-        totalSalesEl.textContent = `$${currentSummary.totalNet.toLocaleString()}`;
+        totalSalesEl.textContent = `₹${currentSummary.totalNet.toLocaleString()}`;
         totalOrdersEl.textContent = currentSummary.totalOrders.toLocaleString();
-        totalDiscountEl.textContent = `$${currentSummary.totalDiscount.toLocaleString()}`;
+        totalDiscountEl.textContent = `₹${currentSummary.totalDiscount.toLocaleString()}`;
 
         // Update Table
         tableBody.innerHTML = currentReportData.map(row => `
             <tr>
                 <td>${formatDate(row._id, reportTypeSelect.value)}</td>
                 <td>${row.ordersCount}</td>
-                <td>$${row.grossSales.toLocaleString()}</td>
-                <td>$${row.discounts.toLocaleString()}</td>
-                <td><strong>$${row.netSales.toLocaleString()}</strong></td>
+                <td>₹${row.grossSales.toLocaleString()}</td>
+                <td>₹${row.discounts.toLocaleString()}</td>
+                <td><strong>₹${row.netSales.toLocaleString()}</strong></td>
             </tr>
         `).join("");
     }
@@ -104,19 +104,19 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.setFontSize(12);
         doc.setTextColor(0);
         doc.text(`Total Orders: ${currentSummary.totalOrders}`, 14, 50);
-        doc.text(`Total Gross: $${currentSummary.totalGross.toLocaleString()}`, 70, 50);
-        doc.text(`Total Discount: $${currentSummary.totalDiscount.toLocaleString()}`, 130, 50);
+        doc.text(`Total Gross: ₹${currentSummary.totalGross.toLocaleString()}`, 70, 50);
+        doc.text(`Total Discount: ₹${currentSummary.totalDiscount.toLocaleString()}`, 130, 50);
         doc.setFont(undefined, 'bold');
-        doc.text(`Net Revenue: $${currentSummary.totalNet.toLocaleString()}`, 14, 60);
+        doc.text(`Net Revenue: ₹${currentSummary.totalNet.toLocaleString()}`, 14, 60);
         doc.setFont(undefined, 'normal');
 
         // Table
         const tableData = currentReportData.map(row => [
             formatDate(row._id, reportTypeSelect.value),
             row.ordersCount,
-            `$${row.grossSales.toLocaleString()}`,
-            `$${row.discounts.toLocaleString()}`,
-            `$${row.netSales.toLocaleString()}`
+            `₹${row.grossSales.toLocaleString()}`,
+            `₹${row.discounts.toLocaleString()}`,
+            `₹${row.netSales.toLocaleString()}`
         ]);
 
         doc.autoTable({

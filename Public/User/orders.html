@@ -52,7 +52,7 @@
                         <div class="account-nav-list">
                             <a href="account.html">My Profile</a>
                             <a href="address.html">Address Book</a>
-                            <a href="payment.html">My Payment Options</a>
+
                             <a href="wallet.html">My Wallet</a>
                         </div>
                     </div>
@@ -115,9 +115,9 @@
             </div>
 
             <div class="order-details-box">
-                <p>Subtotal: <span id="modal-order-subtotal">$0.00</span></p>
+                <p>Subtotal: <span id="modal-order-subtotal">₹0.00</span></p>
                 <p>Shipping: <span>Free</span></p>
-                <p>Total: <span id="modal-order-total">$0.00</span></p>
+                <p>Total: <span id="modal-order-total">₹0.00</span></p>
             </div>
         </div>
     </div>
@@ -146,20 +146,18 @@
                 </select>
             </div>
 
-            <!-- Refund Method -->
+            <!-- Refund Method (Simplified to Wallet Only) -->
             <div style="margin-bottom:2rem;">
                 <label style="display:block; margin-bottom:0.6rem; font-weight:600; font-family:Inter;">Refund Destination</label>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-                    <label style="border:2px solid #e5e7eb; padding:1rem; border-radius:16px; cursor:pointer; text-align:center; transition:all 0.2s ease; display:flex; flex-direction:column; align-items:center;">
-                        <input type="radio" name="refund-method" value="wallet" checked style="margin-bottom:0.5rem; accent-color:#111;">
-                        <span style="font-size:0.85rem; font-weight:700; font-family:Inter;">DripMen Wallet</span>
-                        <small style="font-size:0.75rem; color:#16a34a; font-weight:600; font-family:Inter;">Instant Refund</small>
-                    </label>
-                    <label style="border:2px solid #e5e7eb; padding:1rem; border-radius:16px; cursor:pointer; text-align:center; transition:all 0.2s ease; display:flex; flex-direction:column; align-items:center;">
-                        <input type="radio" name="refund-method" value="original" style="margin-bottom:0.5rem; accent-color:#111;">
-                        <span style="font-size:0.85rem; font-weight:700; font-family:Inter;">Original Method</span>
-                        <small style="font-size:0.75rem; color:#888; font-family:Inter;">5–7 Days</small>
-                    </label>
+                <div style="background:#f0fdf4; border:2px solid #dcfce7; padding:1.25rem; border-radius:16px; display:flex; align-items:center; gap:12px;">
+                    <div style="background:#16a34a; color:#fff; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                        <i class="ph-bold ph-wallet"></i>
+                    </div>
+                    <div>
+                        <span style="display:block; font-size:0.9rem; font-weight:700; font-family:Inter; color:#166534;">DripMen Wallet</span>
+                        <small style="display:block; font-size:0.75rem; color:#15803d; font-family:Inter;">Instant credit upon approval</small>
+                    </div>
+                    <input type="hidden" name="refund-method" id="return-refund-method" value="wallet">
                 </div>
             </div>
 

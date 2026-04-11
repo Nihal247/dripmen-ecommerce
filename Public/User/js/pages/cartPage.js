@@ -71,9 +71,9 @@ export function initCartPage() {
       const isStockReached = qty >= stock;
 
       const priceHTML = salePrice 
-        ? `<span class="cart-item-price-current">$${salePrice}</span>
-           <span class="cart-item-price-original" style="text-decoration:line-through; color:#888; font-size:0.85rem; margin-left:5px;">$${originalPrice}</span>`
-        : `<span class="cart-item-price-current">$${originalPrice}</span>`;
+        ? `<span class="cart-item-price-current">₹${salePrice}</span>
+           <span class="cart-item-price-original" style="text-decoration:line-through; color:#888; font-size:0.85rem; margin-left:5px;">₹${originalPrice}</span>`
+        : `<span class="cart-item-price-current">₹${originalPrice}</span>`;
 
       return `
         <div class="cart-item" data-id="${itemId}" data-index="${index}">
@@ -96,7 +96,7 @@ export function initCartPage() {
               <div class="cart-item-pricing">
                 <div class="price-unit">${priceHTML}</div>
                 <div class="line-total" style="font-size:0.8rem; color:#666; margin-top:2px;">
-                  $${currentPrice} × ${qty} = <strong style="color:#111;">$${lineTotal}</strong>
+                  ₹${currentPrice} × ${qty} = <strong style="color:#111;">₹${lineTotal}</strong>
                 </div>
               </div>
               <div class="qty-stepper">
@@ -126,40 +126,121 @@ export function initCartPage() {
   function updateSummary(cart) {
     cart = cart || getCart();
 
-    const subtotal = cart.reduce((sum, item) => {
+    // 1. Calculate MRP total (Sum of all original prices)
+    let totalMRP = 0;
+    let itemCount = 0;
+    cart.forEach(item => {
+      const qty = item.quantity || 1;
+      const originalPrice = item.product?.price || item.price || 0;
+      totalMRP += originalPrice * qty;
+      itemCount += qty;
+    });
+
+    // 2. Apply product-level discounts (Sum of MRP - Sale Price)
+    let productDiscount = 0;
+    cart.forEach(item => {
+      const qty = item.quantity || 1;
       const originalPrice = item.product?.price || item.price || 0;
       const salePrice     = item.product?.salePrice || null;
-      const price         = salePrice || originalPrice;
-      return sum + (price * (item.quantity || 1));
-    }, 0);
+      if (salePrice) {
+        productDiscount += (originalPrice - salePrice) * qty;
+      }
+    });
 
-    const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
-    const discountedSubtotal = Math.max(0, subtotal - couponDiscount);
-    const threshold = 200;
-    const delivery  = discountedSubtotal >= threshold || discountedSubtotal === 0 ? 0 : 20;
+    // 3. Get SUBTOTAL (MRP - Product Discount)
+    const subtotal = totalMRP - productDiscount;
 
-    document.getElementById("summary-subtotal").textContent = `$${subtotal}`;
-    document.getElementById("summary-delivery").textContent = delivery === 0 ? "Free" : `$${delivery}`;
-    document.getElementById("summary-total").textContent    = `$${discountedSubtotal + delivery}`;
-
-    const discountRow = document.getElementById("summary-discount-row");
-    const discPct     = document.getElementById("discount-percent");
-    const discVal     = document.getElementById("summary-discount");
-    if (discountRow) {
-      if (couponDiscount > 0) {
-        discountRow.style.display = "flex";
-        if (discPct) discPct.textContent = appliedCoupon.code;
-        if (discVal) discVal.textContent = `-$${couponDiscount}`;
+    // 4. Validate & Recalculate Coupon Logic
+    let couponDiscount = 0;
+    if (appliedCoupon) {
+      // Re-validate Minimum Purchase
+      if (subtotal < (appliedCoupon.minPurchase || 0)) {
+        appliedCoupon = null;
+        localStorage.removeItem("dripmen_applied_coupon");
+        
+        // UI Reset
+        const appliedCard = document.getElementById("applied-promo-card");
+        const inputContainer = document.getElementById("promo-input-container");
+        if (appliedCard) appliedCard.style.display = "none";
+        if (inputContainer) inputContainer.style.display = "flex";
+        
+        showToast("Coupon removed: Minimum order requirements not met", "info");
       } else {
-        discountRow.style.display = "none";
+        // Recalculate dynamic discount amount
+        if (appliedCoupon.discountType === "percentage") {
+          couponDiscount = (subtotal * appliedCoupon.discountValue) / 100;
+          if (appliedCoupon.maxDiscountAmount && couponDiscount > appliedCoupon.maxDiscountAmount) {
+            couponDiscount = appliedCoupon.maxDiscountAmount;
+          }
+        } else {
+          couponDiscount = appliedCoupon.discountValue;
+        }
+        
+        couponDiscount = Math.round(couponDiscount);
+        couponDiscount = Math.min(couponDiscount, subtotal);
+        
+        // Update the cached discount in the object
+        appliedCoupon.discount = couponDiscount;
       }
     }
 
-    const mobileTotal  = document.getElementById("mobile-summary-total");
-    const mobileSticky = document.getElementById("mobile-sticky-checkout");
-    if (mobileTotal)  mobileTotal.textContent  = `$${discountedSubtotal + delivery}`;
-    if (mobileSticky) mobileSticky.style.display = cart.length > 0 ? "flex" : "none";
+    // 5. Apply coupon discount (Step 3 - Step 4)
 
+    // 6. Add delivery fee
+    const threshold = 1000;
+    const delivery = (subtotal >= threshold || itemCount === 0) ? 0 : 40;
+
+    // 7. Final total
+    const finalTotal = subtotal - couponDiscount + delivery;
+    const totalSavings = productDiscount + couponDiscount;
+
+    // Update UI
+    const priceLabel  = document.getElementById("summary-price-label");
+    const mrpEl       = document.getElementById("summary-total-mrp");
+    const prodDiscEl  = document.getElementById("summary-product-discount");
+    const subtotalEl  = document.getElementById("summary-subtotal");
+    const couponRow   = document.getElementById("summary-coupon-discount-row");
+    const couponVal   = document.getElementById("summary-discount");
+    const deliveryEl  = document.getElementById("summary-delivery");
+    const totalEl     = document.getElementById("summary-total");
+    const savingsEl   = document.getElementById("cart-total-savings");
+
+    if (priceLabel) priceLabel.textContent = `Price (${itemCount} item${itemCount !== 1 ? 's' : ''})`;
+    if (mrpEl)      mrpEl.textContent      = `₹${totalMRP}`;
+    
+    if (prodDiscEl) prodDiscEl.textContent = `−₹${productDiscount}`;
+    
+    if (subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
+
+    if (couponRow) {
+      if (couponDiscount > 0) {
+        couponRow.style.display = "flex";
+        if (couponVal) couponVal.textContent = `−₹${couponDiscount}`;
+      } else {
+        couponRow.style.display = "none";
+      }
+    }
+
+    if (deliveryEl) {
+      if (delivery === 0) {
+        deliveryEl.innerHTML = `<span style="color:#388e3c; font-weight:500;">FREE</span>`;
+      } else {
+        deliveryEl.textContent = `₹${delivery}`;
+      }
+    }
+
+    if (totalEl)   totalEl.textContent   = `₹${finalTotal}`;
+    
+    if (savingsEl) {
+      if (totalSavings > 0) {
+        savingsEl.style.display = "block";
+        savingsEl.textContent = `You will save ₹${totalSavings} on this order`;
+      } else {
+        savingsEl.style.display = "none";
+      }
+    }
+
+    // Progress Bar
     const progressContainer = document.getElementById("shipping-progress-container");
     if (progressContainer)
       progressContainer.style.display = cart.length > 0 ? "block" : "none";
@@ -167,13 +248,19 @@ export function initCartPage() {
     const progressFill = document.getElementById("shipping-progress-fill");
     const shippingMsg  = document.getElementById("shipping-message");
     if (progressFill && shippingMsg) {
-      const percent = Math.min(100, (discountedSubtotal / threshold) * 100);
+      const percent = Math.min(100, (subtotal / threshold) * 100);
       progressFill.style.width = `${percent}%`;
       shippingMsg.innerHTML =
-        discountedSubtotal >= threshold
+        subtotal >= threshold
           ? "🎉 Free shipping applied!"
-          : `Add $${threshold - discountedSubtotal} more for FREE shipping`;
+          : `Add ₹${threshold - subtotal} more for FREE shipping`;
     }
+
+    // Mobile Sticky
+    const mobileTotal  = document.getElementById("mobile-summary-total");
+    const mobileSticky = document.getElementById("mobile-sticky-checkout");
+    if (mobileTotal)  mobileTotal.textContent  = `₹${finalTotal}`;
+    if (mobileSticky) mobileSticky.style.display = cart.length > 0 ? "flex" : "none";
   }
 
   // ── available coupons panel ──────────────
@@ -187,6 +274,17 @@ export function initCartPage() {
 
     section.style.display = "block";
 
+    // Get current subtotal for eligibility display
+    const token = localStorage.getItem("token");
+    const cart = token ? await getCartFromAPI() : getCart();
+    let currentSubtotal = 0;
+    cart.forEach(item => {
+      const originalPrice = item.product?.price     || item.price || 0;
+      const salePrice     = item.product?.salePrice || null;
+      const paidPrice     = salePrice || originalPrice;
+      currentSubtotal += paidPrice * (item.quantity || 1);
+    });
+
     const tagMeta = {
       HOT:     { bg: "#FF4D4D", glow: "rgba(255,77,77,0.35)" },
       NEW:     { bg: "#6C63FF", glow: "rgba(108,99,255,0.35)" },
@@ -196,11 +294,7 @@ export function initCartPage() {
     list.innerHTML = coupons.map(c => {
       const discountText = c.discountType === "percentage"
         ? `${c.discountValue}% OFF`
-        : `$${c.discountValue} OFF`;
-
-      const minText = c.minPurchase > 0
-        ? `Min order: $${c.minPurchase}`
-        : "No minimum order";
+        : `₹${c.discountValue} OFF`;
 
       const expiry = new Date(c.expiryDate).toLocaleDateString("en-US", {
         month: "short", day: "numeric", year: "numeric"
@@ -212,9 +306,19 @@ export function initCartPage() {
         : "";
 
       const isApplied = appliedCoupon?.code === c.code;
+      const isEligible = currentSubtotal >= c.minPurchase;
+      const moreNeeded = c.minPurchase - currentSubtotal;
+
+      let eligibilityHTML = "";
+      if (!isApplied && !isEligible) {
+        eligibilityHTML = `<p class="coupon-eligibility-msg">Add ₹${moreNeeded} more to apply</p>`;
+      } else {
+        const minText = c.minPurchase > 0 ? `Min order: ₹${c.minPurchase}` : "No minimum order";
+        eligibilityHTML = `<p class="coupon-desc">${minText} &bull; Expires ${expiry}</p>`;
+      }
 
       return `
-        <div class="coupon-card ${isApplied ? "coupon-card--applied" : ""}" data-code="${c.code}">
+        <div class="coupon-card ${isApplied ? "coupon-card--applied" : ""} ${!isEligible && !isApplied ? "coupon-card--locked" : ""}" data-code="${c.code}">
           <div class="coupon-card-left">
             <div class="coupon-code-row">
               ${tagBadge}
@@ -223,12 +327,12 @@ export function initCartPage() {
                 <i class="ph ph-copy"></i>
               </button>
             </div>
-            <p class="coupon-desc">${minText} &bull; Expires ${expiry}</p>
+            ${eligibilityHTML}
           </div>
           <div class="coupon-card-right">
             <span class="coupon-discount-badge">${discountText}</span>
             <button class="coupon-apply-btn btn btn-primary ${isApplied ? "coupon-applied-btn" : ""}"
-                    data-code="${c.code}">
+                    data-code="${c.code}" ${!isEligible && !isApplied ? "disabled" : ""}>
               ${isApplied ? '<i class="ph ph-check"></i> Applied' : "Apply"}
             </button>
           </div>
@@ -248,12 +352,17 @@ export function initCartPage() {
 
     if (applyBtn) { applyBtn.disabled = true; applyBtn.classList.add("loading"); }
 
-    // Get current cart subtotal
+    // Calculate current subtotal (Price after product-level discounts)
+    // Subtotal = MRP - ProductDiscount
     const cart = token ? await getCartFromAPI() : getCart();
-    const subtotal = cart.reduce((sum, item) => {
-      const price = item.product?.price || item.price || 0;
-      return sum + (price * (item.quantity || 1));
-    }, 0);
+    
+    let subtotal = 0;
+    cart.forEach(item => {
+      const originalPrice = item.product?.price     || item.price || 0;
+      const salePrice     = item.product?.salePrice || null;
+      const paidPrice     = salePrice || originalPrice;
+      subtotal += paidPrice * (item.quantity || 1);
+    });
 
     const data = await applyCouponAPI(code, subtotal);
 
@@ -264,7 +373,9 @@ export function initCartPage() {
         code: data.couponCode, 
         discount: data.discount,
         discountType: data.discountType,
-        discountValue: data.discountValue
+        discountValue: data.discountValue,
+        maxDiscountAmount: data.maxDiscountAmount,
+        minPurchase: data.minPurchase
       };
       
       // PERSIST FOR CHECKOUT
@@ -280,7 +391,7 @@ export function initCartPage() {
         appliedCard.style.display = "flex";
         inputContainer.style.display = "none";
         if (cardCode) cardCode.textContent = data.couponCode;
-        if (cardDesc) cardDesc.textContent = `${data.discountType === 'percentage' ? data.discountValue + '%' : '$' + data.discountValue} Discount Applied`;
+        if (cardDesc) cardDesc.textContent = `${data.discountType === 'percentage' ? data.discountValue + '%' : '₹' + data.discountValue} Discount Applied`;
       }
 
       if (msg) { msg.textContent = ""; msg.className = "promo-message success"; }
@@ -447,6 +558,8 @@ export function initCartPage() {
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", () => {
       if (checkAuth("Please login to checkout")) {
+        // 🧹 Clear any stale Buy Now isolation to ensure cart items are used
+        localStorage.removeItem("dripmen_buy_now_item");
         window.location.href = "checkout.html";
       }
     });
@@ -456,6 +569,8 @@ export function initCartPage() {
   if (mobileCheckoutBtn) {
     mobileCheckoutBtn.addEventListener("click", () => {
       if (checkAuth("Please login to checkout")) {
+        // 🧹 Clear any stale Buy Now isolation to ensure cart items are used
+        localStorage.removeItem("dripmen_buy_now_item");
         window.location.href = "checkout.html";
       }
     });

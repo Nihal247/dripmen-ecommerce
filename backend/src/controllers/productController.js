@@ -229,13 +229,31 @@ export const updateProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: "Stock cannot be negative" });
     }
 
-    if (req.files && req.files.length > 0) {
-      for (const imageUrl of product.images) {
-        const publicId = imageUrl.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
+    // Handle Images
+    let currentImages = product.images || [];
+    const { keepImages } = req.body;
+    
+    if (keepImages) {
+      const imagesToKeep = JSON.parse(keepImages);
+      // Delete images from cloudinary that are NOT in imagesToKeep
+      const toDelete = currentImages.filter(img => !imagesToKeep.includes(img));
+      for (const imageUrl of toDelete) {
+        try {
+          const publicId = imageUrl.split("/").pop().split(".")[0];
+          await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
+        } catch (err) {
+          console.error("Cloudinary delete error:", err);
+        }
       }
-      product.images = req.files.map((f) => f.path);
+      currentImages = imagesToKeep;
     }
+
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map((f) => f.path);
+      currentImages = [...currentImages, ...newImages];
+    }
+    
+    product.images = currentImages;
 
     product.name = name || product.name;
     product.description = description || product.description;

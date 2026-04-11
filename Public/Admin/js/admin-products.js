@@ -3,13 +3,16 @@ import { validateProductForm } from "./product-validation.js";
 const API_BASE = "http://127.0.0.1:4000";
 const token = localStorage.getItem("adminToken");
 
+let selectedFiles = []; // Track newly selected images
+let existingImagesToKeep = []; // Track existing images in edit mode
+
 // ==============================
 // LOAD PRODUCTS
 // ==============================
 async function loadProducts(search = "", category = "", status = "") {
   try {
     let url = `${API_BASE}/api/products/admin/all?`;
-    if (search) url += `search=${search}&`;
+    if (search) url += `search=${encodeURIComponent(search)}&`;
     if (category) url += `category=${category}&`;
     if (status) url += `status=${status}&`;
 
@@ -29,8 +32,8 @@ async function loadProducts(search = "", category = "", status = "") {
       const categoryName = p.categoryId?.name || "Uncategorized";
       const image = p.images?.[0] || "";
       const saleDisplay = p.salePrice
-        ? `<span style="text-decoration:line-through;color:#888;font-size:0.85rem;">$${p.price}</span> <span style="color:#ef4444;font-weight:600;">$${p.salePrice}</span>`
-        : `<span style="font-weight:600;">$${p.price}</span>`;
+        ? `<span style="text-decoration:line-through;color:#888;font-size:0.85rem;">₹${p.price}</span> <span style="color:#ef4444;font-weight:600;">₹${p.salePrice}</span>`
+        : `<span style="font-weight:600;">₹${p.price}</span>`;
 
       tbody.innerHTML += `
       <tr>
@@ -77,7 +80,10 @@ function openAddModal() {
   document.getElementById("prodSalePrice").value = "";
   document.getElementById("prodColors").value = "";
   document.getElementById("prodImages").value = "";
-  document.getElementById("imagePreview").innerHTML = "";
+  
+  selectedFiles = [];
+  existingImagesToKeep = [];
+  renderImagePreviews();
   
   const container = document.getElementById("size-stock-container");
   container.innerHTML = "";
@@ -89,7 +95,7 @@ function openAddModal() {
   document.getElementById("section-explore").checked = false;
 
   loadCategoryOptions("prodCategory");
-  document.getElementById("productModal").style.display = "flex";
+  document.getElementById("productModal").style.display = "block";
 }
 
 async function openEditModal(id) {
@@ -107,26 +113,11 @@ async function openEditModal(id) {
     document.getElementById("prodPrice").value = p.price;
     document.getElementById("prodSalePrice").value = p.salePrice || "";
     document.getElementById("prodColors").value = (p.colors || []).join(",");
+    document.getElementById("prodImages").value = "";
 
-    // Image Previews
-    const previewDiv = document.getElementById("imagePreview");
-    previewDiv.innerHTML = "";
-    if (p.images && p.images.length > 0) {
-      const header = document.createElement("div");
-      header.style.width = "100%";
-      header.style.fontSize = "0.8rem";
-      header.style.color = "#666";
-      header.style.marginBottom = "8px";
-      header.textContent = "Current Images:";
-      previewDiv.appendChild(header);
-
-      p.images.forEach(img => {
-        const wrap = document.createElement("div");
-        wrap.style.position = "relative";
-        wrap.innerHTML = `<img src="${img}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #eee;">`;
-        previewDiv.appendChild(wrap);
-      });
-    }
+    selectedFiles = [];
+    existingImagesToKeep = p.images || [];
+    renderImagePreviews();
 
     // Sizes
     const container = document.getElementById("size-stock-container");
@@ -147,7 +138,7 @@ async function openEditModal(id) {
     await loadCategoryOptions("prodCategory");
     document.getElementById("prodCategory").value = p.categoryId?._id || "";
 
-    document.getElementById("productModal").style.display = "flex";
+    document.getElementById("productModal").style.display = "block";
   } catch (err) {
     console.error("Edit modal error:", err);
   }
@@ -158,16 +149,86 @@ function closeModal() {
 }
 
 // ==============================
+// IMAGE HANDLING
+// ==============================
+function renderImagePreviews() {
+  const previewDiv = document.getElementById("imagePreview");
+  previewDiv.innerHTML = "";
+
+  // Render Existing Images (for edit mode)
+  existingImagesToKeep.forEach((img, index) => {
+    const wrap = document.createElement("div");
+    wrap.className = "current-image-item";
+    wrap.style = "position:relative; width:80px; height:80px;";
+    wrap.innerHTML = `
+      <img src="${img}" style="width:100%; height:100%; object-fit:cover; border-radius:8px; border:1px solid #eee;">
+      <button type="button" onclick="removeExistingImage(${index})" style="position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:20px; height:20px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+        <i class="ph ph-x"></i>
+      </button>
+    `;
+    previewDiv.appendChild(wrap);
+  });
+
+  // Render Newly Selected Files
+  selectedFiles.forEach((file, index) => {
+    const wrap = document.createElement("div");
+    wrap.style = "position:relative; width:80px; height:80px;";
+    const reader = new FileReader();
+    reader.onload = e => {
+      wrap.innerHTML = `
+        <img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:8px; border:1px solid #22c55e; opacity:0.8;">
+        <button type="button" onclick="removeSelectedFile(${index})" style="position:absolute; top:-8px; right:-8px; background:#111; color:#fff; border:none; border-radius:50%; width:20px; height:20px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+          <i class="ph ph-x"></i>
+        </button>
+        <span style="position:absolute; bottom:2px; left:2px; font-size:8px; background:rgba(34,197,94,0.8); color:white; padding:1px 4px; border-radius:4px;">NEW</span>
+      `;
+    };
+    reader.readAsDataURL(file);
+    previewDiv.appendChild(wrap);
+  });
+}
+
+window.removeExistingImage = function(index) {
+  existingImagesToKeep.splice(index, 1);
+  renderImagePreviews();
+};
+
+window.removeSelectedFile = function(index) {
+  selectedFiles.splice(index, 1);
+  renderImagePreviews();
+};
+
+document.getElementById("prodImages").addEventListener("change", function(e) {
+  const files = Array.from(e.target.files);
+  const totalImages = existingImagesToKeep.length + selectedFiles.length + files.length;
+  
+  if (totalImages > 5) {
+    alert("You can only have a maximum of 5 images.");
+    this.value = "";
+    return;
+  }
+
+  selectedFiles = [...selectedFiles, ...files];
+  this.value = ""; // Reset input so same file can be selected again
+  renderImagePreviews();
+});
+
+// ==============================
 // SAVE PRODUCT
 // ==============================
 async function saveProduct() {
   if (!validateProductForm()) return;
 
+  const saveBtn = document.querySelector('button[onclick="saveProduct()"]');
+  const originalText = saveBtn.textContent;
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Saving...";
+
   const id = document.getElementById("productId").value;
   const formData = new FormData();
 
-  formData.append("name", document.getElementById("prodName").value);
-  formData.append("description", document.getElementById("prodDescription").value);
+  formData.append("name", document.getElementById("prodName").value.trim());
+  formData.append("description", document.getElementById("prodDescription").value.trim());
   formData.append("price", document.getElementById("prodPrice").value);
   formData.append("salePrice", document.getElementById("prodSalePrice").value);
   formData.append("categoryId", document.getElementById("prodCategory").value);
@@ -194,10 +255,11 @@ async function saveProduct() {
   if (document.getElementById("section-explore").checked) sections.push("explore");
   formData.append("section", JSON.stringify(sections));
 
-  const imageFiles = document.getElementById("prodImages").files;
-  for (const file of imageFiles) {
+  // Images logic
+  formData.append("keepImages", JSON.stringify(existingImagesToKeep));
+  selectedFiles.forEach(file => {
     formData.append("images", file);
-  }
+  });
 
   const url = id ? `${API_BASE}/api/products/${id}` : `${API_BASE}/api/products`;
   const method = id ? "PUT" : "POST";
@@ -213,10 +275,14 @@ async function saveProduct() {
       closeModal();
       loadProducts();
     } else {
-      alert(data.message);
+      alert(data.message || "Failed to save product");
     }
   } catch (err) {
     console.error("Save product error:", err);
+    alert("Network error. Please try again.");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
 }
 
@@ -227,11 +293,14 @@ function addSizeRow(size = "", stock = 0) {
   const container = document.getElementById("size-stock-container");
   const div = document.createElement("div");
   div.className = "size-row";
-  div.style = "display:flex; gap:0.5rem; margin-bottom:0.5rem; align-items:center;";
+  div.style = "display:flex; gap:0.5rem; margin-bottom:0.8rem; align-items:center;";
   div.innerHTML = `
-    <input type="text" class="size-id" value="${size}" placeholder="Size" style="flex:1; padding:8px; border-radius:6px; border:1px solid #eee;">
-    <input type="number" class="size-qty" value="${stock}" placeholder="Qty" style="width:70px; padding:8px; border-radius:6px; border:1px solid #eee;" oninput="updateTotalStock()">
-    <button type="button" onclick="this.parentElement.remove(); updateTotalStock();" style="background:none; border:none; color:#ff4d4d; cursor:pointer;"><i class="ph ph-minus-circle"></i></button>
+    <input type="text" class="size-id" value="${size}" placeholder="Size (e.g. M)" style="flex:1; padding:10px; border-radius:8px; border:1px solid #e9ecef; background:#fff;">
+    <input type="number" class="size-qty" value="${stock}" placeholder="0" min="0" style="width:80px; padding:10px; border-radius:8px; border:1px solid #e9ecef; background:#fff;" 
+      oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateTotalStock()">
+    <button type="button" onclick="this.parentElement.remove(); updateTotalStock();" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; display:flex; align-items:center;">
+      <i class="ph ph-minus-circle"></i>
+    </button>
   `;
   container.appendChild(div);
 }
@@ -239,57 +308,59 @@ function addSizeRow(size = "", stock = 0) {
 window.updateTotalStock = function() {
   let total = 0;
   document.querySelectorAll(".size-qty").forEach(input => {
-    total += parseInt(input.value) || 0;
+    let val = parseInt(input.value) || 0;
+    if (val < 0) {
+       val = 0;
+       input.value = 0;
+    }
+    total += val;
   });
   document.getElementById("prodStock").value = total;
 };
 
 async function loadCategoryOptions(selectId) {
-  const res = await fetch(`${API_BASE}/api/categories/admin`, { headers: { Authorization: `Bearer ${token}` } });
-  const data = await res.json();
-  const select = document.getElementById(selectId);
-  select.innerHTML = `<option value="">Select Category</option>`;
-  data.categories.forEach(c => select.innerHTML += `<option value="${c._id}">${c.name}</option>`);
+  try {
+    const res = await fetch(`${API_BASE}/api/categories/admin`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    const select = document.getElementById(selectId);
+    select.innerHTML = `<option value="">Select Category</option>`;
+    if (data.categories) {
+      data.categories.forEach(c => select.innerHTML += `<option value="${c._id}">${c.name}</option>`);
+    }
+  } catch (err) {
+    console.error("Load category options error:", err);
+  }
 }
 
 async function changeStatus(id, status) {
-  const res = await fetch(`${API_BASE}/api/products/${id}/status`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ status })
-  });
-  if ((await res.json()).success) loadProducts();
+  try {
+    const res = await fetch(`${API_BASE}/api/products/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ status })
+    });
+    const data = await res.json();
+    if (data.success) loadProducts();
+    else alert(data.message);
+  } catch (err) {
+    console.error("Change status error:", err);
+  }
 }
 
 async function deleteProduct(id) {
-  if (!confirm("Are you sure?")) return;
-  const res = await fetch(`${API_BASE}/api/products/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  if ((await res.json()).success) loadProducts();
+  if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/products/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.success) loadProducts();
+    else alert(data.message);
+  } catch (err) {
+    console.error("Delete product error:", err);
+  }
 }
-
-// New Image Selection Preview
-document.getElementById("prodImages").addEventListener("change", function() {
-  const previewDiv = document.getElementById("imagePreview");
-  // Don't clear, just append new ones or show separately
-  const newWrap = document.createElement("div");
-  newWrap.style = "width:100%; display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; border-top:1px solid #eee; padding-top:8px;";
-  newWrap.innerHTML = `<div style="width:100%; font-size:0.8rem; color:#22c55e;">New Selections:</div>`;
-  
-  Array.from(this.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.createElement("img");
-      img.src = e.target.result;
-      img.style = "width:50px; height:50px; object-fit:cover; border-radius:6px; border:1px solid #eee;";
-      newWrap.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-  });
-  previewDiv.appendChild(newWrap);
-});
 
 // Initialization
 document.querySelector(".add-product-btn").addEventListener("click", openAddModal);

@@ -52,7 +52,7 @@ function openOrderDetailsModal(order) {
 
   if (idEl)    idEl.textContent    = "#" + String(orderId).slice(-6).toUpperCase();
   if (dateEl)  dateEl.textContent  = formatDate(order.createdAt || order.date);
-  if (totalEl) totalEl.textContent = `$${Number(order.total).toFixed(2)}`;
+  if (totalEl) totalEl.textContent = `₹${Number(order.total).toFixed(2)}`;
 
   if (statusEl) {
     statusEl.className   = `order-status ${getStatusClass(status)}`;
@@ -194,8 +194,14 @@ function renderOrders(orders) {
     const shortId  = "#" + String(orderId).slice(-6).toUpperCase();
     const date     = formatDate(order.createdAt || order.date);
     const status   = order.orderStatus || order.status || "processing";
-    const total    = order.total || 0;
     const items    = order.items || [];
+    const totalMRP = Number(order.totalMRP || 0);
+    const subtotal = Number(order.subtotal || 0);
+    const orderTotal = Number(order.total || 0);
+
+    // Sum of refunds across all items
+    const totalRefunded = items.reduce((sum, i) => sum + (i.refundAmount || 0), 0);
+    const isFullyRefunded = status.toLowerCase() === "cancelled" && totalRefunded > 0 && orderTotal === 0;
 
     let actionButtons = "";
     if (status.toLowerCase() === "processing") {
@@ -227,8 +233,8 @@ function renderOrders(orders) {
             <span class="order-id">Order ${shortId}</span>
             <span class="order-date">${date}</span>
           </div>
-          <span class="order-status ${getStatusClass(status)}">
-            ${status.charAt(0).toUpperCase() + status.slice(1)}
+          <span class="order-status ${isFullyRefunded ? 'status-refunded' : getStatusClass(status)}">
+            ${isFullyRefunded ? 'Refunded' : (status.charAt(0).toUpperCase() + status.slice(1))}
           </span>
         </div>
 
@@ -245,17 +251,24 @@ function renderOrders(orders) {
                 <span class="order-item-meta">
                   Qty: ${item.quantity} | Size: ${item.size || "N/A"}
                 </span>
+                ${item.refundAmount > 0 ? `
+                  <span class="refund-tag-inline">Refunded: ₹${item.refundAmount.toFixed(2)}</span>
+                ` : ""}
               </div>
             </div>
           `).join("")}
         </div>
 
+
         <div class="order-footer">
           <div>
-            <span class="order-total-label">Total Order:</span>
-            <span class="order-total-value">
-              $${Number(total).toFixed(2)}
+            <span class="order-total-label">
+                ${isFullyRefunded ? 'Total Refunded:' : (status.toLowerCase() === 'cancelled' ? 'Original Value:' : 'Total Order:')}
             </span>
+            <span class="order-total-value ${isFullyRefunded ? 'text-success' : (status.toLowerCase() === 'cancelled' ? 'text-muted' : '')}">
+              ₹${isFullyRefunded ? totalRefunded.toFixed(2) : (status.toLowerCase() === 'cancelled' ? Number(order.totalMRP - order.productDiscount + (order.deliveryCharge || 0) - (order.discount || 0)).toFixed(2) : orderTotal.toFixed(2))}
+            </span>
+            ${status.toLowerCase() === 'cancelled' && !isFullyRefunded ? '<div style="font-size:0.7rem; color:#ef4444; font-weight:600; margin-top:2px;">CANCELLATION (COD)</div>' : ''}
           </div>
           <div class="order-actions-group" style="display:flex;gap:1rem;">
             ${actionButtons}
@@ -267,6 +280,7 @@ function renderOrders(orders) {
         </div>
       </div>
     `;
+
   }).join("");
 }
 
@@ -421,12 +435,11 @@ function openReturnModal(orderId) {
   // Setup submit handler (remove old one first)
   submitBtn.onclick = async () => {
     const reasonEl       = document.getElementById("return-reason");
-    const refundMethodEl = document.querySelector('input[name="refund-method"]:checked');
-
-    if (!reasonEl || !refundMethodEl) return;
+    if (!reasonEl) return;
 
     const reason       = reasonEl.value;
-    const refundMethod = refundMethodEl.value;
+    const refundMethod = "wallet"; // ALWAYS use Wallet for returns as requested
+
 
     submitBtn.disabled  = true;
     submitBtn.innerText = "Submitting...";

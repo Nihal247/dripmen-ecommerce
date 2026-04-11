@@ -219,6 +219,7 @@ function showToast(message, type = "success") {
     </div>
   `;
 
+
   container.appendChild(toast);
 
   setTimeout(() => toast.classList.add("show"), 50);

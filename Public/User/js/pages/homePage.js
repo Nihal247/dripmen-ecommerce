@@ -22,10 +22,10 @@ function renderCard(p) {
 
   // Price HTML
   const priceHTML = p.salePrice && p.salePrice < p.price
-    ? `<span class="current-price">$${p.salePrice}</span>
-       <span class="original-price">$${p.price}</span>
+    ? `<span class="current-price">₹${p.salePrice}</span>
+       <span class="original-price">₹${p.price}</span>
        ${discountBadge}`
-    : `<span class="current-price">$${p.price}</span>`;
+    : `<span class="current-price">₹${p.price}</span>`;
 
   // Stars
   const stars = `

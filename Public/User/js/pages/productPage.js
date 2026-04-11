@@ -239,10 +239,10 @@ function populatePage(p) {
   const curEl = document.querySelector(".current-price-main");
   const orgEl = document.querySelector(".original-price-main");
   const badEl = document.querySelector(".discount-badge-main");
-  if (curEl) curEl.textContent = `$${displayPrice}`;
+  if (curEl) curEl.textContent = `₹${displayPrice}`;
   if (p.salePrice && p.salePrice < p.price) {
     const pct = Math.round(((p.price - p.salePrice) / p.price) * 100);
-    if (orgEl) { orgEl.textContent = `$${p.price}`; orgEl.style.display = ""; }
+    if (orgEl) { orgEl.textContent = `₹${p.price}`; orgEl.style.display = ""; }
     if (badEl) { badEl.textContent = `-${pct}%`;    badEl.style.display = ""; }
   } else {
     if (orgEl) orgEl.style.display = "none";
@@ -320,7 +320,7 @@ function populatePage(p) {
   }
 
   const stickyPrice = document.querySelector(".sticky-price");
-  if (stickyPrice) stickyPrice.textContent = `$${displayPrice}`;
+  if (stickyPrice) stickyPrice.textContent = `₹${displayPrice}`;
 }
 
 function updateStockStatus(size, stock) {
@@ -428,8 +428,8 @@ function renderCard(p) {
     discountBadge = `<span class="discount-badge">-${pct}%</span>`;
   }
   const priceHTML = p.salePrice && p.salePrice < p.price
-    ? `<span class="current-price">$${p.salePrice}</span><span class="original-price">$${p.price}</span>${discountBadge}`
-    : `<span class="current-price">$${p.price}</span>`;
+    ? `<span class="current-price">₹${p.salePrice}</span><span class="original-price">₹${p.price}</span>${discountBadge}`
+    : `<span class="current-price">₹${p.price}</span>`;
 
   return `
     <div class="product-card"

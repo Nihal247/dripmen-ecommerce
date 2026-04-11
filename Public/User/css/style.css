@@ -1473,29 +1473,71 @@
     transform: rotate(90deg);
 }
 
-/* Polishing Summary Rows */
+.text-green {
+    color: #388e3c !important;
+}
+
 .summary-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1.2rem;
+    font-size: 1rem;
 }
 
 .summary-label {
-    color: var(--text-muted, #6b7280);
-    font-weight: 500;
-    font-size: 0.95rem;
+    color: #212121;
+    font-weight: 400;
 }
 
 .summary-value {
-    font-weight: 600;
-    color: var(--text-main, #111827);
+    color: #212121;
+    font-weight: 400;
 }
 
-.total-row .summary-label {
-    font-size: 1.1rem;
-    color: var(--text-main);
-    font-weight: 700;
+.summary-divider {
+    border: 0;
+    border-top: 1px dashed #e0e0e0;
+    margin: 1.2rem 0;
+}
+
+.total-row {
+    padding: 1rem 0;
+}
+
+.savings-badge-flipkart {
+    padding: 12px 0;
+    margin-top: 0.5rem;
+    color: #388e3c;
+    font-weight: 500;
+    font-size: 1rem;
+    border-top: 1px dashed #e0e0e0;
+}
+
+.coupon-eligibility-msg {
+    color: #f44336;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.coupon-card--locked {
+    opacity: 0.7;
+    background: #fdfdfd;
+}
+
+.coupon-card--locked .coupon-discount-badge {
+    background: #f0f0f0;
+    color: #999;
+}
+
+.coupon-card--locked .coupon-apply-btn {
+    background: #e0e0e0 !important;
+    border-color: #e0e0e0 !important;
+    color: #999 !important;
+    cursor: not-allowed;
+}
+    border-top: 1px dashed #e0e0e0;
 }
 
 /* =========================================================================

@@ -347,7 +347,11 @@ async function initTopBarCoupons() {
     return; // Fail silently
   }
 
-  if (!coupons.length) return; // Keep original static text
+  if (!coupons.length) {
+    // Optional: add a default message if no coupons are marked for top bar
+    span.textContent = "Welcome to DripMen | Shop our Latest Collection";
+    return;
+  }
 
   const span = bar.querySelector("span");
   if (!span) return;
@@ -374,9 +378,9 @@ async function initTopBarCoupons() {
 
     const discountText = coupon.discountType === "percentage"
       ? `${coupon.discountValue}% OFF`
-      : `$${coupon.discountValue} OFF`;
+      : `₹${coupon.discountValue} OFF`;
 
-    return `${tagHtml}Use <strong style="letter-spacing:1px;">${coupon.code}</strong> for ${discountText}${coupon.minPurchase ? ` on orders over $${coupon.minPurchase}` : ""}`;
+    return `${tagHtml}Use <strong style="letter-spacing:1px;">${coupon.code}</strong> for ${discountText}${coupon.minPurchase ? ` on orders over ₹${coupon.minPurchase}` : ""}`;
   }
 
   let idx = 0;

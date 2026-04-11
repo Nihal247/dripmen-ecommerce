@@ -17,12 +17,15 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    // Why: prevent duplicate category names like two "Hoodies"
-    const exists = await Category.findOne({ name });
+    // Case-insensitive duplicate check
+    const exists = await Category.findOne({ 
+      name: { $regex: new RegExp("^" + name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i") } 
+    });
+    
     if (exists) {
       return res.status(400).json({
         success: false,
-        message: "Category already exists",
+        message: "Category with this name already exists (case-insensitive check)",
       });
     }
 
@@ -35,8 +38,10 @@ const slug = name
   .toLowerCase()
   .replace(/\s+/g, "-");
 
-// prevent duplicate slug
-const slugExists = await Category.findOne({ slug });
+// prevent duplicate slug (case-insensitive)
+const slugExists = await Category.findOne({ 
+  slug: { $regex: new RegExp("^" + slug + "$", "i") } 
+});
 if (slugExists) {
   return res.status(400).json({
     success: false,
@@ -127,26 +132,41 @@ export const updateCategory = async (req, res) => {
       });
     }
 
-    if (req.file) {
+    const { removeImage } = req.body;
+
+    if (removeImage === "true" || req.file) {
       if (category.image) {
-
-        const publicId = category.image
-          .split("/")
-          .pop()
-          .split(".")[0];
-
-        await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
+        try {
+          const publicId = category.image.split("/").pop().split(".")[0];
+          await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
+        } catch (err) {
+          console.error("Cloudinary delete error:", err);
+        }
+        category.image = "";
       }
-
-      category.image = req.file.path;
+      
+      if (req.file) {
+        category.image = req.file.path;
+      }
     }
 
-    category.name = name || category.name;
+    if (name && name !== category.name) {
+      // Check for duplicates before renaming (case-insensitive)
+      const exists = await Category.findOne({ 
+        _id: { $ne: id },
+        name: { $regex: new RegExp("^" + name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "$", "i") } 
+      });
+      
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Another category already has this name",
+        });
+      }
 
-    // create slug automatically
-    category.slug = name
-      .toLowerCase()
-      .replace(/\s+/g, "-");
+      category.name = name.trim();
+      category.slug = name.trim().toLowerCase().replace(/\s+/g, "-");
+    }
 
     category.description = description || category.description;
 
@@ -199,5 +219,40 @@ export const toggleCategoryStatus = async (req, res) => {
       success: false,
       message: error.message
     });
+  }
+};
+// ==============================
+// ✅ DELETE CATEGORY (Admin only)
+// ==============================
+export const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const category = await Category.findById(id);
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    // Delete image from Cloudinary if it exists
+    if (category.image) {
+      try {
+        const publicId = category.image.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
+      } catch (err) {
+        console.error("Cloudinary delete error:", err);
+      }
+    }
+
+    await Category.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Category deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

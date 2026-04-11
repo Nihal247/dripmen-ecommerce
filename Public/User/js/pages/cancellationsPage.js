@@ -44,6 +44,10 @@ function renderCancellations(orders) {
     const items   = order.items || [];
     const total   = Number(order.total || 0);
 
+    // Sum of refunds across all items
+    const totalRefunded = items.reduce((sum, i) => sum + (i.refundAmount || 0), 0);
+    const isRefunded = totalRefunded > 0;
+
     return `
       <div class="order-card">
         <div class="order-header">
@@ -51,7 +55,9 @@ function renderCancellations(orders) {
             <span class="order-id">Order ${shortId}</span>
             <span class="order-date">Cancelled on ${date}</span>
           </div>
-          <span class="order-status status-cancelled">Cancelled</span>
+          <span class="order-status ${isRefunded ? 'status-refunded' : 'status-cancelled'}">
+            ${isRefunded ? 'Refunded' : 'Cancelled'}
+          </span>
         </div>
 
         <div class="order-items-list">
@@ -67,6 +73,9 @@ function renderCancellations(orders) {
                 <span class="order-item-meta">
                   Qty: ${item.quantity} | Size: ${item.size || "N/A"}
                 </span>
+                ${item.refundAmount > 0 ? `
+                  <span class="refund-tag-inline">Refunded: ₹${item.refundAmount.toFixed(2)}</span>
+                ` : ""}
               </div>
             </div>
           `).join("")}
@@ -74,8 +83,10 @@ function renderCancellations(orders) {
 
         <div class="order-footer">
           <div>
-            <span class="order-total-label">Total Amount:</span>
-            <span class="order-total-value">$${total.toFixed(2)}</span>
+            <span class="order-total-label">${isRefunded ? 'Total Refunded:' : 'Total Amount:'}</span>
+            <span class="order-total-value ${isRefunded ? 'text-success' : ''}">
+                ₹${isRefunded ? totalRefunded.toFixed(2) : total.toFixed(2)}
+            </span>
           </div>
           <button class="btn btn-outline view-details-btn"
                   data-id="${orderId}">

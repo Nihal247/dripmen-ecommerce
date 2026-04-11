@@ -179,7 +179,7 @@
           <label>Discount Type</label>
           <select name="discountType" id="f-discountType">
             <option value="percentage">Percentage (%)</option>
-            <option value="fixed">Fixed Amount ($)</option>
+            <option value="fixed">Fixed Amount (₹)</option>
           </select>
         </div>
         <div class="form-group">
@@ -188,16 +188,22 @@
         </div>
       </div>
 
-      <!-- Min purchase + Expiry -->
+      <!-- Start Date + Expiry -->
       <div class="form-row">
         <div class="form-group">
-          <label>Min Purchase ($)</label>
-          <input type="number" name="minPurchase" id="f-minPurchase" value="0" min="0">
+          <label>Start Date</label>
+          <input type="date" name="startDate" id="f-startDate" required>
         </div>
         <div class="form-group">
           <label>Expiry Date</label>
           <input type="date" name="expiryDate" id="f-expiryDate" required>
         </div>
+      </div>
+
+      <!-- Min purchase -->
+      <div class="form-group">
+        <label>Min Purchase (₹)</label>
+        <input type="number" name="minPurchase" id="f-minPurchase" value="0" min="0">
       </div>
 
       <!-- Tag -->

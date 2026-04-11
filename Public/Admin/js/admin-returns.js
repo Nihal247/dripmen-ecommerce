@@ -79,7 +79,7 @@ function renderReturns(requests) {
                 </td>
                 <td>${req.customer}</td>
                 <td style="max-width: 200px; color: #666; font-size: 0.85rem;">${req.reason}</td>
-                <td style="font-weight: 700;">$${(req.price * req.qty).toFixed(2)}</td>
+                <td style="font-weight: 700;">₹${(req.price * req.qty).toFixed(2)}</td>
                 <td>
                     <div style="display: flex; gap: 0.5rem;">
                         <button onclick="approveItemReturn('${req.orderId}', '${req.productId}', '${req.size}')" class="btn btn-sm" style="background: #16a34a; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">Approve</button>

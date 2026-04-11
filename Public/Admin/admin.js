@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 1. Update Stat Cards
                 if (statOrders)   statOrders.textContent   = stats.totalOrders;
-                if (statRevenue)  statRevenue.textContent  = `$${stats.totalRevenue.toLocaleString()}`;
+                if (statRevenue)  statRevenue.textContent  = `₹${stats.totalRevenue.toLocaleString()}`;
                 if (statUsers)    statUsers.textContent    = stats.totalUsers;
                 if (statProducts) statProducts.textContent = stats.totalProducts;
                 if (statPending)  statPending.textContent  = stats.pendingOrders;
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </td>
                                 <td>${date}</td>
                                 <td>${customer}</td>
-                                <td>$${order.total}</td>
+                                <td>₹${order.total}</td>
                                 <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
                                 <td><button class="btn-text">Detail</button></td>
                             </tr>
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <img src="${product.images?.[0] || 'https://via.placeholder.com/50'}" style="width:48px; height:48px; border-radius:8px; object-fit:cover;">
                                 <div>
                                     <h4 style="font-size:0.9rem; font-weight:600; margin:0;">${product.name}</h4>
-                                    <span style="font-size:0.8rem; color:#6b7280;">$${product.price}</span>
+                                    <span style="font-size:0.8rem; color:#6b7280;">₹${product.price}</span>
                                 </div>
                             </div>
                             <div style="text-align:right;">
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         mode: 'index',
                         intersect: false,
                         callbacks: {
-                            label: (context) => `$${context.parsed.y}`
+                            label: (context) => `₹${context.parsed.y}`
                         }
                     }
                 },
@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         beginAtZero: true,
                         grid: { borderDash: [5, 5], color: '#e5e7eb' },
                         ticks: {
-                            callback: (val) => `$${val}`
+                            callback: (val) => `₹${val}`
                         }
                     },
                     x: {

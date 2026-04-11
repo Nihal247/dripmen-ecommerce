@@ -57,46 +57,52 @@ export const placeOrder = async (req, res) => {
       const pId = item.product?._id ? item.product._id.toString() : item.product.toString();
       const product = productMap[pId];
 
-  if (item.quantity <= 0) {
-  return res.status(400).json({
-    message: "Invalid quantity",
-  });
-}
+      if (item.quantity <= 0) {
+        return res.status(400).json({ message: "Invalid quantity" });
+      }
 
-    // ❌ SIZE-SPECIFIC STOCK VALIDATION (With Fallback)
-    const sizeObj = product.sizes.find(s => s.size === (item.size || "L"));
-    const availableStock = sizeObj ? sizeObj.stock : product.stock || 0;
-    
-    if (availableStock < item.quantity) {
-      return res.status(400).json({
-        message: `${product.name}${item.size ? ` (Size: ${item.size})` : ""} is out of stock`,
+      const sizeObj = product.sizes.find(s => s.size === (item.size || "L"));
+      const availableStock = sizeObj ? sizeObj.stock : product.stock || 0;
+      
+      if (availableStock < item.quantity) {
+        return res.status(400).json({
+          message: `${product.name}${item.size ? ` (Size: ${item.size})` : ""} is out of stock`,
+        });
+      }
+
+      // Professional Price Logic: PaidPrice = SalePrice || MRP
+      const paidPrice = product.salePrice || product.price;
+
+      orderItems.push({
+        product:  product._id,
+        name:     product.name,
+        image:    product.images?.[0] || "",
+        mrp:      product.price, // Original MRP
+        price:    paidPrice,     // Actual paid price per item
+        quantity: item.quantity,
+        size:     item.size  || "L",
+        color:    item.color || "Black",
+        status:   "processing"
       });
+
+      // ✅ REDUCE STOCK
+      if (sizeObj) sizeObj.stock -= item.quantity;
+      product.stock -= item.quantity;
+      await product.save();
     }
 
-    orderItems.push({
-      product:  product._id,
-      name:     product.name,
-      image:    product.images?.[0] || "",
-      price:    product.price, 
-      quantity: item.quantity,
-      size:     item.size  || "L",
-      color:    item.color || "Black",
-      status:   "processing"
-    });
-
-    // ✅ REDUCE STOCK (Size-Specific and Global Summary)
-    if (sizeObj) sizeObj.stock -= item.quantity;
-    product.stock -= item.quantity;
+    // 1. Calculate MRP Total
+    const totalMRP = orderItems.reduce((sum, i) => sum + (i.mrp * i.quantity), 0);
     
-    await product.save();
-  }
+    // 2. Calculate Product Discount (MRP - PricePaid)
+    const productDiscount = orderItems.reduce((sum, i) => sum + ((i.mrp - i.price) * i.quantity), 0);
 
-    // calculate totals
-    const subtotal       = orderItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-    const deliveryCharge = subtotal >= 200 ? 0 : 20;
-    
+    // 3. Get SUBTOTAL (MRP - Product Discount)
+    const subtotal = totalMRP - productDiscount;
+
+    // 4 & 5. Coupon Logic
     let discount = 0;
-    let appliedCoupon = null;
+    let appliedCouponObj = null;
 
     if (couponCode) {
       const coupon = await Coupon.findOne({
@@ -105,33 +111,56 @@ export const placeOrder = async (req, res) => {
         expiryDate: { $gt: new Date() }
       });
 
-      if (coupon && subtotal >= coupon.minPurchase) {
-        if (coupon.discountType === "percentage") {
-          discount = Math.round((subtotal * coupon.discountValue) / 100);
-        } else {
-          discount = coupon.discountValue;
+      if (coupon) {
+        // Enforce isOneTimePerUser
+        const alreadyUsed = coupon.isOneTimePerUser && coupon.usedByUsers.includes(userId);
+        
+        if (!alreadyUsed && subtotal >= coupon.minPurchase) {
+          if (coupon.discountType === "percentage") {
+            discount = (subtotal * coupon.discountValue) / 100;
+            if (coupon.maxDiscountAmount && discount > coupon.maxDiscountAmount) {
+              discount = coupon.maxDiscountAmount;
+            }
+          } else {
+            discount = coupon.discountValue;
+          }
+          
+          discount = Math.round(discount);
+          discount = Math.min(discount, subtotal);
+          appliedCouponObj = coupon;
         }
-        appliedCoupon = coupon.code;
       }
     }
 
+    // 6. Delivery Fee
+    const deliveryCharge = subtotal >= 1000 ? 0 : 40; // Standardize threshold
+
+    // 7. Final Total
     const total = subtotal + deliveryCharge - discount;
 
     // create order
     const order = await Order.create({
-      user:     userId,
-      items:    orderItems,
+      user:           userId,
+      items:          orderItems,
       address,
       paymentMethod:  paymentMethod || "COD",
       paymentStatus:  "pending",
       orderStatus:    "processing",
+      totalMRP,
+      productDiscount,
       subtotal,
       deliveryCharge,
       discount,
-      couponCode: couponCode || "",
+      couponCode:     appliedCouponObj ? appliedCouponObj.code : "",
       total,
-      notes: notes || ""
+      notes:          notes || ""
     });
+
+    // Record Coupon Usage
+    if (appliedCouponObj) {
+        appliedCouponObj.usedByUsers.push(userId);
+        await appliedCouponObj.save();
+    }
 
     // 💰 WALLET LOGIC
     if (paymentMethod.toLowerCase() === "wallet") {
@@ -142,7 +171,7 @@ export const placeOrder = async (req, res) => {
           `Order Payment #${order._id.toString().slice(-6).toUpperCase()}`,
           order._id
         );
-        order.paymentStatus = "confirmed";
+        order.paymentStatus = "paid";
         await order.save();
       } catch (err) {
         // Rollback stock if wallet payment fails
@@ -225,7 +254,7 @@ export const getOrderById = async (req, res) => {
 export const cancelOrderItem = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { orderId, productId, size } = req.body;
+    const { orderId, productId, size, refundMethod } = req.body; // refundMethod: 'wallet' or 'original'
 
     const order = await Order.findOne({ _id: orderId, user: userId });
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
@@ -238,61 +267,88 @@ export const cancelOrderItem = async (req, res) => {
     if (!item) return res.status(404).json({ success: false, message: "Item not found or already cancelled" });
 
     if (["shipped", "delivered", "cancelled", "returned"].includes(item.status)) {
-      return res.status(400).json({ success: false, message: "Cannot cancel item in its current state" });
+      return res.status(400).json({ success: false, message: `Cannot cancel item in its current state (${item.status})` });
     }
 
-    // 1. Calculate Refund Amount
-    let refundAmount = item.price * item.quantity;
+    // --- RECALCULATION LOGIC ---
+    const originalTotal = order.total;
+    const itemValue = item.price * item.quantity;
     
-    // 2. Handle Coupon Recalculation
+    // Mark item as cancelled temporarily for recalculation
+    item.status = "cancelled";
+
+    // 1. New Subtotal (active items only)
+    const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
+    const newSubtotal = activeItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    
+    // 2. Coupon Re-validation
+    let newDiscount = 0;
+    let couponRemoved = false;
     if (order.couponCode) {
       const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
       if (coupon) {
-        const currentSubtotal = order.items.reduce((sum, i) => 
-          sum + (i.status !== "cancelled" && i.status !== "returned" ? i.price * i.quantity : 0), 0
-        );
-        const newSubtotal = currentSubtotal - (item.price * item.quantity);
-
-        if (newSubtotal < coupon.minPurchase) {
-          // If subtotal falls below min, the entire discount is revoked from this refund
-          // Basically: user should have paid (newSubtotal + delivery) without coupon.
-          // They already paid (originalTotal).
-          // Refund = originalTotal - (newSubtotal + newDelivery)
-          const newDelivery = newSubtotal >= 200 ? 0 : 20;
-          const originalPaid = order.total;
-          const shouldHavePaid = newSubtotal + newDelivery;
-          refundAmount = originalPaid - shouldHavePaid;
-          
-          // Ensure refund isn't negative (edge case if delivery charge jumps)
-          refundAmount = Math.max(0, refundAmount);
-          
-          order.discount = 0;
+        if (newSubtotal < coupon.minPurchase || !coupon.isActive) {
+          newDiscount = 0;
           order.couponCode = "";
-          order.notes = (order.notes || "") + ` | Coupon removed: subtotal fell below ${coupon.minPurchase}`;
+          couponRemoved = true;
+          order.notes = (order.notes || "") + ` | Coupon removed: subtotal ₹${newSubtotal} < min ₹${coupon.minPurchase}`;
         } else {
-          // Proportionate discount reduction
+          // Recalculate discount value (especially for percentage)
           if (coupon.discountType === "percentage") {
-            const itemDiscount = Math.round((item.price * item.quantity * coupon.discountValue) / 100);
-            refundAmount -= itemDiscount;
+            newDiscount = Math.round((newSubtotal * coupon.discountValue) / 100);
+            if (coupon.maxDiscountAmount && newDiscount > coupon.maxDiscountAmount) {
+              newDiscount = coupon.maxDiscountAmount;
+            }
           } else {
-            // For fixed discount, we keep the coupon as long as minPurchase is met
-            // No reduction unless we want to be very strict
+            newDiscount = coupon.discountValue;
           }
+          newDiscount = Math.min(newDiscount, newSubtotal);
         }
+      } else {
+        newDiscount = 0;
+        order.couponCode = "";
+        couponRemoved = true;
       }
     }
 
-    // 3. Process Refund (if paid)
-    if (order.paymentStatus === "confirmed" || order.paymentStatus === "paid") {
-      await addMoneyToWallet(
-        userId,
-        refundAmount,
-        `Refund for cancelled item (${item.name}) from Order #${order._id.toString().slice(-6).toUpperCase()}`,
-        order._id
-      );
+    // 3. New Delivery Charge (match placeOrder logic)
+    const newDeliveryCharge = (newSubtotal >= 1000 || newSubtotal === 0) ? 0 : 40;
+
+    // 4. New Total
+    const newTotal = newSubtotal + newDeliveryCharge - newDiscount;
+
+    // 5. Final Refund Amount = What they paid - What they should have paid now
+    // This correctly handles coupon shifts and delivery fee changes
+    let refundAmount = originalTotal - newTotal;
+    refundAmount = Math.max(0, refundAmount);
+
+    // 6. Handle Edge Case: All items cancelled
+    if (activeItems.length === 0) {
+      order.orderStatus = "cancelled";
+      if (order.paymentStatus === "paid") {
+          order.paymentStatus = "refunded";
+      }
     }
 
-    // 4. Restore Stock
+    // --- PROCESS REFUND ---
+    if (order.paymentStatus === "paid" || order.paymentStatus === "refunded") {
+        // ALWAYS use Wallet for refunds as requested
+        await addMoneyToWallet(
+            userId,
+            refundAmount,
+            `Refund for cancelled item (${item.name}) from Order #${order._id.toString().slice(-6).toUpperCase()}`,
+            order._id
+        );
+        item.refundAmount = refundAmount;
+        item.refundStatus = "completed";
+    } else {
+        // COD - No refund needed, just update values
+        item.refundAmount = 0;
+        item.refundStatus = "none";
+    }
+
+
+    // 7. Restore Stock
     const product = await Product.findById(productId);
     if (product) {
       const sObj = product.sizes.find(s => s.size === size);
@@ -301,26 +357,20 @@ export const cancelOrderItem = async (req, res) => {
       await product.save();
     }
 
-    // 5. Update Item and Order
-    item.status = "cancelled";
-    item.refundAmount = refundAmount;
-    
-    // Recalculate order total for record keeping
-    const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
-    if (activeItems.length === 0) {
-      order.orderStatus = "cancelled";
-    }
-    
-    const newTotalSub = order.items.reduce((sum, i) => 
-      sum + (i.status !== "cancelled" && i.status !== "returned" ? i.price * i.quantity : 0), 0
-    );
-    order.subtotal = newTotalSub;
-    order.deliveryCharge = (newTotalSub >= 200 || newTotalSub === 0) ? 0 : 20;
-    order.total = order.subtotal + order.deliveryCharge - order.discount;
+    // 8. Update Order Model with new totals
+    order.subtotal = newSubtotal;
+    order.discount = newDiscount;
+    order.deliveryCharge = newDeliveryCharge;
+    order.total = newTotal;
 
     await order.save();
 
-    res.status(200).json({ success: true, message: "Item cancelled and refund processed", refundAmount, order });
+    res.status(200).json({ 
+        success: true, 
+        message: couponRemoved ? "Item cancelled. Coupon removed due to subtotal requirement." : "Item cancelled and refund processed.",
+        refundAmount, 
+        order 
+    });
 
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -357,10 +407,19 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (orderStatus)   order.orderStatus   = orderStatus;
+    if (orderStatus) {
+      order.orderStatus = orderStatus;
+      // Sync status to items that are not cancelled or returned
+      order.items.forEach(item => {
+        if (!["cancelled", "returned"].includes(item.status)) {
+          item.status = orderStatus;
+        }
+      });
+    }
     if (paymentStatus) order.paymentStatus = paymentStatus;
 
     await order.save();
+
 
     res.status(200).json({
       success: true,
@@ -514,5 +573,79 @@ export const rejectReturn = async (req, res) => {
     res.status(200).json({ success: true, message: "Return request rejected", order });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ✅ CANCEL FULL ORDER (User)
+export const cancelOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const order = await Order.findOne({ _id: id, user: userId });
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+    // Allow cancellation only if not yet shipped/delivered
+    if (!["processing", "pending", "confirmed"].includes(order.orderStatus)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Order cannot be cancelled in its current state (${order.orderStatus})` 
+      });
+    }
+
+    // 1. Restore Stock for all active items
+    for (const item of order.items) {
+      if (item.status !== "cancelled" && item.status !== "returned") {
+        const product = await Product.findById(item.product);
+        if (product) {
+          const sObj = product.sizes.find(s => s.size === item.size);
+          if (sObj) sObj.stock += item.quantity;
+          product.stock += item.quantity;
+          await product.save();
+        }
+        item.status = "cancelled";
+      }
+    }
+
+    // 2. Process Refund (if paid)
+    // Refund the remaining total (the current value of the order)
+    if (order.total > 0 && order.paymentStatus === "paid") {
+      await addMoneyToWallet(
+        userId,
+        order.total,
+        `Refund for cancelled Order #${order._id.toString().slice(-6).toUpperCase()}`,
+        order._id
+      );
+      order.paymentStatus = "refunded";
+    }
+
+    // 3. Coupon Logic: If a one-time coupon was used, "un-use" it so they can try again
+    if (order.couponCode) {
+      const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
+      if (coupon && coupon.isOneTimePerUser) {
+        coupon.usedByUsers = coupon.usedByUsers.filter(uid => uid.toString() !== userId.toString());
+        await coupon.save();
+      }
+    }
+
+    // 4. Update Order Status
+    order.orderStatus = "cancelled";
+    order.notes = (order.notes || "") + ` | Order fully cancelled by user at ${new Date().toLocaleString()}`;
+    
+    // Clear financial values for cancelled order record
+    order.subtotal = 0;
+    order.deliveryCharge = 0;
+    order.discount = 0;
+    order.total = 0;
+
+    await order.save();
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Order cancelled successfully and refund processed to wallet." 
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

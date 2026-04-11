@@ -42,7 +42,21 @@ const couponSchema = new mongoose.Schema(
       type: String,
       enum: ["HOT", "NEW", "LIMITED", ""],
       default: "HOT"
-    }
+    },
+    maxDiscountAmount: {
+      type: Number,
+      default: null, // Only used for percentage discounts
+    },
+    isOneTimePerUser: {
+      type: Boolean,
+      default: false,
+    },
+    usedByUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }
+    ]
   },
   { timestamps: true }
 );

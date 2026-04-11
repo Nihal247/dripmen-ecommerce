@@ -59,7 +59,7 @@ async function loadCoupons() {
         <tr>
           <td><strong style="letter-spacing:.5px;">${c.code}</strong></td>
           <td>${c.discountType === "percentage" ? c.discountValue + "%" : "$" + c.discountValue}</td>
-          <td>$${c.minPurchase || 0}</td>
+          <td>₹${c.minPurchase || 0}</td>
           <td style="color:${isExpired ? "#ef4444" : "inherit"}">${date}</td>
           <td>${tagHtml}</td>
           <td>${topBarHtml}</td>
@@ -118,6 +118,7 @@ async function openEditModal(id) {
     document.getElementById("f-discountType").value        = c.discountType;
     document.getElementById("f-discountValue").value       = c.discountValue;
     document.getElementById("f-minPurchase").value         = c.minPurchase || 0;
+    document.getElementById("f-startDate").value           = new Date(c.startDate || c.createdAt).toISOString().split("T")[0];
     document.getElementById("f-expiryDate").value          = new Date(c.expiryDate).toISOString().split("T")[0];
     document.getElementById("f-tag").value                 = c.tag || "";
     document.getElementById("f-showOnTopBar").checked      = !!c.showOnTopBar;
@@ -161,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("f-code").readOnly           = false;
     form.reset();
     document.getElementById("f-isActive").checked = true;
+    document.getElementById("f-startDate").value = new Date().toISOString().split("T")[0];
     updateToggleLabels();
     modal.classList.add("active");
   };
@@ -190,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       discountValue: Number(document.getElementById("f-discountValue").value),
       minPurchase:   Number(document.getElementById("f-minPurchase").value) || 0,
       expiryDate:    document.getElementById("f-expiryDate").value,
+      startDate:     document.getElementById("f-startDate").value,
       tag:           document.getElementById("f-tag").value,
       showOnTopBar:  document.getElementById("f-showOnTopBar").checked,
       isActive:      document.getElementById("f-isActive").checked,

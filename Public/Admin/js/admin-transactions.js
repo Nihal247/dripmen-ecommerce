@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </td>
                     <td style="font-weight:700; color:${trx.type === 'credit' ? '#16a34a' : '#dc2626'};">
-                        ${trx.type === 'credit' ? '+' : '-'}$${trx.amount.toFixed(2)}
+                        ${trx.type === 'credit' ? '+' : '-'}₹${trx.amount.toFixed(2)}
                     </td>
                     <td><span class="status-badge ${typeClass}">${trx.type.charAt(0).toUpperCase() + trx.type.slice(1)}</span></td>
                     <td><span class="status-badge ${statusClass}">Completed</span></td>

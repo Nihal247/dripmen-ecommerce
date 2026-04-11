@@ -22,7 +22,7 @@
 <body>
     <!-- Top Announcement Bar -->
     <div class="announcement-bar" id="announcement-bar">
-        <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+        <span>Welcome to DripMen | Premium Streetwear</span>
         <button class="close-announcement" aria-label="Close">
             <i class="ph ph-x"></i>
         </button>
@@ -103,47 +103,66 @@
                 </div>
 
                 <!-- Right Section: Order Summary -->
-                <div class="checkout-right">
-                    <h3 class="checkout-section-title" style="margin-bottom: 1rem;">Order Summary</h3>
+                <div class="checkout-right" style="background: #fff; padding: 0; border: none; box-shadow: none;">
+                    <div class="order-summary-card" style="padding: 1.5rem; border: 1px solid #f0f0f0; border-radius: 4px;">
+                    <h3 class="checkout-section-title" style="font-size: 1rem; color: #878787; font-weight: 600; text-transform: uppercase; margin-bottom: 1.5rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.75rem;">Price Details</h3>
                     
-                    <div id="checkout-items-list" class="checkout-items-summary" style="margin-bottom: 2rem; max-height: 300px; overflow-y: auto; padding-right: 5px;">
+                    <div id="checkout-items-list" class="checkout-items-summary" style="margin-bottom: 2rem; max-height: 250px; overflow-y: auto; padding-right: 5px;">
                         <!-- Injected by JS -->
                     </div>
 
                     <div class="summary-row">
-                        <span class="summary-label">Subtotal</span>
-                        <span class="summary-value" id="checkout-subtotal">$0</span>
+                        <span class="summary-label" id="checkout-price-label">Price (MRP)</span>
+                        <span class="summary-value" id="checkout-total-mrp">₹0</span>
                     </div>
 
-                    <div class="summary-row discount-row" id="checkout-discount-row" style="display: none;">
-                        <span class="summary-label">Discount (<span id="checkout-discount-percent">-0%</span>)</span>
-                        <span class="summary-value text-red" id="checkout-discount">-$0</span>
+                    <div class="summary-row" id="checkout-product-discount-row">
+                        <span class="summary-label">Product Discount</span>
+                        <span class="summary-value text-green" id="checkout-discount-mrp">−₹0</span>
                     </div>
 
                     <div class="summary-row">
-                        <span class="summary-label">Shipping</span>
-                        <span class="summary-value" id="checkout-delivery" style="color: #10b981;">$0</span>
+                        <span class="summary-label">Subtotal</span>
+                        <span class="summary-value" id="checkout-subtotal">₹0</span>
                     </div>
 
-                    <hr class="summary-divider" style="margin: 1.5rem 0;" />
-
-                    <div class="summary-row total-row" style="margin-bottom: 2rem;">
-                        <span class="summary-label" style="font-size: 1.25rem; font-weight: 800;">Total</span>
-                        <span class="summary-value" id="checkout-total"
-                            style="font-size: 1.25rem; font-weight: 800; color: #111;">$0</span>
+                    <div class="summary-row" id="checkout-discount-row" style="display: none;">
+                        <span class="summary-label">Coupon Discount</span>
+                        <span class="summary-value text-green" id="checkout-discount">−₹0</span>
                     </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Delivery Fee</span>
+                        <span class="summary-value" id="checkout-delivery">₹0</span>
+                    </div>
+
+                    <hr class="summary-divider" style="border-top: 1px dashed #e0e0e0;" />
+
+                    <div class="summary-row total-row" style="padding: 1rem 0; font-size: 1.2rem; font-weight: 700;">
+                        <span class="summary-label" style="color: #212121;">Total Amount</span>
+                        <span class="summary-value" id="checkout-total" style="color: #212121;">₹0</span>
+                    </div>
+
+                    <hr class="summary-divider" style="border-top: 1px dashed #e0e0e0; margin-top: 0;" />
+
+                    <div class="savings-badge-flipkart" id="checkout-total-savings" style="color: #388e3c; font-weight: 600; font-size: 0.95rem; margin-top: 0.5rem; display: none;">
+                        You will save ₹0 on this order
+                    </div>
+                    </div>
+
+
 
                     <!-- Applied Coupon Card (Hidden by default) -->
                     <div class="applied-promo-card" id="applied-promo-card" style="display: none;">
                         <div class="applied-promo-info">
                             <i class="ph-fill ph-ticket applied-promo-icon"></i>
                             <div class="applied-promo-details">
-                                <span class="applied-promo-code" id="applied-promo-code-text">FLASH50</span>
-                                <span class="applied-promo-desc" id="applied-promo-desc-text">50% Discount Applied</span>
+                                <span class="applied-promo-code" id="applied-promo-code-text">COUPON</span>
+                                <span class="applied-promo-desc" id="applied-promo-desc-text">Discount Applied</span>
                             </div>
                         </div>
-                        <button class="remove-promo-btn" id="checkout-remove-promo" title="Remove Coupon">
-                            <i class="ph ph-x"></i>
+                        <button class="remove-promo-btn" id="checkout-remove-promo" title="Remove Coupon" style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 0.75rem; font-weight: 600;">
+                            <i class="ph ph-x"></i> Remove
                         </button>
                     </div>
 
@@ -176,7 +195,7 @@
                                 <input type="radio" name="payment_method" value="wallet" id="payment-wallet" />
                                 <div class="payment-text-group">
                                     <span class="payment-label-text">My Wallet</span>
-                                    <span class="payment-balance-text">Balance: <span id="wallet-balance-amount">$0.00</span> <span class="text-red" id="wallet-insufficient-msg" style="display: none;">(Insufficient)</span></span>
+                                    <span class="payment-balance-text">Balance: <span id="wallet-balance-amount">₹0.00</span> <span class="text-red" id="wallet-insufficient-msg" style="display: none;">(Insufficient)</span></span>
                                 </div>
                             </div>
                             <i class="ph-fill ph-wallet payment-icon-modern"></i>
@@ -240,7 +259,7 @@
                 </div>
                 <div class="modal-info-row">
                     <span class="modal-info-label">Total Amount</span>
-                    <span class="modal-info-value" id="success-order-total">$0.00</span>
+                    <span class="modal-info-value" id="success-order-total">₹0.00</span>
                 </div>
             </div>
 

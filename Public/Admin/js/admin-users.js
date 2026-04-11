@@ -119,7 +119,7 @@ function renderUsers(users) {
               data-id="${user._id}"
               data-blocked="${blocked}"
               title="${blocked ? "Unblock" : "Block"}">
-        <i class="ph ph-${blocked ? "check-circle" : "prohibit"}"></i>
+        <i class="ph ph-₹{blocked ? "check-circle" : "prohibit"}"></i>
       </button>`;
 
     const deleteBtn = user.isAdmin ? "" : `

@@ -68,14 +68,15 @@ function populateOrderDetails(order) {
     const size = item.size || "L";
     const status = item.status || "processing";
     const returnStatus = item.returnStatus || "none";
+    const refund = Number(item.refundAmount || 0);
     
     // Action Logic
     let actionHTML = "";
     if (status === "processing" || status === "confirmed") {
-        actionHTML = `<button class="btn-cancel-item" onclick="cancelItem('${orderId}', '${item.product}', '${size}')">Cancel</button>`;
+        actionHTML = `<button class="btn btn-outline btn-sm" onclick="cancelItem('${orderId}', '${item.product}', '${size}', ${price}, ${qty}, '${status}', ${total}, '${order.couponCode || ""}')">Cancel</button>`;
     } else if (status === "delivered") {
         if (returnStatus === "none") {
-            actionHTML = `<button class="btn-return-item" onclick="requestReturn('${orderId}', '${item.product}', '${size}')">Return</button>`;
+            actionHTML = `<button class="btn btn-outline btn-sm" onclick="requestReturn('${orderId}', '${item.product}', '${size}')">Return</button>`;
         } else if (returnStatus === "requested") {
             actionHTML = `<span class="status-badge badge-warning">Return Requested</span>`;
         } else if (returnStatus === "approved") {
@@ -83,20 +84,31 @@ function populateOrderDetails(order) {
         } else if (returnStatus === "rejected") {
             actionHTML = `<span class="status-badge badge-error">Return Rejected</span>`;
         }
+    } else if (status === "cancelled") {
+        if (refund > 0) {
+            const rStatus = item.refundStatus === "completed" ? "Completed" : (item.refundStatus === "pending" ? "Pending" : "");
+            actionHTML = `
+                <div class="refund-badge">Refund: ₹${refund.toFixed(2)}</div>
+                ${rStatus ? `<div class="refund-status-text">${rStatus}</div>` : ""}
+            `;
+        } else {
+            actionHTML = '<span class="text-muted">No Refund</span>';
+        }
     }
+
 
     return `
       <tr class="${status === 'cancelled' || status === 'returned' ? 'item-muted' : ''}">
         <td>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <img src="${image}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #eee;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="${image}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:1px solid #eee;">
             <div>
-              <div style="font-weight:600;">${name}</div>
-              <div style="font-size:0.8rem;color:#666;">Size: ${size}</div>
+              <div style="font-weight:700; color:var(--text-main);">${name}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted); margin-top:2px;">Size: ${size}</div>
             </div>
           </div>
         </td>
-        <td>$${price.toFixed(2)}</td>
+        <td style="font-weight:600;">₹${price.toFixed(2)}</td>
         <td>${qty}</td>
         <td><span class="status-tag ${getStatusClass(status)}">${status}</span></td>
         <td class="text-right">${actionHTML}</td>
@@ -107,7 +119,9 @@ function populateOrderDetails(order) {
   // Summary
   const summary = document.getElementById("od-summary");
   const delivery = Number(order.deliveryCharge || 0);
-  const discount = Number(order.discount || 0);
+  const couponDiscount = Number(order.discount || 0);
+  const totalMRP = Number(order.totalMRP || 0);
+  const productDiscount = Number(order.productDiscount || 0);
   const subtotal = Number(order.subtotal || 0);
   
   // Calculate potential refunds display
@@ -115,58 +129,141 @@ function populateOrderDetails(order) {
 
   summary.innerHTML = `
     <div class="summary-row">
-      <span>Subtotal</span>
-      <span>$${subtotal.toFixed(2)}</span>
+      <span>Price (MRP)</span>
+      <span>₹${totalMRP.toFixed(2)}</span>
     </div>
-    ${discount > 0 ? `
-    <div class="summary-row" style="color:var(--accent-red);">
-      <span>Coupon Discount</span>
-      <span>-$${discount.toFixed(2)}</span>
+    <div class="summary-row" style="color:#10b981;">
+      <span>Product Discount</span>
+      <span>−₹${productDiscount.toFixed(2)}</span>
+    </div>
+    <div class="summary-row" style="font-weight:600; border-top: 1px dashed #eee; margin-top:12px; padding-top:12px;">
+      <span>Subtotal</span>
+      <span>₹${subtotal.toFixed(2)}</span>
+    </div>
+    ${couponDiscount > 0 ? `
+    <div class="summary-row" style="color:#10b981;">
+      <span>Coupon Discount (${order.couponCode})</span>
+      <span>−₹${couponDiscount.toFixed(2)}</span>
     </div>` : ""}
     <div class="summary-row">
-      <span>Shipping</span>
-      <span>${delivery === 0 ? "Free" : "$" + delivery.toFixed(2)}</span>
+      <span>Delivery Fee</span>
+      <span>${delivery === 0 ? '<span style="color:#10b981; font-weight:700;">FREE</span>' : "₹" + delivery.toFixed(2)}</span>
     </div>
+    
     ${totalRefunded > 0 ? `
-    <div class="summary-row" style="color:#10b981; font-weight:600; background:#f0fdf4; padding:8px; border-radius:6px; margin:4px 0;">
-      <span>Total Refunded to Wallet</span>
-      <span>$${totalRefunded.toFixed(2)}</span>
-    </div>` : ""}
+    <div class="refund-summary-box">
+        <div class="refund-summary-header">
+            <i class="ph-fill ph-check-circle"></i>
+            <span>Refund Summary</span>
+        </div>
+        <div class="refund-summary-body">
+            <div class="summary-row">
+                <span>Amount Refunded to Wallet</span>
+                <span class="refund-amount-text">₹${totalRefunded.toFixed(2)}</span>
+            </div>
+            <p class="refund-note">The refund has been credited to your DripMen Wallet. You can use this for your next purchase.</p>
+        </div>
+    </div>` : (orderStatus === 'cancelled' && order.paymentMethod.toLowerCase().includes('cash') ? `
+    <div class="refund-summary-box warning">
+        <div class="refund-summary-header">
+            <i class="ph-fill ph-info"></i>
+            <span>No Refund Applicable</span>
+        </div>
+        <div class="refund-summary-body">
+            <p class="refund-note">As this was a Cash on Delivery (COD) order, no payment was transacted. No refund is required.</p>
+        </div>
+    </div>` : "")}
+
     <div class="summary-divider"></div>
     <div class="summary-row total-row">
-      <span>Current Total</span>
-      <span>$${total.toFixed(2)}</span>
+      <span>Order Total</span>
+      <span>₹${total.toFixed(2)}</span>
     </div>
+    
+    ${order.notes && order.notes.includes("Refund") ? `
+    <div class="order-notes-box">
+        <i class="ph ph-info"></i>
+        <span>${order.notes}</span>
+    </div>` : ""}
+
   `;
 }
 
 // ==========================================
 // ACTIONS
 // ==========================================
-window.cancelItem = async (orderId, productId, size) => {
-    if (!confirm("Are you sure you want to cancel this item?")) return;
+let pendingCancellation = null;
+
+window.cancelItem = (orderId, productId, size, price, qty, status, orderTotal, couponCode) => {
+    pendingCancellation = { orderId, productId, size, price, qty };
     
-    const token = localStorage.getItem("token");
-    try {
-        const res = await fetch(`${API}/api/orders/cancel-item`, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}` 
-            },
-            body: JSON.stringify({ orderId, productId, size })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showToast("Item cancelled successfully. Refund added to wallet.");
-            initOrderDetailsPage(); // reload
-        } else {
-            showToast(data.message, "error");
-        }
-    } catch (err) {
-        showToast("Error cancelling item", "error");
+    // Show Modal
+    document.getElementById("refund-modal-overlay").classList.add("active");
+    document.getElementById("refund-modal").classList.add("active");
+
+    // Dynamic Coupon Warning
+    if (couponCode) {
+        document.getElementById("coupon-warning").style.display = "flex";
+    } else {
+        document.getElementById("coupon-warning").style.display = "none";
     }
 };
+
+
+// Modal Event Listeners
+document.addEventListener("DOMContentLoaded", () => {
+    const closeBtn = document.getElementById("close-refund-modal");
+    const dismissBtn = document.getElementById("cancel-modal-btn");
+    const confirmBtn = document.getElementById("confirm-refund-btn");
+    const overlay = document.getElementById("refund-modal-overlay");
+
+    const closeModal = () => {
+        overlay.classList.remove("active");
+        document.getElementById("refund-modal").classList.remove("active");
+        pendingCancellation = null;
+    };
+
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (dismissBtn) dismissBtn.onclick = closeModal;
+    
+    if (confirmBtn) {
+        confirmBtn.onclick = async () => {
+            if (!pendingCancellation) return;
+            
+            const method = document.querySelector('input[name="refundMethod"]:checked').value;
+            const { orderId, productId, size } = pendingCancellation;
+
+            const token = localStorage.getItem("token");
+            try {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="ph ph-spinner-gap ph-bold spin"></i> Processing...';
+                
+                const res = await fetch(`${API}/api/orders/cancel-item`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ orderId, productId, size, refundMethod: method })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast(data.message);
+                    closeModal();
+                    initOrderDetailsPage(); // reload
+                } else {
+                    showToast(data.message, "error");
+                }
+            } catch (err) {
+                showToast("Error cancelling item", "error");
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = "Confirm Cancellation";
+            }
+        };
+    }
+});
 
 window.requestReturn = async (orderId, productId, size) => {
     const reason = prompt("Reason for return:");

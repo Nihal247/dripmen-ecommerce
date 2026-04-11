@@ -8,7 +8,8 @@ import {
   updateOrderStatus,
   requestReturnItem,
   approveReturnItem,
-  rejectReturnItem
+  rejectReturnItem,
+  cancelOrder
 } from "../controllers/orderController.js";
 
 import { protect }   from "../middleware/authMiddleware.js";
@@ -23,6 +24,7 @@ router.get("/:id",        protect, getOrderById);
 
 // Item-level actions (User)
 router.post("/cancel-item", protect, cancelOrderItem);
+router.put("/:id/cancel", protect, cancelOrder);
 router.post("/return-item-request", protect, requestReturnItem);
 
 // admin routes

@@ -30,7 +30,10 @@ export const getAvailableCoupons = async (req, res) => {
   try {
     const coupons = await Coupon.find({
       isActive: true,
-      startDate: { $lte: new Date() },
+      $or: [
+        { startDate: { $exists: false } },
+        { startDate: { $lte: new Date() } }
+      ],
       expiryDate: { $gt: new Date() }
     }).sort({ createdAt: -1 });
     res.json({ success: true, coupons });
@@ -68,11 +71,16 @@ export const updateCoupon = async (req, res) => {
 // ✅ APPLY COUPON (USER)
 export const applyCoupon = async (req, res) => {
   try {
-    const { code, cartTotal } = req.body;
+    const { code, cartTotal } = req.body; // cartTotal here is the subtotal (after product-level discounts)
+    const userId = req.user.id;
+
     const coupon = await Coupon.findOne({
       code: code.toUpperCase(),
       isActive: true,
-      startDate: { $lte: new Date() },
+      $or: [
+        { startDate: { $exists: false } },
+        { startDate: { $lte: new Date() } }
+      ],
       expiryDate: { $gt: new Date() }
     });
 
@@ -80,21 +88,36 @@ export const applyCoupon = async (req, res) => {
       return res.status(404).json({ success: false, message: "Invalid or expired coupon" });
     }
 
+    // 1. Check if user already used this coupon (if one-time)
+    if (coupon.isOneTimePerUser && coupon.usedByUsers.includes(userId)) {
+      return res.status(400).json({ success: false, message: "You have already used this coupon code" });
+    }
+
+    // 2. Validate Minimum Purchase (Subtotal)
     if (cartTotal < coupon.minPurchase) {
+      const moreNeeded = coupon.minPurchase - cartTotal;
       return res.status(400).json({
         success: false,
-        message: `Min purchase of $${coupon.minPurchase} required for this coupon`
+        message: `Add ₹${moreNeeded} more to apply this coupon`,
+        minPurchase: coupon.minPurchase,
+        currentTotal: cartTotal
       });
     }
 
+    // 3. Calculate Discount
     let discount = 0;
     if (coupon.discountType === "percentage") {
       discount = (cartTotal * coupon.discountValue) / 100;
+      
+      // Apply Max Discount Cap if exists
+      if (coupon.maxDiscountAmount && discount > coupon.maxDiscountAmount) {
+        discount = coupon.maxDiscountAmount;
+      }
     } else {
       discount = coupon.discountValue;
     }
 
-    // Cap discount at cartTotal
+    // Cap discount at total subtotal (don't make it negative)
     discount = Math.min(discount, cartTotal);
 
     res.json({
@@ -103,7 +126,9 @@ export const applyCoupon = async (req, res) => {
       finalTotal: Math.round(cartTotal - discount),
       couponCode: coupon.code,
       discountType: coupon.discountType,
-      discountValue: coupon.discountValue
+      discountValue: coupon.discountValue,
+      maxDiscountAmount: coupon.maxDiscountAmount,
+      minPurchase: coupon.minPurchase
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

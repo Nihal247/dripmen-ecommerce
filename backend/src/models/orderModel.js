@@ -8,7 +8,8 @@ const orderItemSchema = new mongoose.Schema({
   },
   name:     { type: String, required: true },
   image:    { type: String },
-  price:    { type: Number, required: true }, // This is the price at time of purchase
+  mrp:      { type: Number }, // Original price
+  price:    { type: Number, required: true }, // Paid price (SalePrice or MRP)
   quantity: { type: Number, required: true, default: 1 },
   size:     { type: String, default: "L" },
   color:    { type: String, default: "Black" },
@@ -56,6 +57,8 @@ const orderSchema = new mongoose.Schema({
     default: "processing"
   },
   subtotal:      { type: Number, required: true },
+  totalMRP:      { type: Number },
+  productDiscount: { type: Number, default: 0 },
   deliveryCharge:{ type: Number, default: 0 },
   total:         { type: Number, required: true },
   couponCode:    { type: String },
