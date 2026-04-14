@@ -37,7 +37,6 @@ import { initOrdersPage } from "./pages/ordersPage.js";
 import { initOrderDetailsPage } from "./pages/orderDetailsPage.js";
 import { initAddressPage } from "./pages/addressPage.js";
 import { initContactPage } from "./pages/contactPage.js";
-import { initPaymentPage } from "./pages/paymentPage.js";
 import { initReturnsPage } from "./pages/returnsPage.js";
 import { initCancellationsPage } from "./pages/cancellationsPage.js";
 import { initAccountPage } from "./pages/accountPage.js";
@@ -305,11 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("contact-form")) {
     initContactPage();
   }
-
-  if (document.getElementById("payment-grid")) {
-    initPaymentPage();
-  }
-
   if (document.getElementById("loginForm")) {
     initLoginPage();
   }
