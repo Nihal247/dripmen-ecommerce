@@ -4,8 +4,12 @@ import {
   getAllCategories,
   getAdminCategories,
   updateCategory,
+<<<<<<< HEAD
   toggleCategoryStatus,
   deleteCategory,
+=======
+toggleCategoryStatus,
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 } from "../controllers/categoryController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { adminOnly } from "../middleware/adminMiddleware.js";

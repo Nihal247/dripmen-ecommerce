@@ -5,10 +5,13 @@ const wishlistItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
     required: true
+<<<<<<< HEAD
   },
   size: {
     type: String,
     default: "N/A"
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   }
 }, { _id: false });
 

@@ -1,5 +1,8 @@
 import { API_BASE_URL } from "../config.js";
+<<<<<<< HEAD
 import { initPasswordToggles } from "../utils/helpers.js";
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 export async function initAccountPage() {
   const token = localStorage.getItem("token");
@@ -9,6 +12,7 @@ export async function initAccountPage() {
     return;
   }
 
+<<<<<<< HEAD
   // ==============================
   // CLEAR ANY BROWSER-AUTOFILLED PASSWORDS
   // Browsers sometimes ignore autocomplete="off" — this ensures fields
@@ -29,6 +33,9 @@ export async function initAccountPage() {
   // ==============================
   // LOAD USER DATA
   // ==============================
+=======
+  // ───────── LOAD USER DATA ─────────
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -51,9 +58,13 @@ export async function initAccountPage() {
     showToast("Network error while loading user", "error");
   }
 
+<<<<<<< HEAD
   // ==============================
   // FORM SUBMIT
   // ==============================
+=======
+  // ───────── FORM SUBMIT ─────────
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   const form = document.getElementById("account-form");
 
   form.addEventListener("submit", async (e) => {
@@ -67,9 +78,13 @@ export async function initAccountPage() {
     const newPass = document.getElementById("newPassword")?.value;
     const confirm = document.getElementById("confirmPassword")?.value;
 
+<<<<<<< HEAD
     // ==============================
     // VALIDATION
     // ==============================
+=======
+    // ───────── VALIDATION ─────────
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     if (!name) {
       showToast("Name cannot be empty", "error");
       return;
@@ -80,6 +95,7 @@ export async function initAccountPage() {
       return;
     }
 
+<<<<<<< HEAD
     // ==============================
     // LOADING STATE
     // ==============================
@@ -91,6 +107,13 @@ export async function initAccountPage() {
     // ==============================
     // UPDATE PROFILE
     // ==============================
+=======
+    // ───────── LOADING STATE ─────────
+    saveBtn.disabled = true;
+    saveBtn.innerText = "Saving...";
+
+    // ───────── UPDATE PROFILE ─────────
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/update-profile`, {
         method: "PUT",
@@ -105,7 +128,12 @@ export async function initAccountPage() {
 
       if (!res.ok || !data.success) {
         showToast(data.message || "Failed to update profile", "error");
+<<<<<<< HEAD
         resetButton(saveBtn);
+=======
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Save Changes";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         return;
       }
 
@@ -113,6 +141,7 @@ export async function initAccountPage() {
 
     } catch (err) {
       showToast("Network error", "error");
+<<<<<<< HEAD
       resetButton(saveBtn);
       return;
     }
@@ -120,23 +149,46 @@ export async function initAccountPage() {
     // ==============================
     // PASSWORD CHANGE
     // ==============================
+=======
+      saveBtn.disabled = false;
+      saveBtn.innerText = "Save Changes";
+      return;
+    }
+
+    // ───────── PASSWORD CHANGE ─────────
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     if (current || newPass || confirm) {
 
       if (!current || !newPass || !confirm) {
         showToast("Fill all password fields", "error");
+<<<<<<< HEAD
         resetButton(saveBtn);
+=======
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Save Changes";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         return;
       }
 
       if (newPass !== confirm) {
         showToast("Passwords do not match", "error");
+<<<<<<< HEAD
         resetButton(saveBtn);
+=======
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Save Changes";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         return;
       }
 
       if (newPass.length < 6) {
         showToast("Password must be at least 6 characters", "error");
+<<<<<<< HEAD
         resetButton(saveBtn);
+=======
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Save Changes";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         return;
       }
 
@@ -157,13 +209,22 @@ export async function initAccountPage() {
 
         if (!res.ok || !data.success) {
           showToast(data.message || "Failed to change password", "error");
+<<<<<<< HEAD
           resetButton(saveBtn);
+=======
+          saveBtn.disabled = false;
+          saveBtn.innerText = "Save Changes";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
           return;
         }
 
         showToast("Password changed successfully ✅");
 
+<<<<<<< HEAD
         // clear fields
+=======
+        // clear password fields
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         document.getElementById("currentPassword").value = "";
         document.getElementById("newPassword").value = "";
         document.getElementById("confirmPassword").value = "";
@@ -173,12 +234,21 @@ export async function initAccountPage() {
       }
     }
 
+<<<<<<< HEAD
     resetButton(saveBtn);
   });
 
   // ==============================
   // CANCEL BUTTON
   // ==============================
+=======
+    // ───────── RESET BUTTON ─────────
+    saveBtn.disabled = false;
+    saveBtn.innerText = "Save Changes";
+  });
+
+  // ───────── CANCEL BUTTON ─────────
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   const cancelBtn = document.getElementById("cancel-btn");
   if (cancelBtn) {
     cancelBtn.addEventListener("click", () => {
@@ -187,6 +257,7 @@ export async function initAccountPage() {
   }
 }
 
+<<<<<<< HEAD
 // ==============================
 // HELPER FUNCTION
 // ==============================
@@ -199,6 +270,9 @@ function resetButton(btn) {
 // ==============================
 // TOAST FUNCTION
 // ==============================
+=======
+// ───────── TOAST FUNCTION ─────────
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 function showToast(message, type = "success") {
   let container = document.getElementById("toast-container");
 
@@ -219,7 +293,10 @@ function showToast(message, type = "success") {
     </div>
   `;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   container.appendChild(toast);
 
   setTimeout(() => toast.classList.add("show"), 50);

@@ -14,7 +14,11 @@ import {
   updateHeaderCounts
 } from "../core.js";
 
+<<<<<<< HEAD
 const API = "http://127.0.0.1:4000";
+=======
+const API = "http://localhost:4000";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 // ==========================================
 // BADGE UPDATE HELPER
@@ -70,8 +74,11 @@ export function initWishlistPage() {
           data-name="${name}"
           data-price="${price}"
           data-image="${image}"
+<<<<<<< HEAD
           data-size="${item.size || "N/A"}"
           data-sizes="${encodeURIComponent(JSON.stringify(item.product?.sizes || item.sizes || []))}"
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
           style="border:none;background:transparent;padding:0;">
 
           <button class="remove-wishlist-btn" data-id="${productId}" data-index="${index}">
@@ -100,10 +107,14 @@ export function initWishlistPage() {
 
             <div class="price-container" style="display:flex;align-items:center;gap:0.75rem;">
               <span class="product-price" style="font-size:1.4rem;font-weight:800;color:var(--text-main);">
+<<<<<<< HEAD
                 ₹${price}
               </span>
               <span class="selected-size" style="font-size:0.8rem; font-weight:600; color:var(--text-muted); background:var(--bg-card); padding:2px 8px; border-radius:4px;">
                 Size: ${item.size || "N/A"}
+=======
+                $${price}
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
               </span>
             </div>
 
@@ -141,11 +152,16 @@ export function initWishlistPage() {
       const productId = removeBtn.dataset.id;
       const token     = localStorage.getItem("token");
 
+<<<<<<< HEAD
       const card      = removeBtn.closest(".product-card");
       const savedSize = card?.dataset.size || "N/A";
 
       if (token && productId) {
         await removeFromWishlistAPI(productId, savedSize);
+=======
+      if (token && productId) {
+        await removeFromWishlistAPI(productId);
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         const items = await getWishlistFromAPI();
         render(items);
         updateWishlistBadge(items.length);
@@ -170,6 +186,7 @@ export function initWishlistPage() {
       const productId = addBtn.dataset.id;
       const token     = localStorage.getItem("token");
 
+<<<<<<< HEAD
       addBtn.textContent = "Moving...";
       addBtn.disabled    = true;
 
@@ -196,6 +213,31 @@ export function initWishlistPage() {
           addBtn.textContent = "Add to Cart";
           addBtn.disabled    = false;
         }
+=======
+      addBtn.textContent = "Adding...";
+      addBtn.disabled    = true;
+
+      if (token && productId) {
+        const data = await addToCartAPI(productId, 1);
+        if (data?.success) {
+          const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+          updateCartBadge(count);
+          showToast("Added to cart 🛒");
+        } else {
+          showToast("Failed to add to cart", "error");
+        }
+      } else {
+        const wishlist = getWishlist();
+        const item     = wishlist[addBtn.dataset.index];
+        addToCart({ ...item, quantity: 1 });
+      }
+
+      addBtn.textContent = "Added ✓";
+      setTimeout(() => {
+        addBtn.textContent = "Add to Cart";
+        addBtn.disabled    = false;
+      }, 1500);
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       return;
     }
   });

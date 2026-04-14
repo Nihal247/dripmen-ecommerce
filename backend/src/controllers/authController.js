@@ -24,6 +24,7 @@ function createTransporter() {
 }
 
 // ==============================
+<<<<<<< HEAD
 // ✅ REGEX VALIDATORS
 // ==============================
 const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
@@ -31,6 +32,8 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$
 const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
 
 // ==============================
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 // ✅ SEND SIGNUP OTP
 // ==============================
 export const sendSignupOtp = async (req, res) => {
@@ -133,7 +136,11 @@ export const verifySignupOtp = async (req, res) => {
 
     res.status(201).json({
       status: "success",
+<<<<<<< HEAD
       token: generateToken(user._id, user.isAdmin || false),
+=======
+      token: generateToken(user._id, user.is_Admin || false),
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       message: "Account created successfully",
     });
 
@@ -162,7 +169,11 @@ export const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
+<<<<<<< HEAD
       { id: user._id, isAdmin: user.isAdmin || false },
+=======
+      { id: user._id, is_Admin: user.is_Admin || false },
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -208,7 +219,11 @@ export const forgotPassword = async (req, res) => {
 
     await user.save();
 
+<<<<<<< HEAD
 const resetUrl = `${process.env.FRONTEND_URL}/Public/User/reset-password.html?token=${resetToken}`;
+=======
+    const resetUrl = `http://localhost:5500/Public/User/reset-password.html?token=${resetToken}`;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     const transporter = createTransporter();
     await transporter.sendMail({
@@ -278,6 +293,7 @@ export const resetPassword = async (req, res) => {
 // UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { name, email, phone } = req.body;
     
     let updates = {};
@@ -309,6 +325,14 @@ export const updateProfile = async (req, res) => {
       req.user.id,
       updates,
       { new: true, runValidators: true }
+=======
+    const { name, email } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, email },
+      { new: true }
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     ).select("-password");
 
     res.json({ success: true, user });
@@ -336,6 +360,7 @@ export const changePassword = async (req, res) => {
         message: "Current password is incorrect"
       });
     }
+<<<<<<< HEAD
     
     if (!passwordRegex.test(newPassword)) {
       return res.status(400).json({ 
@@ -343,6 +368,8 @@ export const changePassword = async (req, res) => {
         message: "New password must be at least 6 characters and include an uppercase letter, lowercase letter, number, and special character" 
       });
     }
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     user.password = newPassword;
     await user.save();

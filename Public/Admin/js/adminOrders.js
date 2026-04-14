@@ -1,12 +1,20 @@
 console.log("ADMIN ORDERS JS LOADED");
 
+<<<<<<< HEAD
 const API = "http://127.0.0.1:4000";
+=======
+const API = "http://localhost:4000";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 // ==============================
 // HELPER
 // ==============================
 function getToken() {
+<<<<<<< HEAD
   return localStorage.getItem("adminToken");
+=======
+  return localStorage.getItem("adminToken") || localStorage.getItem("token");
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 }
 
 // ==============================
@@ -110,8 +118,12 @@ function renderAdminOrders(orders) {
       confirmed:  "#3b82f6",
       shipped:    "#8b5cf6",
       delivered:  "#10b981",
+<<<<<<< HEAD
       cancelled:  "#ef4444",
       returned:   "#6366f1"
+=======
+      cancelled:  "#ef4444"
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     };
     const color = statusColors[status] || "#888";
 
@@ -120,7 +132,11 @@ function renderAdminOrders(orders) {
         <td><strong>${shortId}</strong></td>
         <td>${customer}</td>
         <td>${date}</td>
+<<<<<<< HEAD
         <td>₹${total}</td>
+=======
+        <td>$${total}</td>
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         <td>${payment}</td>
         <td>
           <span style="background:${color}20;color:${color};
@@ -211,6 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
         b.classList.remove("active")
       );
       btn.classList.add("active");
+<<<<<<< HEAD
       const btnText = btn.textContent.trim().toLowerCase();
       
       if (btnText === "all") {
@@ -224,6 +241,12 @@ document.addEventListener("DOMContentLoaded", () => {
       loadAdminOrders(currentFilter, currentSearch);
     });
 
+=======
+      currentFilter = btn.textContent.trim().toLowerCase();
+      if (currentFilter === "all") currentFilter = "all";
+      loadAdminOrders(currentFilter, currentSearch);
+    });
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   });
 
   // search
@@ -236,6 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // load orders
+<<<<<<< HEAD
   const urlParams = new URLSearchParams(window.location.search);
   const statusParam = urlParams.get('status');
   
@@ -252,4 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   loadAdminOrders(currentFilter, currentSearch);
+=======
+  loadAdminOrders();
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 });

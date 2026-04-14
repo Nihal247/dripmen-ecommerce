@@ -17,6 +17,7 @@ export function initAuthSystem() {
     }
 
     // ── Inject Updated Modal HTML ─────────────────────────────────────
+<<<<<<< HEAD
     // ── Check for token in URL (Google Auth Success) ──────────────────
     const urlParams = new URLSearchParams(window.location.search);
     const googleToken = urlParams.get("token");
@@ -31,6 +32,8 @@ export function initAuthSystem() {
     }
 
     // ── Inject Updated Modal HTML ─────────────────────────────────────
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     if (authModal) {
         authModal.innerHTML = `
         <button class="close-modal"><i class="ph ph-x"></i></button>
@@ -153,6 +156,7 @@ export function initAuthSystem() {
         initPasswordToggles();
     }
 
+<<<<<<< HEAD
     // ── Clear Auth Fields (prevent browser autofill) ──────────────────
     function clearAuthFields() {
         setTimeout(() => {
@@ -168,6 +172,8 @@ export function initAuthSystem() {
         }, 50);
     }
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     // ── Check Auth State ──────────────────────────────────────────────
     async function checkAuth() {
         const token = localStorage.getItem("token");
@@ -178,21 +184,32 @@ export function initAuthSystem() {
             if (accountIcon) {
                 accountIcon.onclick = (e) => {
                     e.preventDefault();
+<<<<<<< HEAD
                     if (authModal) {
                         openModal(authModal);
                         clearAuthFields();
                     }
+=======
+                    if (authModal) openModal(authModal);
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
                 };
             }
             return;
         }
 
         try {
+<<<<<<< HEAD
             const res  = await fetch("http://127.0.0.1:4000/api/auth/me", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
             console.log("LOGIN RESPONSE:", data);
+=======
+            const res  = await fetch("http://localhost:4000/api/auth/me", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
             if (data.success) {
                 // ✅ LOGGED IN — show dropdown on click
@@ -231,10 +248,14 @@ export function initAuthSystem() {
                 if (accountIcon) {
                     accountIcon.onclick = (e) => {
                         e.preventDefault();
+<<<<<<< HEAD
                         if (authModal) {
                             openModal(authModal);
                             clearAuthFields();
                         }
+=======
+                        if (authModal) openModal(authModal);
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
                     };
                 }
             }
@@ -295,7 +316,11 @@ export function initAuthSystem() {
                 const password = document.getElementById("modal-login-password").value;
 
                 try {
+<<<<<<< HEAD
                     const response = await fetch("http://127.0.0.1:4000/api/auth/login", {
+=======
+                    const response = await fetch("http://localhost:4000/api/auth/login", {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, password })
@@ -333,6 +358,7 @@ export function initAuthSystem() {
                 const password    = document.getElementById('modal-signup-password').value;
                 const confirmPass = document.getElementById('modal-signup-confirm-password').value;
 
+<<<<<<< HEAD
                 const nameRegex = /^[A-Za-z\s'\-]{2,50}$/;
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
@@ -349,6 +375,11 @@ export function initAuthSystem() {
                 
                 if (!strongPasswordRegex.test(password)) {
                     showToast("Password must be at least 6 characters and include an uppercase letter, lowercase letter, number, and special character", "error");
+=======
+                const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+                if (!strongPasswordRegex.test(password)) {
+                    showToast("Password must be at least 6 characters and include uppercase, lowercase, and number", "error");
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
                     return;
                 }
                 if (password !== confirmPass) {
@@ -434,7 +465,11 @@ export function initAuthSystem() {
             showToast("Signed out successfully");
             checkAuth();
 
+<<<<<<< HEAD
             const protectedPages = ['account.html', 'orders.html', 'address.html', 'returns.html', 'cancellations.html'];
+=======
+            const protectedPages = ['account.html', 'orders.html', 'address.html', 'payment.html', 'returns.html', 'cancellations.html'];
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
             const currentPage    = window.location.pathname.split('/').pop();
             if (protectedPages.includes(currentPage)) {
                 window.location.href = 'index.html';

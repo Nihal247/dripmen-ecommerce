@@ -52,6 +52,7 @@ export function showToast(message, type = "success") {
   }, 3000);
 }
 
+<<<<<<< HEAD
 export async function updateHeaderCounts() {
   let cartCount = 0;
   let wishlistCount = 0;
@@ -75,6 +76,15 @@ export async function updateHeaderCounts() {
     wishlistCount = wishlist.length;
   }
 
+=======
+export function updateHeaderCounts() {
+  const cart     = getCart();
+  const wishlist = getWishlist();
+
+  const cartCount     = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const wishlistCount = wishlist.length;
+
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   document.querySelectorAll(
     ".cart-count, .header-cart-badge, .cart-badge"
   ).forEach(badge => {
@@ -158,6 +168,7 @@ export function getProductDataFromElement(el) {
 // WISHLIST STATE INITIALIZATION
 // ==========================================
 
+<<<<<<< HEAD
 export async function initializeWishlistState() {
   let wishlistIds = new Set();
   const token = localStorage.getItem("token");
@@ -172,6 +183,11 @@ export async function initializeWishlistState() {
     const wishlist = getWishlist();
     wishlist.forEach(item => { if (item.id) wishlistIds.add(item.id); });
   }
+=======
+export function initializeWishlistState() {
+  const wishlist    = getWishlist();
+  const wishlistIds = new Set(wishlist.map(item => item.id));
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
   document.querySelectorAll(".wishlist-btn, .wishlist-main").forEach(btn => {
     const product = getProductDataFromElement(btn);
@@ -195,6 +211,7 @@ export async function initializeWishlistState() {
 
 
 export async function toggleWishlist(btn) {
+<<<<<<< HEAD
   if (!checkAuth("Please login to manage your wishlist")) return;
   
   const product = getProductDataFromElement(btn);
@@ -297,6 +314,80 @@ export async function toggleWishlist(btn) {
   }
   showToast("Added to wishlist ❤️");
   updateHeaderCounts();
+=======
+  const product = getProductDataFromElement(btn);
+  if (!product) return;
+
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    // check if already in API wishlist
+    const wishlistItems = await getWishlistFromAPI();
+    const exists = wishlistItems.find(
+      item => (item.product?._id || item.product) === product.id
+    );
+
+    if (exists) {
+      // remove from API
+      await removeFromWishlistAPI(product.id);
+      btn.classList.remove("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-fill", "ph-heart");
+        icon.classList.add("ph-heart");
+      }
+      showToast("Removed from wishlist");
+    } else {
+      // add to API
+      await addToWishlistAPI(product.id);
+      btn.classList.add("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-heart");
+        icon.classList.add("ph-fill", "ph-heart");
+      }
+      showToast("Added to wishlist ❤️");
+    }
+
+    // update badge count
+    const items = await getWishlistFromAPI();
+    document.querySelectorAll(
+      ".wishlist-count, .header-wishlist-badge, .wishlist-badge"
+    ).forEach(badge => {
+      badge.textContent   = items.length;
+      badge.style.display = items.length > 0 ? "flex" : "none";
+    });
+
+  } else {
+    // fallback localStorage
+    let wishlist  = getWishlist();
+    const index   = wishlist.findIndex(item => item.id === product.id);
+
+    if (index === -1) {
+      wishlist.push(product);
+      btn.classList.add("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-heart");
+        icon.classList.add("ph-fill", "ph-heart");
+      }
+      showToast("Added to wishlist ❤️");
+    } else {
+      wishlist.splice(index, 1);
+      btn.classList.remove("active");
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("ph-fill", "ph-heart");
+        icon.classList.add("ph-heart");
+      }
+      showToast("Removed from wishlist");
+    }
+
+    saveWishlist(wishlist);
+    updateHeaderCounts();
+    window.dispatchEvent(new Event("wishlist-updated"));
+  }
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 }
 
 // ==========================================
@@ -339,6 +430,7 @@ export function addToCart(product) {
 // ==========================================
 
 export async function handleGridAddToCart(btn) {
+<<<<<<< HEAD
   if (!checkAuth("Please login to add to cart")) return;
 
   const product = getProductDataFromElement(btn);
@@ -355,11 +447,22 @@ export async function handleGridAddToCart(btn) {
   // if size modal exists and product has sizes — open it first
   const sizeModal = document.getElementById("size-selection-modal");
   if (sizeModal && product.sizes && product.sizes.length > 0) {
+=======
+  const product = getProductDataFromElement(btn);
+  if (!product) return;
+
+  window.currentSelection = product;
+
+  // if size modal exists — open it first
+  const sizeModal = document.getElementById("size-selection-modal");
+  if (sizeModal) {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     const imgEl   = document.getElementById("size-modal-img");
     const nameEl  = document.getElementById("size-modal-name");
     const priceEl = document.getElementById("size-modal-price");
     if (imgEl)   imgEl.src           = product.image;
     if (nameEl)  nameEl.textContent  = product.name;
+<<<<<<< HEAD
     if (priceEl) priceEl.textContent = `₹${product.price}`;
 
     // Populating Sizes dynamically
@@ -382,11 +485,15 @@ export async function handleGridAddToCart(btn) {
       }
     }
 
+=======
+    if (priceEl) priceEl.textContent = `$${product.price}`;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     openModal(sizeModal);
     return;
   }
 
   // no size modal — call backend API directly
+<<<<<<< HEAD
   const data = await addToCartAPI(product.id, 1);
   if (data?.success) {
     const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
@@ -400,6 +507,26 @@ export async function handleGridAddToCart(btn) {
   } else if (data?.message) {
     showToast(data.message, "error");
   }
+=======
+  const token = localStorage.getItem("token");
+  if (token) {
+    const data = await addToCartAPI(product.id, 1);
+    if (data?.success) {
+      const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+      document.querySelectorAll(
+        ".cart-count, .header-cart-badge, .cart-badge"
+      ).forEach(badge => {
+        badge.textContent   = count;
+        badge.style.display = count > 0 ? "flex" : "none";
+      });
+    }
+  } else {
+    // not logged in — fallback to localStorage
+    addToCart({ ...product, size: "L", quantity: 1 });
+  }
+
+  showCartConfirmModal(product);
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 }
 
 // ==========================================
@@ -475,7 +602,11 @@ export function showCartConfirmModal(item) {
 
   if (nameEl)  nameEl.textContent = item.name  || "";
   if (imgEl)   imgEl.src          = item.image  || "";
+<<<<<<< HEAD
   if (priceEl) priceEl.textContent = `₹${item.price}`;
+=======
+  if (priceEl) priceEl.textContent = `$${item.price}`;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
   openModal(modal);
 }
@@ -484,7 +615,11 @@ export function showCartConfirmModal(item) {
 // CART API FUNCTIONS
 // ==========================================
 
+<<<<<<< HEAD
 const API = "http://127.0.0.1:4000";
+=======
+const API = "http://localhost:4000";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 export async function getCartFromAPI() {
   const token = localStorage.getItem("token");
@@ -501,7 +636,11 @@ export async function getCartFromAPI() {
   }
 }
 
+<<<<<<< HEAD
 export async function addToCartAPI(productId, quantity = 1, size = "N/A", color = "Black") {
+=======
+export async function addToCartAPI(productId, quantity = 1) {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
@@ -511,7 +650,11 @@ export async function addToCartAPI(productId, quantity = 1, size = "N/A", color 
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
+<<<<<<< HEAD
       body: JSON.stringify({ productId, quantity, size, color })
+=======
+      body: JSON.stringify({ productId, quantity })
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     });
     return res.json();
   } catch (err) {
@@ -520,11 +663,19 @@ export async function addToCartAPI(productId, quantity = 1, size = "N/A", color 
   }
 }
 
+<<<<<<< HEAD
 export async function removeFromCartAPI(itemId) {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
     const res = await fetch(`${API}/api/cart/${itemId}`, {
+=======
+export async function removeFromCartAPI(productId) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/cart/${productId}`, {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` }
     });
@@ -535,11 +686,19 @@ export async function removeFromCartAPI(itemId) {
   }
 }
 
+<<<<<<< HEAD
 export async function updateCartItemAPI(itemId, quantity) {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
     const res = await fetch(`${API}/api/cart/${itemId}`, {
+=======
+export async function updateCartItemAPI(productId, quantity) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/cart/${productId}`, {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -573,7 +732,11 @@ export async function getWishlistFromAPI() {
   }
 }
 
+<<<<<<< HEAD
 export async function addToWishlistAPI(productId, size = "N/A") {
+=======
+export async function addToWishlistAPI(productId) {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
@@ -583,7 +746,11 @@ export async function addToWishlistAPI(productId, size = "N/A") {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
+<<<<<<< HEAD
       body: JSON.stringify({ productId, size })
+=======
+      body: JSON.stringify({ productId })
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     });
     return res.json();
   } catch (err) {
@@ -592,12 +759,20 @@ export async function addToWishlistAPI(productId, size = "N/A") {
   }
 }
 
+<<<<<<< HEAD
 export async function removeFromWishlistAPI(productId, size = null) {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
     const url = size ? `${API}/api/wishlist/${productId}?size=${size}` : `${API}/api/wishlist/${productId}`;
     const res = await fetch(url, {
+=======
+export async function removeFromWishlistAPI(productId) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API}/api/wishlist/${productId}`, {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` }
     });
@@ -621,6 +796,7 @@ export async function clearWishlistAPI() {
     console.error("clearWishlistAPI failed:", err);
     return null;
   }
+<<<<<<< HEAD
 }
 
 // ==========================================
@@ -655,4 +831,6 @@ export async function applyCouponAPI(code, cartTotal) {
     console.error("applyCouponAPI failed:", err);
     return { success: false, message: "Failed to apply coupon" };
   }
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 }

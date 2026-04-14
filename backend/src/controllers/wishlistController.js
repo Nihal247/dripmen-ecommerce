@@ -27,7 +27,11 @@ export const getWishlist = async (req, res) => {
 export const addToWishlist = async (req, res) => {
   try {
     const userId    = req.user.id;
+<<<<<<< HEAD
     const { productId, size } = req.body;
+=======
+    const { productId } = req.body;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     if (!productId) {
       return res.status(400).json({ message: "Product ID is required" });
@@ -45,12 +49,20 @@ export const addToWishlist = async (req, res) => {
       // create new wishlist
       wishlist = new Wishlist({
         user:  userId,
+<<<<<<< HEAD
         items: [{ product: productId, size: size || "N/A" }]
+=======
+        items: [{ product: productId }]
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       });
     } else {
       // check if already in wishlist
       const exists = wishlist.items.find(
+<<<<<<< HEAD
         item => item.product.toString() === productId && item.size === (size || "N/A")
+=======
+        item => item.product.toString() === productId
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       );
 
       if (exists) {
@@ -61,7 +73,11 @@ export const addToWishlist = async (req, res) => {
         });
       }
 
+<<<<<<< HEAD
       wishlist.items.push({ product: productId, size: size || "N/A" });
+=======
+      wishlist.items.push({ product: productId });
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     }
 
     await wishlist.save();
@@ -85,7 +101,10 @@ export const removeFromWishlist = async (req, res) => {
   try {
     const userId    = req.user.id;
     const { productId } = req.params;
+<<<<<<< HEAD
     const { size } = req.query; // optional size filter
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     const wishlist = await Wishlist.findOne({ user: userId });
 
@@ -93,6 +112,7 @@ export const removeFromWishlist = async (req, res) => {
       return res.status(404).json({ message: "Wishlist not found" });
     }
 
+<<<<<<< HEAD
     if (size && size !== "all") {
       wishlist.items = wishlist.items.filter(
         item => !(item.product.toString() === productId && item.size === size)
@@ -102,6 +122,11 @@ export const removeFromWishlist = async (req, res) => {
         item => item.product.toString() !== productId
       );
     }
+=======
+    wishlist.items = wishlist.items.filter(
+      item => item.product.toString() !== productId
+    );
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     await wishlist.save();
     await wishlist.populate("items.product");

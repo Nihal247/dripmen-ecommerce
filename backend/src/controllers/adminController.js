@@ -39,7 +39,11 @@ const admin = await User.findOne({ email }).select("+password");
 
     // create token
     const token = jwt.sign(
+<<<<<<< HEAD
   { id: admin._id, isAdmin: true },
+=======
+  { id: admin._id, is_Admin: true },
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   process.env.JWT_SECRET,
   { expiresIn: "7d" }
 );
@@ -91,7 +95,11 @@ export const deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+<<<<<<< HEAD
     if (user.isAdmin) {
+=======
+    if (user.is_Admin) {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       return res.status(400).json({ message: "Cannot delete admin user" });
     }
 
@@ -100,6 +108,7 @@ export const deleteUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+<<<<<<< HEAD
 };
 
 // ✅ DASHBOARD STATS
@@ -295,3 +304,6 @@ export const getAllTransactions = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+=======
+};
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920

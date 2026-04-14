@@ -7,14 +7,22 @@ import {
   closeAllModals
 } from "../core.js";
 
+<<<<<<< HEAD
 const API = "http://127.0.0.1:4000";
+=======
+const API = "http://localhost:4000";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 // ==========================================
 // HELPER: FORMAT DATE
 // ==========================================
 function formatDate(dateStr) {
   const d = new Date(dateStr);
+<<<<<<< HEAD
   return d.toLocaleDateString("en-IN", {
+=======
+  return d.toLocaleDateString("en-US", {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     year: "numeric", month: "short", day: "numeric"
   });
 }
@@ -28,9 +36,13 @@ function getStatusClass(status) {
     confirmed:  "status-confirmed",
     shipped:    "status-shipped",
     delivered:  "status-delivered",
+<<<<<<< HEAD
     cancelled:  "status-cancelled",
     returned:   "status-returned",
     requested:  "status-pending"
+=======
+    cancelled:  "status-cancelled"
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   };
   return map[status?.toLowerCase()] || "status-processing";
 }
@@ -52,7 +64,11 @@ function openOrderDetailsModal(order) {
 
   if (idEl)    idEl.textContent    = "#" + String(orderId).slice(-6).toUpperCase();
   if (dateEl)  dateEl.textContent  = formatDate(order.createdAt || order.date);
+<<<<<<< HEAD
   if (totalEl) totalEl.textContent = `₹${Number(order.total).toFixed(2)}`;
+=======
+  if (totalEl) totalEl.textContent = `$${Number(order.total).toFixed(2)}`;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
   if (statusEl) {
     statusEl.className   = `order-status ${getStatusClass(status)}`;
@@ -88,6 +104,7 @@ function openOrderDetailsModal(order) {
         Cancel Order
       </button>`;
   } else if (status.toLowerCase() === "delivered") {
+<<<<<<< HEAD
     if (order.returnStatus && order.returnStatus !== "none") {
         actionBtnHtml = `<button class="btn btn-outline full-width" disabled style="margin-top:1rem; opacity:0.6;">Return ${order.returnStatus}</button>`;
     } else {
@@ -97,6 +114,13 @@ function openOrderDetailsModal(order) {
             Return Order
           </button>`;
     }
+=======
+    actionBtnHtml = `
+      <button class="btn btn-outline full-width"
+              id="modal-return-btn" style="margin-top:1rem;">
+        Return Order
+      </button>`;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   }
 
   if (actionBtnHtml) {
@@ -114,8 +138,13 @@ function openOrderDetailsModal(order) {
 
     actionsDiv.querySelector("#modal-return-btn")
       ?.addEventListener("click", () => {
+<<<<<<< HEAD
         closeAllModals();
         openReturnModal(orderId);
+=======
+        showToast("Return request submitted");
+        closeAllModals();
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       });
   }
 
@@ -194,6 +223,7 @@ function renderOrders(orders) {
     const shortId  = "#" + String(orderId).slice(-6).toUpperCase();
     const date     = formatDate(order.createdAt || order.date);
     const status   = order.orderStatus || order.status || "processing";
+<<<<<<< HEAD
     const items    = order.items || [];
     const totalMRP = Number(order.totalMRP || 0);
     const subtotal = Number(order.subtotal || 0);
@@ -202,6 +232,10 @@ function renderOrders(orders) {
     // Sum of refunds across all items
     const totalRefunded = items.reduce((sum, i) => sum + (i.refundAmount || 0), 0);
     const isFullyRefunded = status.toLowerCase() === "cancelled" && totalRefunded > 0 && orderTotal === 0;
+=======
+    const total    = order.total || 0;
+    const items    = order.items || [];
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     let actionButtons = "";
     if (status.toLowerCase() === "processing") {
@@ -211,6 +245,7 @@ function renderOrders(orders) {
           Cancel Order
         </button>`;
     } else if (status.toLowerCase() === "delivered") {
+<<<<<<< HEAD
       if (order.returnStatus && order.returnStatus !== "none") {
         const returnLabel = order.returnStatus.charAt(0).toUpperCase() + order.returnStatus.slice(1);
         actionButtons = `
@@ -224,6 +259,13 @@ function renderOrders(orders) {
       <i class="ph ph-arrow-right"></i> View Details to return items
     </span>`;
 }
+=======
+      actionButtons = `
+        <button class="btn btn-outline return-order-btn"
+                data-id="${orderId}">
+          Return Order
+        </button>`;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     }
 
     return `
@@ -233,8 +275,13 @@ function renderOrders(orders) {
             <span class="order-id">Order ${shortId}</span>
             <span class="order-date">${date}</span>
           </div>
+<<<<<<< HEAD
           <span class="order-status ${isFullyRefunded ? 'status-refunded' : getStatusClass(status)}">
             ${isFullyRefunded ? 'Refunded' : (status.charAt(0).toUpperCase() + status.slice(1))}
+=======
+          <span class="order-status ${getStatusClass(status)}">
+            ${status.charAt(0).toUpperCase() + status.slice(1)}
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
           </span>
         </div>
 
@@ -251,14 +298,18 @@ function renderOrders(orders) {
                 <span class="order-item-meta">
                   Qty: ${item.quantity} | Size: ${item.size || "N/A"}
                 </span>
+<<<<<<< HEAD
                 ${item.refundAmount > 0 ? `
                   <span class="refund-tag-inline">Refunded: ₹${item.refundAmount.toFixed(2)}</span>
                 ` : ""}
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
               </div>
             </div>
           `).join("")}
         </div>
 
+<<<<<<< HEAD
 
         <div class="order-footer">
           <div>
@@ -269,6 +320,14 @@ function renderOrders(orders) {
               ₹${isFullyRefunded ? totalRefunded.toFixed(2) : (status.toLowerCase() === 'cancelled' ? Number(order.totalMRP - order.productDiscount + (order.deliveryCharge || 0) - (order.discount || 0)).toFixed(2) : orderTotal.toFixed(2))}
             </span>
             ${status.toLowerCase() === 'cancelled' && !isFullyRefunded ? '<div style="font-size:0.7rem; color:#ef4444; font-weight:600; margin-top:2px;">CANCELLATION (COD)</div>' : ''}
+=======
+        <div class="order-footer">
+          <div>
+            <span class="order-total-label">Total Order:</span>
+            <span class="order-total-value">
+              $${Number(total).toFixed(2)}
+            </span>
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
           </div>
           <div class="order-actions-group" style="display:flex;gap:1rem;">
             ${actionButtons}
@@ -280,7 +339,10 @@ function renderOrders(orders) {
         </div>
       </div>
     `;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   }).join("");
 }
 
@@ -333,6 +395,7 @@ export function initOrdersPage() {
 
   // click handler
   container.addEventListener("click", async (e) => {
+<<<<<<< HEAD
     // 🛡 Robust Target Detection
     const cancelBtn = e.target.closest(".cancel-order-btn");
     const returnBtn = e.target.closest(".return-order-btn");
@@ -348,28 +411,54 @@ export function initOrdersPage() {
     if (cancelBtn) {
       if (confirm("Are you sure you want to cancel this order?")) {
         await cancelOrder(cancelBtn.dataset.id);
+=======
+    const target = e.target;
+
+    // cancel
+    if (target.classList.contains("cancel-order-btn")) {
+      if (confirm("Are you sure you want to cancel this order?")) {
+        await cancelOrder(target.dataset.id);
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       }
       return;
     }
 
     // return
+<<<<<<< HEAD
     if (returnBtn) {
       openReturnModal(returnBtn.dataset.id);
+=======
+    if (target.classList.contains("return-order-btn")) {
+      showToast("Return request submitted");
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       return;
     }
 
     // view details
+<<<<<<< HEAD
     if (viewBtn) {
       const orderId = viewBtn.dataset.id;
+=======
+    if (target.classList.contains("view-details-btn")) {
+      const orderId = target.dataset.id;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       const token   = localStorage.getItem("token");
 
       if (token && orderId) {
         window.location.href = `order-details.html?id=${orderId}`;
+<<<<<<< HEAD
       } else if (viewBtn.dataset.index !== undefined) {
         const orders = JSON.parse(
           localStorage.getItem("dripmen_orders") || "[]"
         );
         openOrderDetailsModal(orders[viewBtn.dataset.index]);
+=======
+      } else {
+        const orders = JSON.parse(
+          localStorage.getItem("dripmen_orders") || "[]"
+        );
+        openOrderDetailsModal(orders[target.dataset.index]);
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       }
       return;
     }
@@ -396,6 +485,7 @@ export function initOrdersPage() {
       }
     }, 200);
   }
+<<<<<<< HEAD
 }
 
 // ==========================================
@@ -403,4 +493,6 @@ export function initOrdersPage() {
 // ==========================================
 function openReturnModal(orderId) {
   window.location.href = `order-details.html?id=${orderId}`;
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 }

@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 const API = "http://127.0.0.1:4000";
 
 function getToken() {
   return localStorage.getItem("adminToken");
+=======
+const API = "http://localhost:4000";
+
+function getToken() {
+  return localStorage.getItem("adminToken") || localStorage.getItem("token");
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 }
 
 function showToast(message, type = "success") {
@@ -101,6 +108,7 @@ function renderUsers(users) {
 
     const name    = user.name  || "Unknown";
     const email   = user.email || "";
+<<<<<<< HEAD
     const role    = user.isAdmin ? "Admin" : "User";
     const blocked = user.isBlocked;
     const authMethod = user.isGoogleUser ? `<span style="background:#ea433520;color:#ea4335;padding:3px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;">G Google</span>` : `<span style="background:#22c55e20;color:#16a34a;padding:3px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;">✉ Email</span>`;
@@ -115,14 +123,34 @@ function renderUsers(users) {
     const statusText  = blocked ? "Blocked" : "Active";
 
     const blockBtn = user.isAdmin ? "" : `
+=======
+    const role    = user.is_Admin ? "Admin" : "User";
+    const blocked = user.isBlocked;
+    const joined  = new Date(user.createdAt).toLocaleDateString("en-US", {
+      year: "numeric", month: "short", day: "numeric"
+    });
+
+    const roleColor   = user.is_Admin ? "#8b5cf6" : "#3b82f6";
+    const statusColor = blocked ? "#ef4444" : "#10b981";
+    const statusText  = blocked ? "Blocked" : "Active";
+
+    const blockBtn = user.is_Admin ? "" : `
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       <button class="action-btn block-btn"
               data-id="${user._id}"
               data-blocked="${blocked}"
               title="${blocked ? "Unblock" : "Block"}">
+<<<<<<< HEAD
         <i class="ph ph-₹{blocked ? "check-circle" : "prohibit"}"></i>
       </button>`;
 
     const deleteBtn = user.isAdmin ? "" : `
+=======
+        <i class="ph ph-${blocked ? "check-circle" : "prohibit"}"></i>
+      </button>`;
+
+    const deleteBtn = user.is_Admin ? "" : `
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       <button class="action-btn delete-btn"
               data-id="${user._id}"
               title="Delete"
@@ -140,7 +168,10 @@ function renderUsers(users) {
           </div>
         </td>
         <td>${email}</td>
+<<<<<<< HEAD
         <td>${authMethod}</td>
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         <td>
           <span style="background:${roleColor}20;color:${roleColor};
                        padding:4px 10px;border-radius:20px;

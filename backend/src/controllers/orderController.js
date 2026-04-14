@@ -1,6 +1,7 @@
 import Order from "../models/orderModel.js";
 import Cart  from "../models/cartModel.js";
 import Product from "../models/Product.js";
+<<<<<<< HEAD
 import Coupon from "../models/couponModel.js";
 import { addMoneyToWallet, deductMoneyFromWallet } from "./walletController.js";
 import Razorpay from "razorpay";
@@ -12,12 +13,18 @@ const razorpay = new Razorpay({
 
 const FREE_DELIVERY_THRESHOLD = 1000;
 const DELIVERY_CHARGE = 40;
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 // ✅ PLACE ORDER
 export const placeOrder = async (req, res) => {
   try {
     const userId = req.user.id;
+<<<<<<< HEAD
     const { address, paymentMethod, couponCode, notes, items: customItems } = req.body;
+=======
+    const { address, paymentMethod, couponCode, notes } = req.body;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     if (!paymentMethod) {
   return res.status(400).json({
     message: "Payment method is required",
@@ -28,6 +35,7 @@ export const placeOrder = async (req, res) => {
       return res.status(400).json({ message: "Address is required" });
     }
 
+<<<<<<< HEAD
     // 🛒 FETCH ITEMS (Priority: Custom Items > Cart)
     let finalItems = [];
 
@@ -145,10 +153,75 @@ export const placeOrder = async (req, res) => {
     const order = await Order.create({
       user:           userId,
       items:          orderItems,
+=======
+    // get user cart
+    const cart = await Cart.findOne({ user: userId }).populate("items.product");
+    const productIds = cart.items.map(item => item.product._id);
+
+const products = await Product.find({
+  _id: { $in: productIds }
+});
+
+const productMap = {};
+
+products.forEach(p => {
+  productMap[p._id.toString()] = p;
+});
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: "Cart is empty" });
+    }
+
+const orderItems = [];
+
+for (const item of cart.items) {
+const product = productMap[item.product._id.toString()];
+
+  if (item.quantity <= 0) {
+  return res.status(400).json({
+    message: "Invalid quantity",
+  });
+}
+
+  // ❌ STOCK VALIDATION
+  if (product.stock < item.quantity) {
+    return res.status(400).json({
+      message: `${product.name} is out of stock`,
+    });
+  }
+
+  // ✅ ADD ITEM TO ORDER
+  orderItems.push({
+    product:  product._id,
+    name:     product.name,
+    image:    product.images?.[0] || "",
+    price:    product.price, // locked price
+    quantity: item.quantity,
+    size:     item.size  || "L",
+    color:    item.color || "Black"
+  });
+
+  // ✅ REDUCE STOCK
+  product.stock -= item.quantity;
+  await product.save();
+}
+
+    // calculate totals
+    const subtotal       = orderItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    const deliveryCharge = subtotal >= 200 ? 0 : 20;
+    const discount       = couponCode === "DRIP20" ? Math.round(subtotal * 0.2) : 0;
+    const total          = subtotal + deliveryCharge - discount;
+
+    // create order
+    const order = await Order.create({
+      user:     userId,
+      items:    orderItems,
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       address,
       paymentMethod:  paymentMethod || "COD",
       paymentStatus:  "pending",
       orderStatus:    "processing",
+<<<<<<< HEAD
       totalMRP,
       productDiscount,
       subtotal,
@@ -200,6 +273,19 @@ export const placeOrder = async (req, res) => {
             await cart.save();
         }
     }
+=======
+      subtotal,
+      deliveryCharge,
+      discount,
+      couponCode: couponCode || "",
+      total,
+      notes: notes || ""
+    });
+
+    // clear the cart after order placed
+    cart.items = [];
+    await cart.save();
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     res.status(201).json({
       success: true,
@@ -253,6 +339,7 @@ export const getOrderById = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 // ✅ CANCEL ORDER ITEM (User)
 export const cancelOrderItem = async (req, res) => {
   try {
@@ -377,6 +464,37 @@ export const cancelOrderItem = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+=======
+// ✅ CANCEL ORDER
+export const cancelOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const order = await Order.findOne({ _id: id, user: userId });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (["shipped", "delivered"].includes(order.orderStatus)) {
+      return res.status(400).json({
+        message: "Cannot cancel order that is already shipped or delivered"
+      });
+    }
+
+    order.orderStatus = "cancelled";
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully",
+      order
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   }
 };
 
@@ -410,6 +528,7 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+<<<<<<< HEAD
     if (orderStatus) {
       order.orderStatus = orderStatus;
       // Sync status to items that are not cancelled or returned
@@ -419,11 +538,17 @@ export const updateOrderStatus = async (req, res) => {
         }
       });
     }
+=======
+    if (orderStatus)   order.orderStatus   = orderStatus;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     if (paymentStatus) order.paymentStatus = paymentStatus;
 
     await order.save();
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     res.status(200).json({
       success: true,
       message: "Order updated",
@@ -433,6 +558,7 @@ export const updateOrderStatus = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+<<<<<<< HEAD
 };
 
 // ✅ REQUEST RETURN ITEM (User)
@@ -651,4 +777,6 @@ export const cancelOrder = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 };

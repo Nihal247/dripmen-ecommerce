@@ -6,8 +6,12 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
+<<<<<<< HEAD
   updateProductStatus,
   getPriceRange
+=======
+  updateProductStatus
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 } from "../controllers/productController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -43,9 +47,12 @@ router.delete("/:id", protect, adminOnly, deleteProduct);
 // get products for users
 router.get("/", getProducts);
 
+<<<<<<< HEAD
 // get price range
 router.get("/price-range", getPriceRange);
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 // get single product
 router.get("/:id", getProductById);
 

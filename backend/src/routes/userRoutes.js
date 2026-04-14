@@ -18,6 +18,7 @@ router.post("/reset-password", resetPassword);
 router.put("/update-profile", protect, updateProfile);
 router.put("/change-password", protect, changePassword);
 
+<<<<<<< HEAD
 // ==============================
 // ✅ GOOGLE AUTH ROUTES
 // ==============================
@@ -69,4 +70,6 @@ router.get(
   }
 );
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 export default router;

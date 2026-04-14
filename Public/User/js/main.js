@@ -10,8 +10,11 @@ import {
   checkAuth,
   addToCart,
   addToCartAPI,
+<<<<<<< HEAD
   addToWishlistAPI,
   removeFromWishlistAPI,
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   showToast,
   openModal,
   closeAllModals,
@@ -146,6 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!activeSizeBtn) { showToast("Please select a size", "error"); return; }
 
       const size  = activeSizeBtn.dataset.size || activeSizeBtn.textContent.trim();
+<<<<<<< HEAD
       const color = "Black"; // Default for grid items
       const token = localStorage.getItem("token");
 
@@ -187,6 +191,32 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast(data?.message || "Failed to add to cart", "error");
         }
       }
+=======
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        // ✅ call backend API
+        const data = await addToCartAPI(window.currentSelection.id, 1);
+        if (data?.success) {
+          const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+          document.querySelectorAll(
+            ".cart-count, .header-cart-badge, .cart-badge"
+          ).forEach(badge => {
+            badge.textContent   = count;
+            badge.style.display = count > 0 ? "flex" : "none";
+          });
+          showToast("Added to cart 🛒");
+        } else {
+          showToast("Failed to add to cart", "error");
+        }
+      } else {
+        // fallback localStorage
+        addToCart({ ...window.currentSelection, size, quantity: 1 });
+      }
+
+      closeAllModals();
+      setTimeout(() => showCartConfirmModal(window.currentSelection), 300);
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       return;
     }
 
@@ -289,7 +319,10 @@ document.addEventListener("DOMContentLoaded", () => {
     initOrderDetailsPage();
   }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   if (document.getElementById("returns-list")) {
     initReturnsPage();
   }
@@ -321,6 +354,17 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("fp-email-form")) {
     initForgotPasswordPage();
   }
+<<<<<<< HEAD
+=======
+
+  if (document.getElementById("reset-password-form")) {
+    initResetPasswordPage();
+  }
+
+  if (document.getElementById("account-form")) {
+    initAccountPage();
+  }
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
   if (document.getElementById("reset-password-form")) {
     initResetPasswordPage();

@@ -23,8 +23,11 @@
     "multer": "^2.1.0",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^8.0.2",
+<<<<<<< HEAD
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     "razorpay": "^2.9.6"
   },
   "devDependencies": {

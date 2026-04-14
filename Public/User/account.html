@@ -20,6 +20,7 @@
 
 <body>
 
+<<<<<<< HEAD
   <!-- ✅ OVERLAY -->
   <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
@@ -59,10 +60,45 @@
               <a href="address.html">Address Book</a>
 
               <a href="wallet.html">My Wallet</a>
+=======
+  <!-- Announcement Bar -->
+  <div class="announcement-bar" id="announcement-bar">
+    <span>Sign up and get 20% off to your first order. Sign Up Now</span>
+    <button class="close-announcement" aria-label="Close">
+      <i class="ph ph-x"></i>
+    </button>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar"></header>
+
+  <!-- MAIN -->
+  <main class="account-page">
+    <div class="account-container">
+
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator"><i class="ph ph-caret-right"></i></span>
+        <span class="current">My Account</span>
+      </nav>
+
+      <div class="account-layout">
+
+        <!-- Sidebar -->
+        <aside class="account-sidebar">
+          <div class="account-nav-section">
+            <h3 class="account-nav-title">Manage My Account</h3>
+            <div class="account-nav-list">
+              <a href="account.html" class="active">My Profile</a>
+              <a href="address.html">Address Book</a>
+              <a href="payment.html">My Payment Options</a>
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
             </div>
           </div>
 
           <div class="account-nav-section">
+<<<<<<< HEAD
             <h3 class="account-nav-title">Orders</h3>
             <div class="account-nav-list">
               <a href="orders.html">Orders</a>
@@ -93,6 +129,27 @@
           <!-- FORM -->
           <form id="account-form" class="account-form" novalidate autocomplete="off">
 
+=======
+            <h3 class="account-nav-title">My Orders</h3>
+            <div class="account-nav-list">
+              <a href="orders.html">My Orders</a>
+              <a href="returns.html">My Returns</a>
+              <a href="cancellations.html">My Cancellations</a>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Content -->
+        <section class="account-content">
+          <div class="account-header">
+            <h1>Edit Your Profile</h1>
+          </div>
+
+          <!-- FORM -->
+          <form id="account-form" class="account-form" novalidate>
+
+            <!-- Name + Email -->
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
             <div class="form-row">
 
               <div class="form-group">
@@ -103,6 +160,10 @@
                   type="text" 
                   placeholder="Your name"
                   required
+<<<<<<< HEAD
+=======
+                  autocomplete="name"
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
                 >
               </div>
 
@@ -114,11 +175,16 @@
                   type="email" 
                   placeholder="Your email"
                   required
+<<<<<<< HEAD
+=======
+                  autocomplete="email"
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
                 >
               </div>
 
             </div>
 
+<<<<<<< HEAD
             <!-- PASSWORD -->
             <div class="password-change-section">
               <h2 class="section-subtitle">Change Password</h2>
@@ -175,6 +241,47 @@
               <button id="cancel-btn" type="button" class="btn btn-outline">Cancel</button>
 
               <button id="save-changes-btn" type="submit" class="btn btn-primary">
+=======
+            <!-- Password -->
+            <div class="password-change-section">
+              <h2 class="section-subtitle">Change Password</h2>
+
+              <div class="form-group">
+                <input 
+                  id="currentPassword" 
+                  type="password" 
+                  placeholder="Current Password"
+                  autocomplete="current-password"
+                >
+              </div>
+
+              <div class="form-group">
+                <input 
+                  id="newPassword" 
+                  type="password" 
+                  placeholder="New Password"
+                  autocomplete="new-password"
+                >
+              </div>
+
+              <div class="form-group">
+                <input 
+                  id="confirmPassword" 
+                  type="password" 
+                  placeholder="Confirm New Password"
+                  autocomplete="new-password"
+                >
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <button type="button" id="cancel-btn" class="btn btn-outline">
+                Cancel
+              </button>
+
+              <button type="submit" id="save-changes-btn" class="btn btn-primary">
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
                 Save Changes
               </button>
             </div>
@@ -190,6 +297,11 @@
   <!-- Footer -->
   <footer class="footer" id="footer"></footer>
 
+<<<<<<< HEAD
+=======
+  <div class="mobile-menu-overlay"></div>
+
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   <script type="module" src="js/main.js"></script>
 
 </body>

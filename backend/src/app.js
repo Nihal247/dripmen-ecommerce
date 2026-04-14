@@ -7,6 +7,7 @@ import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import wishlistRoutes from "./routes/wishlistRoutes.js";
+<<<<<<< HEAD
 import paymentRoutes from "./routes/paymentRoutes.js";
 import addressRoutes from "./routes/addressRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
@@ -15,6 +16,9 @@ import reviewRoutes from "./routes/reviewRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 
 import passport from "./config/passportConfig.js";
+=======
+
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 const app = express();
 
@@ -59,6 +63,7 @@ app.use("/api/orders", orderRoutes);
 // wishlist routes
 app.use("/api/wishlist", wishlistRoutes);
 
+<<<<<<< HEAD
 // wallet routes
 app.use("/api/wallet", walletRoutes);
 
@@ -70,6 +75,8 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/reviews", reviewRoutes);
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 // ==============================
 
 // health check route (optional but useful)

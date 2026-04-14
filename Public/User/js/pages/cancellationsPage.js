@@ -3,7 +3,11 @@
 // ==========================================
 import { showToast } from "../core.js";
 
+<<<<<<< HEAD
 const API = "http://127.0.0.1:4000";
+=======
+const API = "http://localhost:4000";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 // ==========================================
 // HELPER: FORMAT DATE
@@ -44,10 +48,13 @@ function renderCancellations(orders) {
     const items   = order.items || [];
     const total   = Number(order.total || 0);
 
+<<<<<<< HEAD
     // Sum of refunds across all items
     const totalRefunded = items.reduce((sum, i) => sum + (i.refundAmount || 0), 0);
     const isRefunded = totalRefunded > 0;
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     return `
       <div class="order-card">
         <div class="order-header">
@@ -55,9 +62,13 @@ function renderCancellations(orders) {
             <span class="order-id">Order ${shortId}</span>
             <span class="order-date">Cancelled on ${date}</span>
           </div>
+<<<<<<< HEAD
           <span class="order-status ${isRefunded ? 'status-refunded' : 'status-cancelled'}">
             ${isRefunded ? 'Refunded' : 'Cancelled'}
           </span>
+=======
+          <span class="order-status status-cancelled">Cancelled</span>
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
         </div>
 
         <div class="order-items-list">
@@ -73,9 +84,12 @@ function renderCancellations(orders) {
                 <span class="order-item-meta">
                   Qty: ${item.quantity} | Size: ${item.size || "N/A"}
                 </span>
+<<<<<<< HEAD
                 ${item.refundAmount > 0 ? `
                   <span class="refund-tag-inline">Refunded: ₹${item.refundAmount.toFixed(2)}</span>
                 ` : ""}
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
               </div>
             </div>
           `).join("")}
@@ -83,10 +97,15 @@ function renderCancellations(orders) {
 
         <div class="order-footer">
           <div>
+<<<<<<< HEAD
             <span class="order-total-label">${isRefunded ? 'Total Refunded:' : 'Total Amount:'}</span>
             <span class="order-total-value ${isRefunded ? 'text-success' : ''}">
                 ₹${isRefunded ? totalRefunded.toFixed(2) : total.toFixed(2)}
             </span>
+=======
+            <span class="order-total-label">Total Amount:</span>
+            <span class="order-total-value">$${total.toFixed(2)}</span>
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
           </div>
           <button class="btn btn-outline view-details-btn"
                   data-id="${orderId}">

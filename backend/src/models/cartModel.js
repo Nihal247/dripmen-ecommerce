@@ -12,6 +12,7 @@ const cartItemSchema = new mongoose.Schema(
       required: true,
       default: 1,
     },
+<<<<<<< HEAD
     size: {
       type: String,
       required: true,
@@ -23,6 +24,10 @@ const cartItemSchema = new mongoose.Schema(
       default: "Black",
     },
   }
+=======
+  },
+  { _id: false }
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 );
 
 const cartSchema = new mongoose.Schema(

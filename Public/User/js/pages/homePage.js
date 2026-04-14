@@ -3,7 +3,11 @@
 // Loads products from API into homepage sections
 // ==========================================
 
+<<<<<<< HEAD
 const API_BASE = "http://127.0.0.1:4000";
+=======
+const API_BASE = "http://localhost:4000";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
 // ==========================================
 // RENDER CARD — matches exact CSS classes in style.css
@@ -22,10 +26,17 @@ function renderCard(p) {
 
   // Price HTML
   const priceHTML = p.salePrice && p.salePrice < p.price
+<<<<<<< HEAD
     ? `<span class="current-price">₹${p.salePrice}</span>
        <span class="original-price">₹${p.price}</span>
        ${discountBadge}`
     : `<span class="current-price">₹${p.price}</span>`;
+=======
+    ? `<span class="current-price">$${p.salePrice}</span>
+       <span class="original-price">$${p.price}</span>
+       ${discountBadge}`
+    : `<span class="current-price">$${p.price}</span>`;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
   // Stars
   const stars = `
@@ -45,11 +56,17 @@ function renderCard(p) {
     <div class="product-card"
       data-id="${p._id}"
       data-name="${p.name}"
+<<<<<<< HEAD
       data-stock="${p.stock}"
       data-price="${displayPrice}"
       data-image="${image}"
       data-rating="4.5/5"
       data-sizes="${encodeURIComponent(JSON.stringify(p.sizes || []))}">
+=======
+      data-price="${displayPrice}"
+      data-image="${image}"
+      data-rating="4.5/5">
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
       <div class="product-image-container">
         <img src="${image}" alt="${p.name}" class="product-image" />
         <button class="wishlist-btn" aria-label="Add to wishlist">
@@ -102,6 +119,7 @@ async function loadSection(gridId, section, limit) {
 }
 
 // ==========================================
+<<<<<<< HEAD
 // LOAD BANNERS FROM API
 // ==========================================
 async function loadBanners() {
@@ -182,6 +200,11 @@ async function loadBanners() {
 // ==========================================
 export function initHomePage() {
   loadBanners();
+=======
+// INIT — called by main.js
+// ==========================================
+export function initHomePage() {
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
   loadSection("new-arrivals-grid", "new_arrivals", 4);
   loadSection("top-selling-grid",  "top_selling",  4);
   loadSection("explore-grid",      "explore",      8);

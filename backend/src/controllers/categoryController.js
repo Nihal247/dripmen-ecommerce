@@ -38,10 +38,15 @@ const slug = name
   .toLowerCase()
   .replace(/\s+/g, "-");
 
+<<<<<<< HEAD
 // prevent duplicate slug (case-insensitive)
 const slugExists = await Category.findOne({ 
   slug: { $regex: new RegExp("^" + slug + "$", "i") } 
 });
+=======
+// prevent duplicate slug
+const slugExists = await Category.findOne({ slug });
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 if (slugExists) {
   return res.status(400).json({
     success: false,
@@ -132,6 +137,7 @@ export const updateCategory = async (req, res) => {
       });
     }
 
+<<<<<<< HEAD
     const { removeImage } = req.body;
 
     if (removeImage === "true" || req.file) {
@@ -167,6 +173,28 @@ export const updateCategory = async (req, res) => {
       category.name = name.trim();
       category.slug = name.trim().toLowerCase().replace(/\s+/g, "-");
     }
+=======
+    if (req.file) {
+      if (category.image) {
+
+        const publicId = category.image
+          .split("/")
+          .pop()
+          .split(".")[0];
+
+        await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
+      }
+
+      category.image = req.file.path;
+    }
+
+    category.name = name || category.name;
+
+    // create slug automatically
+    category.slug = name
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     category.description = description || category.description;
 
@@ -197,6 +225,7 @@ export const toggleCategoryStatus = async (req, res) => {
 
     const category = await Category.findById(req.params.id);
 
+<<<<<<< HEAD
     if (!category) {
       return res.status(404).json({
         success: false,
@@ -229,13 +258,16 @@ export const deleteCategory = async (req, res) => {
     const { id } = req.params;
     const category = await Category.findById(id);
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     if (!category) {
       return res.status(404).json({
         success: false,
-        message: "Category not found",
+        message: "Category not found"
       });
     }
 
+<<<<<<< HEAD
     // Delete image from Cloudinary if it exists
     if (category.image) {
       try {
@@ -245,14 +277,26 @@ export const deleteCategory = async (req, res) => {
         console.error("Cloudinary delete error:", err);
       }
     }
+=======
+    category.status =
+      category.status === "active" ? "inactive" : "active";
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     await Category.findByIdAndDelete(id);
 
-    res.status(200).json({
+    res.json({
       success: true,
+<<<<<<< HEAD
       message: "Category deleted successfully",
+=======
+      status: category.status
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };

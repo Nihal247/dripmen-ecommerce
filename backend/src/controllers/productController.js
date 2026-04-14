@@ -16,6 +16,7 @@ export const createProduct = async (req, res) => {
       });
     }
 
+<<<<<<< HEAD
     if (Number(price) <= 0) {
       return res.status(400).json({ success: false, message: "Price must be greater than zero" });
     }
@@ -28,6 +29,8 @@ export const createProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: "Stock cannot be negative" });
     }
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     const images = req.files ? req.files.map((f) => f.path) : [];
 
     // Parse section safely
@@ -92,17 +95,24 @@ export const getAdminProducts = async (req, res) => {
 // ==============================
 export const getProducts = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { category, minPrice, maxPrice, color, size, sort, section, search, page = 1, limit = 9 } = req.query;
+=======
+    const { category, minPrice, maxPrice, color, size, sort, section, page = 1, limit = 9 } = req.query;
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     let filter = {
       status: { $in: ["active", "out_of_stock"] }
     };
 
+<<<<<<< HEAD
     // Filter by name (search)
     if (search) {
       filter.name = { $regex: search, $options: "i" };
     }
 
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
     // Filter by homepage section
     if (section) {
       filter.section = { $elemMatch: { $eq: section } };
@@ -152,6 +162,7 @@ export const getProducts = async (req, res) => {
 };
 
 // ==============================
+<<<<<<< HEAD
 // ✅ GET PRICE RANGE (Public)
 // ==============================
 export const getPriceRange = async (req, res) => {
@@ -182,6 +193,8 @@ export const getPriceRange = async (req, res) => {
 };
 
 // ==============================
+=======
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 // ✅ GET SINGLE PRODUCT (Public)
 // ==============================
 export const getProductById = async (req, res) => {
@@ -217,6 +230,7 @@ export const updateProduct = async (req, res) => {
       });
     }
 
+<<<<<<< HEAD
     if (price && Number(price) <= 0) {
       return res.status(400).json({ success: false, message: "Price must be greater than zero" });
     }
@@ -254,6 +268,15 @@ export const updateProduct = async (req, res) => {
     }
     
     product.images = currentImages;
+=======
+    if (req.files && req.files.length > 0) {
+      for (const imageUrl of product.images) {
+        const publicId = imageUrl.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`dripmen-products/${publicId}`);
+      }
+      product.images = req.files.map((f) => f.path);
+    }
+>>>>>>> 517f3a4a938f3f8caf65d9cdcafe9a623a138920
 
     product.name = name || product.name;
     product.description = description || product.description;
