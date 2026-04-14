@@ -243,8 +243,8 @@ export function initProductFilters() {
         let max = parseInt(maxRange.value);
         if (min > max) [min, max] = [max, min];
 
-        if (minVal) minVal.textContent = "$" + min;
-        if (maxVal) maxVal.textContent = "$" + max;
+        if (minVal) minVal.textContent = "₹" + min;
+        if (maxVal) maxVal.textContent = "₹" + max;
 
         if (sliderTrack) {
             const range = minRange.max - minRange.min;

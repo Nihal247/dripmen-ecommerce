@@ -133,7 +133,7 @@ export const verifySignupOtp = async (req, res) => {
 
     res.status(201).json({
       status: "success",
-      token: generateToken(user._id, user.is_Admin || false),
+      token: generateToken(user._id, user.isAdmin || false),
       message: "Account created successfully",
     });
 
@@ -162,7 +162,7 @@ export const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, is_Admin: user.is_Admin || false },
+      { id: user._id, isAdmin: user.isAdmin || false },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -208,7 +208,7 @@ export const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetUrl = `http://localhost:5500/Public/User/reset-password.html?token=${resetToken}`;
+const resetUrl = `${process.env.FRONTEND_URL}/Public/User/reset-password.html?token=${resetToken}`;
 
     const transporter = createTransporter();
     await transporter.sendMail({

@@ -14,7 +14,7 @@ const API = "http://127.0.0.1:4000";
 // ==========================================
 function formatDate(dateStr) {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("en-US", {
+  return d.toLocaleDateString("en-IN", {
     year: "numeric", month: "short", day: "numeric"
   });
 }
@@ -218,12 +218,12 @@ function renderOrders(orders) {
             Return ${returnLabel}
           </button>`;
       } else {
-        actionButtons = `
-          <button class="btn btn-outline return-order-btn"
-                  data-id="${orderId}">
-            Return Order
-          </button>`;
-      }
+  // Return is item-level — user must go to order details to select which item to return
+  actionButtons = `
+    <span style="font-size:0.78rem; color:#888; display:flex; align-items:center; gap:4px;">
+      <i class="ph ph-arrow-right"></i> View Details to return items
+    </span>`;
+}
     }
 
     return `
@@ -402,72 +402,5 @@ export function initOrdersPage() {
 // RETURN MODAL LOGIC
 // ==========================================
 function openReturnModal(orderId) {
-  const modal     = document.getElementById("return-request-modal");
-  const idInput   = document.getElementById("return-order-id");
-  const submitBtn = document.getElementById("confirm-return-btn");
-
-  if (!modal || !idInput || !submitBtn) {
-    console.error("Return modal elements missing");
-    return;
-  }
-  
-  idInput.value = orderId;
-  
-  // 🛡 Strong Layout Override
-  modal.style.setProperty("display", "flex", "important");
-  modal.style.setProperty("position", "fixed", "important");
-  modal.style.setProperty("top", "0", "important");
-  modal.style.setProperty("left", "0", "important");
-  modal.style.setProperty("width", "100vw", "important");
-  modal.style.setProperty("height", "100vh", "important");
-  modal.style.setProperty("z-index", "999999", "important");
-  modal.style.setProperty("align-items", "center", "important");
-  modal.style.setProperty("justify-content", "center", "important");
-  modal.style.setProperty("opacity", "1", "important");
-  modal.style.setProperty("visibility", "visible", "important");
-
-  console.log("Opening Return Modal for Order:", orderId);
-
-  // Reset button state
-  submitBtn.disabled  = false;
-  submitBtn.innerText = "Submit Request";
-
-  // Setup submit handler (remove old one first)
-  submitBtn.onclick = async () => {
-    const reasonEl       = document.getElementById("return-reason");
-    if (!reasonEl) return;
-
-    const reason       = reasonEl.value;
-    const refundMethod = "wallet"; // ALWAYS use Wallet for returns as requested
-
-
-    submitBtn.disabled  = true;
-    submitBtn.innerText = "Submitting...";
-
-    try {
-      const token = localStorage.getItem("token");
-      const res   = await fetch(`${API}/api/orders/${orderId}/return`, {
-        method: "PATCH",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ reason, refundMethod })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        showToast("Return request submitted successfully");
-        modal.style.display = "none";
-        loadOrders(); // Refresh table
-      } else {
-        showToast(data.message || "Failed to submit return", "error");
-      }
-    } catch (err) {
-      showToast("Network error", "error");
-    } finally {
-      submitBtn.disabled  = false;
-      submitBtn.innerText = "Submit Request";
-    }
-  };
+  window.location.href = `order-details.html?id=${orderId}`;
 }

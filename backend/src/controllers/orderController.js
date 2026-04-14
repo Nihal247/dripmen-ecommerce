@@ -10,6 +10,9 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
+const FREE_DELIVERY_THRESHOLD = 1000;
+const DELIVERY_CHARGE = 40;
+
 // ✅ PLACE ORDER
 export const placeOrder = async (req, res) => {
   try {

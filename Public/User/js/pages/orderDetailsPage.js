@@ -10,7 +10,7 @@ const API = "http://127.0.0.1:4000";
 // ==========================================
 function formatDate(dateStr) {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("en-US", {
+  return d.toLocaleDateString("en-IN", {
     year: "numeric", month: "short", day: "numeric"
   });
 }
