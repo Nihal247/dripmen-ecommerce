@@ -94,7 +94,7 @@ export const setDefaultAddress = async (req, res) => {
     const address = await Address.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
       { isDefault: true },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!address) {

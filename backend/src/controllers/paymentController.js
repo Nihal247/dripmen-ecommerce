@@ -75,7 +75,7 @@ export const verifyPayment = async (req, res) => {
         paymentId:       razorpay_payment_id,
         razorpayOrderId: razorpay_order_id
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     res.status(200).json({

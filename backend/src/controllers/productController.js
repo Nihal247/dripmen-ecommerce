@@ -370,7 +370,7 @@ export const updateProductStatus = async (req, res) => {
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     res.json({

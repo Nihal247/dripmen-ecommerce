@@ -59,7 +59,7 @@ export const updateCoupon = async (req, res) => {
     const coupon = await Coupon.findByIdAndUpdate(
       req.params.id,
       { ...req.body },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
     if (!coupon) return res.status(404).json({ success: false, message: "Coupon not found" });
     res.json({ success: true, coupon });

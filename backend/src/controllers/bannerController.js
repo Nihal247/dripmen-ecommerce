@@ -112,7 +112,7 @@ export const getPublicBanners = async (req, res) => {
 export const toggleBannerStatus = async (req, res) => {
   try {
     const { isActive } = req.body;
-    const banner = await Banner.findByIdAndUpdate(req.params.id, { isActive }, { new: true });
+    const banner = await Banner.findByIdAndUpdate(req.params.id, { isActive }, { returnDocument: 'after' });
     res.json({ success: true, banner });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
