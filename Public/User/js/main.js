@@ -341,14 +341,14 @@ async function initTopBarCoupons() {
     return; // Fail silently
   }
 
+  const span = bar.querySelector("span");
+  if (!span) return;
+
   if (!coupons.length) {
     // Optional: add a default message if no coupons are marked for top bar
     span.textContent = "Welcome to DripMen | Shop our Latest Collection";
     return;
   }
-
-  const span = bar.querySelector("span");
-  if (!span) return;
 
   const tagColors = {
     HOT:     { bg: "#FF4D4D", text: "#fff", glow: "rgba(255,77,77,0.5)" },

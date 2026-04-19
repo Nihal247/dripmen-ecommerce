@@ -33,8 +33,12 @@ export const createProduct = async (req, res) => {
     // Parse section safely
     let parsedSection = [];
     if (section) {
-      try { parsedSection = JSON.parse(section); } catch(e) { parsedSection = []; }
-      if (!Array.isArray(parsedSection)) parsedSection = [];
+      try { 
+        const parsed = JSON.parse(section);
+        parsedSection = Array.isArray(parsed) ? parsed : [parsed];
+      } catch(e) { 
+        parsedSection = section.split(",").map(s => s.trim());
+      }
     }
 
     const product = await Product.create({
@@ -105,12 +109,24 @@ export const getProducts = async (req, res) => {
 
     // Filter by homepage section
     if (section) {
-      filter.section = { $elemMatch: { $eq: section } };
+      // Case-insensitive match, allows "new_arrivals" to match "New Arrivals"
+      const safeSection = section.replace(/_/g, ".*");
+      filter.section = { $regex: new RegExp(safeSection, "i") };
     }
 
     if (category && category !== "all") {
-      const cat = await Category.findOne({ name: category });
-      if (cat) filter.categoryId = cat._id;
+      // Case-insensitive match for Category Name OR Slug
+      const cat = await Category.findOne({
+        $or: [
+          { name: { $regex: new RegExp("^" + category + "$", "i") } },
+          { slug: { $regex: new RegExp("^" + category + "$", "i") } }
+        ]
+      });
+      if (cat) {
+        filter.categoryId = cat._id;
+      } else {
+        filter.categoryId = "000000000000000000000000"; // Force empty result if category is invalid
+      }
     }
 
     if (minPrice || maxPrice) {
@@ -268,10 +284,10 @@ export const updateProduct = async (req, res) => {
     let parsedSection = [];
     if (section !== undefined && section !== null) {
       try {
-        parsedSection = JSON.parse(section);
-        if (!Array.isArray(parsedSection)) parsedSection = [];
+        const parsed = JSON.parse(section);
+        parsedSection = Array.isArray(parsed) ? parsed : [parsed];
       } catch(e) {
-        parsedSection = [];
+        parsedSection = section.split(",").map(s => s.trim());
       }
     }
     product.section = parsedSection;
