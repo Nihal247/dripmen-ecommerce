@@ -1,9 +1,8 @@
 import dotenv from "dotenv";
-import app from "./app.js";
-import connectDB from "./config/db.js";
-
 dotenv.config();
 
+import app from "./app.js";
+import connectDB from "./config/db.js";
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err.message);

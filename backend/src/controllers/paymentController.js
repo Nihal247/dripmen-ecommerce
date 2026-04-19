@@ -38,7 +38,8 @@ export const createRazorpayOrder = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    const msg = error.error?.description || error.message || "Payment Gateway Error";
+    res.status(500).json({ success: false, message: msg });
   }
 };
 

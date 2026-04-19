@@ -640,6 +640,11 @@ export function initCheckoutPage() {
 
         const rzpData = await rzpRes.json();
 
+        if (!rzpData.success) {
+          showToast(rzpData.message || "Payment initiation failed. Please check payment gateway configuration.", "error");
+          return;
+        }
+
         const options = {
           key: rzpData.keyId,
           amount: rzpData.amount,
