@@ -473,41 +473,72 @@ export const approveReturnItem = async (req, res) => {
 
     if (!item) return res.status(404).json({ success: false, message: "Return request not found" });
 
-    // 1. Calculate Refund (similar logic to cancel)
-    let refundAmount = item.price * item.quantity;
+    // --- RECALCULATION LOGIC ---
+    const originalTotal = order.total;
     
+    // Mark item as returned temporarily for recalculation
+    item.status = "returned";
+
+    // 1. New Subtotal (active items only)
+    const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
+    const newSubtotal = activeItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    
+    // 2. Coupon Re-validation
+    let newDiscount = 0;
     if (order.couponCode) {
       const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
       if (coupon) {
-        const currentSubtotal = order.items.reduce((sum, i) => 
-          sum + (i.status !== "cancelled" && ["none", "requested", "rejected"].includes(i.returnStatus) ? i.price * i.quantity : 0), 0
-        );
-        const newSubtotal = currentSubtotal - (item.price * item.quantity);
-
-        if (newSubtotal < coupon.minPurchase) {
-          const newDelivery = newSubtotal >= 200 ? 0 : 20;
-          refundAmount = order.total - (newSubtotal + newDelivery);
-          refundAmount = Math.max(0, refundAmount);
-          order.discount = 0;
+        if (newSubtotal < coupon.minPurchase || !coupon.isActive) {
+          newDiscount = 0;
           order.couponCode = "";
+          order.notes = (order.notes || "") + ` | Coupon removed: subtotal ₹${newSubtotal} < min ₹${coupon.minPurchase}`;
         } else {
+          // Recalculate discount value
           if (coupon.discountType === "percentage") {
-            const itemDiscount = Math.round((item.price * item.quantity * coupon.discountValue) / 100);
-            refundAmount -= itemDiscount;
+            newDiscount = Math.round((newSubtotal * coupon.discountValue) / 100);
+            if (coupon.maxDiscountAmount && newDiscount > coupon.maxDiscountAmount) {
+              newDiscount = coupon.maxDiscountAmount;
+            }
+          } else {
+            newDiscount = coupon.discountValue;
           }
+          newDiscount = Math.min(newDiscount, newSubtotal);
         }
+      } else {
+        newDiscount = 0;
+        order.couponCode = "";
       }
     }
 
-    // 2. Process Refund
-    await addMoneyToWallet(
-      order.user,
-      refundAmount,
-      `Refund for returned item (${item.name}) from Order #${order._id.toString().slice(-6).toUpperCase()}`,
-      order._id
-    );
+    // 3. New Delivery Charge (match placeOrder logic)
+    const newDeliveryCharge = (newSubtotal >= 1000 || newSubtotal === 0) ? 0 : 40;
 
-    // 3. Restore Stock
+    // 4. New Total
+    const newTotal = newSubtotal + newDeliveryCharge - newDiscount;
+
+    // 5. Final Refund Amount
+    let refundAmount = originalTotal - newTotal;
+    refundAmount = Math.max(0, refundAmount);
+
+    // 6. Handle Edge Case: All items cancelled/returned
+    if (activeItems.length === 0) {
+      order.orderStatus = "returned";
+    }
+
+    // --- PROCESS REFUND ---
+    if (order.paymentStatus === "paid" || order.paymentStatus === "refunded") {
+        await addMoneyToWallet(
+            order.user,
+            refundAmount,
+            `Refund for returned item (${item.name}) from Order #${order._id.toString().slice(-6).toUpperCase()}`,
+            order._id
+        );
+        item.refundAmount = refundAmount;
+    } else {
+        item.refundAmount = 0;
+    }
+
+    // 7. Restore Stock
     const product = await Product.findById(productId);
     if (product) {
       const sObj = product.sizes.find(s => s.size === size);
@@ -516,20 +547,16 @@ export const approveReturnItem = async (req, res) => {
       await product.save();
     }
 
-    // 4. Update Status
+    // 8. Update Order Model with new totals
     item.returnStatus = "approved";
     item.status = "returned";
-    item.refundAmount = refundAmount;
-
-    // Recalculate order total
-    const newTotalSub = order.items.reduce((sum, i) => 
-      sum + (i.status !== "cancelled" && i.status !== "returned" ? i.price * i.quantity : 0), 0
-    );
-    order.subtotal = newTotalSub;
-    order.deliveryCharge = (newTotalSub >= 200 || newTotalSub === 0) ? 0 : 20;
-    order.total = order.subtotal + order.deliveryCharge - order.discount;
+    order.subtotal = newSubtotal;
+    order.discount = newDiscount;
+    order.deliveryCharge = newDeliveryCharge;
+    order.total = newTotal;
 
     await order.save();
+
     res.status(200).json({ success: true, message: "Return approved and refund processed", order });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

@@ -31,6 +31,17 @@ async function fetchReturns() {
             data.orders.forEach(order => {
                 order.items.forEach(item => {
                     if (item.returnStatus === "requested") {
+                        // Calculate expected refund
+                        let expectedRefund = item.price * item.quantity;
+                        const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
+                        
+                        if (activeItems.length === 1) {
+                            expectedRefund = order.total;
+                        } else if (order.discount > 0 && order.subtotal > 0) {
+                            const proportion = (item.price * item.quantity) / order.subtotal;
+                            expectedRefund -= (order.discount * proportion);
+                        }
+
                         returnRequests.push({
                             orderId: order._id,
                             customer: order.user?.name || "Unknown",
@@ -39,6 +50,7 @@ async function fetchReturns() {
                             size: item.size,
                             price: item.price,
                             qty: item.quantity,
+                            expectedRefund: Math.max(0, expectedRefund),
                             reason: item.returnReason || "N/A",
                             refundMethod: order.refundMethod
                         });
@@ -79,7 +91,7 @@ function renderReturns(requests) {
                 </td>
                 <td>${req.customer}</td>
                 <td style="max-width: 200px; color: #666; font-size: 0.85rem;">${req.reason}</td>
-                <td style="font-weight: 700;">₹${(req.price * req.qty).toFixed(2)}</td>
+                <td style="font-weight: 700;">₹${req.expectedRefund.toFixed(2)}</td>
                 <td>
                     <div style="display: flex; gap: 0.5rem;">
                         <button onclick="approveItemReturn('${req.orderId}', '${req.productId}', '${req.size}')" class="btn btn-sm" style="background: #16a34a; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">Approve</button>
