@@ -119,16 +119,15 @@ function renderUsers(users) {
               data-id="${user._id}"
               data-blocked="${blocked}"
               title="${blocked ? "Unblock" : "Block"}">
-        <i class="ph ph-₹{blocked ? "check-circle" : "prohibit"}"></i>
+        <i class="ph ph-${blocked ? "check-circle" : "prohibit"}"></i>
       </button>`;
 
-    const deleteBtn = user.isAdmin ? "" : `
-      <button class="action-btn delete-btn"
-              data-id="${user._id}"
-              title="Delete"
-              style="color:#ef4444;">
-        <i class="ph ph-trash"></i>
-      </button>`;
+
+
+    const viewBtn = `
+      <a href="admin-user-details.html?id=${user._id}" class="action-btn view-btn" title="View Details" style="color: #3b82f6;">
+        <i class="ph ph-eye"></i>
+      </a>`;
 
     return `
       <tr>
@@ -157,8 +156,8 @@ function renderUsers(users) {
         </td>
         <td>${joined}</td>
         <td>
+          ${viewBtn}
           ${blockBtn}
-          ${deleteBtn}
         </td>
       </tr>
     `;
@@ -167,10 +166,6 @@ function renderUsers(users) {
   // bind buttons
   container.querySelectorAll(".block-btn").forEach(btn => {
     btn.addEventListener("click", () => toggleBlock(btn.dataset.id));
-  });
-
-  container.querySelectorAll(".delete-btn").forEach(btn => {
-    btn.addEventListener("click", () => deleteUser(btn.dataset.id));
   });
 }
 
@@ -197,30 +192,6 @@ async function toggleBlock(userId) {
   }
 }
 
-// ==============================
-// DELETE USER
-// ==============================
-async function deleteUser(userId) {
-  if (!confirm("Are you sure you want to delete this user?")) return;
-
-  const token = getToken();
-  try {
-    const res  = await fetch(`${API}/api/admin/users/${userId}`, {
-      method: "DELETE",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      showToast("User deleted");
-      loadUsers(currentSearch);
-    } else {
-      showToast(data.message || "Failed", "error");
-    }
-  } catch (err) {
-    showToast("Network error", "error");
-  }
-}
 
 // ==============================
 // INIT

@@ -78,12 +78,24 @@ app.get("/", (req, res) => {
 });
 
 // ==============================
-// ✅ 404 HANDLER (optional pro)
+// ✅ 404 HANDLER
 // ==============================
-app.use((req, res) => {
+app.use((req, res, next) => {
   res.status(404).json({
-    status: "error",
+    success: false,
     message: "Route not found",
+  });
+});
+
+// ==============================
+// ✅ GLOBAL ERROR HANDLER
+// ==============================
+app.use((err, req, res, next) => {
+  console.error("Global Error:", err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+    error: process.env.NODE_ENV === "development" ? err : {}
   });
 });
 

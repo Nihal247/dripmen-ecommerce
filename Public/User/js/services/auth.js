@@ -20,6 +20,17 @@ export function initAuthSystem() {
     // ── Check for token in URL (Google Auth Success) ──────────────────
     const urlParams = new URLSearchParams(window.location.search);
     const googleToken = urlParams.get("token");
+    const errorParam = urlParams.get("error");
+
+    if (errorParam === "account_suspended") {
+        showToast("Your account has been suspended. Please contact support.", "error");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        if (authModal) {
+            setTimeout(() => {
+                openModal(authModal);
+            }, 100);
+        }
+    }
 
     if (googleToken) {
         localStorage.setItem("token", googleToken);
@@ -226,6 +237,20 @@ export function initAuthSystem() {
                 // Token invalid — clear and show login on click
                 localStorage.removeItem("token");
                 localStorage.removeItem("dripmen_token");
+
+                if (res.status === 403) {
+                    showToast(data.message || "Your account has been suspended", "error");
+                    
+                    const protectedPages = ['account.html', 'orders.html', 'address.html', 'returns.html', 'cancellations.html', 'checkout.html', 'cart.html'];
+                    const currentPage = window.location.pathname.split('/').pop();
+                    
+                    if (protectedPages.includes(currentPage)) {
+                        window.location.href = 'index.html?error=account_suspended';
+                        return; // stop execution
+                    } else {
+                        if (authModal) openModal(authModal);
+                    }
+                }
 
                 if (dropdown) dropdown.style.display = "none";
                 if (accountIcon) {

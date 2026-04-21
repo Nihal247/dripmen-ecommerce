@@ -26,7 +26,7 @@ function createTransporter() {
 // ==============================
 // ✅ REGEX VALIDATORS
 // ==============================
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|in|org|net|edu|gov|co\.in)$/i;
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
 
@@ -159,6 +159,10 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email }).select("+password");
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({ success: false, message: "Your account has been suspended. Please contact support." });
     }
 
     const token = jwt.sign(

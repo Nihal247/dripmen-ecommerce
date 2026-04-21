@@ -14,6 +14,12 @@ export function initLoginPage() {
     // ---- Check for token in URL (Google Auth Success) ----
     const urlParams = new URLSearchParams(window.location.search);
     const googleToken = urlParams.get("token");
+    const errorParam = urlParams.get("error");
+
+    if (errorParam === "account_suspended") {
+        showToast("Your account has been suspended. Please contact support.", "error");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
     if (googleToken) {
         localStorage.setItem("token", googleToken);

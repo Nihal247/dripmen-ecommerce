@@ -11,7 +11,7 @@ import {
   getAvailableCouponsAPI
 } from "../core.js";
 
-import { isValidEmail, isValidPhone } from "../utils/validators.js";
+import { isValidEmail, isValidPhone, isValidName, isValidZip, isValidStreet, isValidCity } from "../utils/validators.js";
 
 const API = "http://127.0.0.1:4000";
 
@@ -307,6 +307,7 @@ export function initCheckoutPage() {
     document.getElementById("checkout-street").value = addr.street || "";
     document.getElementById("checkout-city").value   = addr.city   || "";
     document.getElementById("checkout-email").value  = addr.email  || "";
+    document.getElementById("checkout-zip").value    = addr.zip    || "";
   }
 
   renderCheckoutAddresses();
@@ -545,6 +546,8 @@ export function initCheckoutPage() {
       const street = document.getElementById("checkout-street");
       const city   = document.getElementById("checkout-city");
       const mobile = document.getElementById("checkout-mobile");
+      const zip    = document.getElementById("checkout-zip");
+      const saveInfo = document.getElementById("checkout-save-info");
 
       let isValid = true;
 
@@ -561,10 +564,11 @@ export function initCheckoutPage() {
         if (errEl) errEl.style.display = "none";
       };
 
-      if (!name.value.trim()) showError(name, "error-name"); else clearError(name, "error-name");
+      if (!isValidName(name.value)) showError(name, "error-name"); else clearError(name, "error-name");
       if (!isValidEmail(email.value.trim())) showError(email, "error-email"); else clearError(email, "error-email");
-      if (!street.value.trim()) showError(street, "error-street"); else clearError(street, "error-street");
-      if (!city.value.trim()) showError(city, "error-city"); else clearError(city, "error-city");
+      if (!isValidStreet(street.value.trim())) showError(street, "error-street"); else clearError(street, "error-street");
+      if (!isValidCity(city.value.trim())) showError(city, "error-city"); else clearError(city, "error-city");
+      if (!isValidZip(zip.value.trim())) showError(zip, "error-zip"); else clearError(zip, "error-zip");
       if (!isValidPhone(mobile.value.replace(/\D/g, ""))) showError(mobile, "error-mobile"); else clearError(mobile, "error-mobile");
 
       if (!isValid) {
@@ -583,6 +587,30 @@ export function initCheckoutPage() {
       if (!token) return;
 
       try {
+        // 💾 SAVE ADDRESS FOR NEXT TIME IF CHECKED
+        if (saveInfo && saveInfo.checked) {
+          try {
+            await fetch(`${API}/api/address`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                name: name.value.trim(),
+                mobile: mobile.value.replace(/\D/g, ""),
+                email: email.value.trim(),
+                street: street.value.trim(),
+                city: city.value.trim(),
+                zip: zip.value.trim(),
+                isDefault: false
+              })
+            });
+          } catch (addrErr) {
+            console.error("Failed to save address for next time", addrErr);
+          }
+        }
+
         // 🧾 CREATE ORDER
         const orderRes = await fetch(`${API}/api/orders`, {
           method: "POST",
@@ -596,6 +624,7 @@ export function initCheckoutPage() {
               phone: mobile.value,
               street: street.value,
               city: city.value,
+              zip: zip.value,
               country: "India"
             },
             paymentMethod,

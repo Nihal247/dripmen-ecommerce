@@ -130,16 +130,11 @@ function renderAdminOrders(orders) {
           </span>
         </td>
         <td>
-          <select onchange="updateOrderStatus('${order._id}', this.value)"
-                  style="padding:6px 10px;border-radius:6px;
-                         border:1px solid #ddd;font-size:0.85rem;
-                         cursor:pointer;">
-            <option value="processing" ${status === "processing" ? "selected" : ""}>Processing</option>
-            <option value="confirmed"  ${status === "confirmed"  ? "selected" : ""}>Confirmed</option>
-            <option value="shipped"    ${status === "shipped"    ? "selected" : ""}>Shipped</option>
-            <option value="delivered"  ${status === "delivered"  ? "selected" : ""}>Delivered</option>
-            <option value="cancelled"  ${status === "cancelled"  ? "selected" : ""}>Cancelled</option>
-          </select>
+          <a href="admin-order-details.html?id=${order._id}" 
+             class="btn" 
+             style="background: #eff6ff; color: #2563eb; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            <i class="ph ph-eye"></i> View
+          </a>
         </td>
       </tr>
     `;

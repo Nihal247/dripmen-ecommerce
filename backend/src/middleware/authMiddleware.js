@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
+import User from "../models/userModel.js";
 
-export const protect = (req, res, next) => {
+export const protect = async (req, res, next) => {
 
   let token;
 
@@ -21,6 +22,22 @@ export const protect = (req, res, next) => {
   try {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been suspended. Please contact support."
+      });
+    }
 
     req.user = decoded;
 

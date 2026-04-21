@@ -423,7 +423,6 @@ export const updateOrderStatus = async (req, res) => {
 
     await order.save();
 
-
     res.status(200).json({
       success: true,
       message: "Order updated",
@@ -432,6 +431,136 @@ export const updateOrderStatus = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ ADMIN — GET SINGLE ORDER DETAILED
+export const adminGetOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findById(id).populate("user", "name email phone");
+    
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+    
+    res.status(200).json({ success: true, order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ✅ ADMIN — UPDATE ITEM STATUS
+export const adminUpdateOrderItemStatus = async (req, res) => {
+  try {
+    const { orderId, itemId } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findById(orderId).populate("user", "name email");
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+    const item = order.items.id(itemId);
+    if (!item) return res.status(404).json({ success: false, message: "Item not found" });
+
+    if (item.status === status) {
+        return res.status(200).json({ success: true, message: "Status unchanged", order });
+    }
+
+    let couponRemoved = false;
+
+    if (status === "cancelled" && item.status !== "cancelled") {
+        // --- CANCELLATION LOGIC ---
+        const originalTotal = order.total;
+        item.status = "cancelled";
+
+        const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
+        const newSubtotal = activeItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+        let newDiscount = 0;
+        if (order.couponCode) {
+            const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
+            if (coupon) {
+                if (newSubtotal < coupon.minPurchase || !coupon.isActive) {
+                    newDiscount = 0;
+                    order.couponCode = "";
+                    couponRemoved = true;
+                    order.notes = (order.notes || "") + ` | Coupon removed by admin item cancellation: subtotal < min`;
+                } else {
+                    if (coupon.discountType === "percentage") {
+                        newDiscount = Math.round((newSubtotal * coupon.discountValue) / 100);
+                        if (coupon.maxDiscountAmount && newDiscount > coupon.maxDiscountAmount) newDiscount = coupon.maxDiscountAmount;
+                    } else {
+                        newDiscount = coupon.discountValue;
+                    }
+                    newDiscount = Math.min(newDiscount, newSubtotal);
+                }
+            } else {
+                newDiscount = 0;
+                order.couponCode = "";
+                couponRemoved = true;
+            }
+        }
+
+        const newDeliveryCharge = (newSubtotal >= 1000 || newSubtotal === 0) ? 0 : 40;
+        const newTotal = newSubtotal + newDeliveryCharge - newDiscount;
+
+        let refundAmount = originalTotal - newTotal;
+        refundAmount = Math.max(0, refundAmount);
+
+        if (activeItems.length === 0) {
+            order.orderStatus = "cancelled";
+            if (order.paymentStatus === "paid") order.paymentStatus = "refunded";
+        }
+
+        if (order.paymentStatus === "paid" || order.paymentStatus === "refunded") {
+            await addMoneyToWallet(order.user._id, refundAmount, `Refund for cancelled item (${item.name}) by Admin from Order #${order._id.toString().slice(-6).toUpperCase()}`, order._id);
+            item.refundAmount = refundAmount;
+            item.refundStatus = "completed";
+        } else {
+            item.refundAmount = 0;
+            item.refundStatus = "none";
+        }
+
+        const product = await Product.findById(item.product);
+        if (product) {
+            const sObj = product.sizes.find(s => s.size === item.size);
+            if (sObj) sObj.stock += item.quantity;
+            product.stock += item.quantity;
+            await product.save();
+        }
+
+        order.subtotal = newSubtotal;
+        order.discount = newDiscount;
+        order.deliveryCharge = newDeliveryCharge;
+        order.total = newTotal;
+        order.notes = (order.notes || "") + ` | Admin cancelled item ${item.name} at ${new Date().toLocaleString()}`;
+
+    } else {
+        // Just updating status (e.g., to shipped, delivered)
+        item.status = status;
+        
+        // Auto-update parent orderStatus based on item statuses
+        const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
+        if (activeItems.length > 0) {
+            const allDelivered = activeItems.every(i => i.status === "delivered");
+            const allShipped = activeItems.every(i => i.status === "shipped" || i.status === "delivered");
+            
+            if (allDelivered) order.orderStatus = "delivered";
+            else if (allShipped) order.orderStatus = "shipped";
+            else order.orderStatus = "processing";
+        }
+    }
+
+    await order.save();
+
+    res.status(200).json({
+        success: true,
+        message: couponRemoved ? "Item status updated. Coupon removed due to subtotal requirements." : "Item status updated",
+        order
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

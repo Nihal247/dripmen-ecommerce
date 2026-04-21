@@ -61,6 +61,11 @@ router.get(
         return res.redirect(`${cleanOrigin}/Public/User/login.html?error=user_not_found`);
       }
 
+      if (user.isBlocked) {
+        console.error("Google Auth failed: User is blocked.");
+        return res.redirect(`${cleanOrigin}/Public/User/login.html?error=account_suspended`);
+      }
+
       const token = generateToken(user._id, user.isAdmin || false);
       
       const frontendUrl = `${cleanOrigin}/Public/User/index.html?token=${token}`;

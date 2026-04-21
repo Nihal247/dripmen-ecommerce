@@ -8,6 +8,8 @@ import {
   showToast
 } from "../core.js";
 
+import { isValidEmail, isValidPhone, isValidName, isValidZip, isValidStreet, isValidCity } from "../utils/validators.js";
+
 const API = "http://127.0.0.1:4000/api/address";
 
 // ==========================================
@@ -101,13 +103,27 @@ export function initAddressPage() {
       if (!token) return;
 
       const formData = new FormData(form);
+      const nameVal = formData.get('name').trim();
+      const mobileVal = formData.get('mobile').replace(/\D/g, "");
+      const emailVal = formData.get('email').trim();
+      const streetVal = formData.get('street').trim();
+      const cityVal = formData.get('city').trim();
+      const zipVal = formData.get('zip').trim();
+
+      if (!isValidName(nameVal)) return showToast("Please enter a valid name (only letters, min 2 chars)", "error");
+      if (!isValidPhone(mobileVal)) return showToast("Please enter a valid 10-digit mobile number", "error");
+      if (emailVal && !isValidEmail(emailVal)) return showToast("Please enter a valid email address", "error");
+      if (!isValidStreet(streetVal)) return showToast("Please enter a valid street address (min 5 chars)", "error");
+      if (!isValidCity(cityVal)) return showToast("Please enter a valid city (only letters, min 2 chars)", "error");
+      if (!isValidZip(zipVal)) return showToast("Please enter a valid 6-digit PIN code", "error");
+
       const addressData = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        mobile: formData.get('mobile'),
-        street: formData.get('street'),
-        city: formData.get('city'),
-        zip: formData.get('zip'),
+        name: nameVal,
+        email: emailVal,
+        mobile: mobileVal,
+        street: streetVal,
+        city: cityVal,
+        zip: zipVal,
         isDefault: formData.get('is-default') === 'on'
       };
 

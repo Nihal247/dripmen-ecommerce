@@ -3,7 +3,7 @@ import {
   adminLogin,
   getAllUsers,
   toggleBlockUser,
-  deleteUser,
+  getUserDetails,
   getDashboardStats,
   getSalesReport,
   getNotifications,
@@ -25,7 +25,7 @@ router.get("/transactions",       protect, adminOnly, getAllTransactions);
 
 // user management
 router.get("/users",              protect, adminOnly, getAllUsers);
+router.get("/users/:id/details",  protect, adminOnly, getUserDetails);
 router.put("/users/:id/block",    protect, adminOnly, toggleBlockUser);
-router.delete("/users/:id",       protect, adminOnly, deleteUser);
 
 export default router;

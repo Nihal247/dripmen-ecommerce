@@ -4,6 +4,7 @@ import Product from "../models/Product.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Wallet from "../models/walletModel.js";
+import Address from "../models/addressModel.js";
 
 export const adminLogin = async (req, res) => {
   try {
@@ -85,22 +86,55 @@ export const toggleBlockUser = async (req, res) => {
   }
 };
 
-// ✅ DELETE USER
-export const deleteUser = async (req, res) => {
+// ✅ GET USER DETAILS (CUSTOMER 360)
+export const getUserDetails = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const userId = req.params.id;
+    
+    // Fetch all related user data in parallel
+    const [user, orders, wallet, addresses] = await Promise.all([
+      User.findById(userId),
+      Order.find({ user: userId }).sort({ createdAt: -1 }),
+      Wallet.findOne({ userId }),
+      Address.find({ user: userId })
+    ]);
 
-    if (user.isAdmin) {
-      return res.status(400).json({ message: "Cannot delete admin user" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: "User deleted" });
+    // Calculate total spent from non-cancelled/returned orders
+    const totalSpent = orders
+      .filter(o => o.orderStatus !== "cancelled" && o.orderStatus !== "returned")
+      .reduce((sum, o) => sum + (o.total || 0), 0);
+
+    const totalOrders = orders.filter(o => o.orderStatus !== "cancelled").length;
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isBlocked: user.isBlocked,
+        isAdmin: user.isAdmin,
+        isGoogleUser: user.isGoogleUser,
+        createdAt: user.createdAt
+      },
+      stats: {
+        totalOrders,
+        totalSpent
+      },
+      orders,
+      wallet: wallet || { balance: 0, transactions: [] },
+      addresses
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // ✅ DASHBOARD STATS
 export const getDashboardStats = async (req, res) => {
