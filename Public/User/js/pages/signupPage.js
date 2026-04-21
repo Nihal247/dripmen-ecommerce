@@ -41,8 +41,8 @@ export function initSignupPage() {
       // Professional name: Letters and single spaces only, 2-50 chars
       const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
       
-      // Strict Gmail only
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+      // Standard email regex
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 
@@ -82,7 +82,7 @@ export function initSignupPage() {
 
       if (!emailRegex.test(email)) {
         setValidationUI(emailInput, false);
-        showToast("Only @gmail.com addresses are allowed", "error");
+        showToast("Invalid email format", "error");
         return;
       }
 

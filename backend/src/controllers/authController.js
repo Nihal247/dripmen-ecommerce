@@ -26,7 +26,7 @@ function createTransporter() {
 // ==============================
 // ✅ REGEX VALIDATORS
 // ==============================
-const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
 
@@ -44,7 +44,7 @@ export const sendSignupOtp = async (req, res) => {
     const trimmedEmail = email.trim().toLowerCase();
 
     if (!emailRegex.test(trimmedEmail)) {
-      return res.status(400).json({ status: "error", message: "Only @gmail.com addresses are allowed" });
+      return res.status(400).json({ status: "error", message: "Invalid email format" });
     }
 
     const userExists = await User.findOne({ email: trimmedEmail });
@@ -114,7 +114,7 @@ export const verifySignupOtp = async (req, res) => {
     }
 
     if (!emailRegex.test(trimmedEmail)) {
-      return res.status(400).json({ status: "error", message: "Only @gmail.com addresses are allowed" });
+      return res.status(400).json({ status: "error", message: "Invalid email format" });
     }
 
     if (!passwordRegex.test(password)) {
@@ -293,7 +293,7 @@ export const updateProfile = async (req, res) => {
     if (email) {
       const trimmedEmail = email.trim().toLowerCase();
       if (!emailRegex.test(trimmedEmail)) {
-        return res.status(400).json({ success: false, message: "Only @gmail.com addresses are allowed" });
+        return res.status(400).json({ success: false, message: "Invalid email format" });
       }
       updates.email = trimmedEmail;
     }

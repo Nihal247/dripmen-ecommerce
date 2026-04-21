@@ -26,7 +26,8 @@ export function debounce(fn, delay = 300) {
 // Call once on any page that has .toggle-password-btn buttons.
 // =========================================================
 export function initPasswordToggles() {
-  document.querySelectorAll(".toggle-password-btn").forEach(function(btn) {
+  document.querySelectorAll(".toggle-password-btn:not(.toggle-initialized)").forEach(function(btn) {
+    btn.classList.add("toggle-initialized");
     btn.addEventListener("click", function(e) {
       e.preventDefault();
       e.stopPropagation();
