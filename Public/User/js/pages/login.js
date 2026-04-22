@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config.js";
 // ==========================================
 // IMPORTS
 // ==========================================
@@ -10,6 +11,12 @@ import { initPasswordToggles } from "../utils/helpers.js";
 export function initLoginPage() {
     // Wire up eye toggles on password fields
     initPasswordToggles();
+
+    // Set dynamic Google Auth URL
+    const googleBtn = document.getElementById("google-login-btn");
+    if (googleBtn) {
+        googleBtn.href = `${API_BASE_URL}/api/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+    }
 
     // ---- Check for token in URL (Google Auth Success) ----
     const urlParams = new URLSearchParams(window.location.search);
@@ -44,7 +51,7 @@ export function initLoginPage() {
         const password = document.getElementById("password").value;
 
         try {
-            const res = await fetch("http://127.0.0.1:4000/api/auth/login", {
+            const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })

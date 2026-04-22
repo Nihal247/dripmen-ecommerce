@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config.js";
 import { showToast } from "../core.js";
 import { initPasswordToggles } from "../utils/helpers.js";
 
@@ -17,7 +18,7 @@ export function initForgotPasswordPage() {
 
     try {
 
-      const res = await fetch("http://127.0.0.1:4000/api/auth/forgot-password", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

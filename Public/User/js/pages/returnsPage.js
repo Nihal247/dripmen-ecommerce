@@ -1,9 +1,10 @@
+import { API_BASE_URL } from "../config.js";
  // ==========================================
 // IMPORT CORE FUNCTIONS
 // ==========================================
 import { showToast, openModal, closeAllModals } from "../core.js";
 
-const API = "http://127.0.0.1:4000";
+const API = API_BASE_URL;
 
 // ==========================================
 // HELPER: FORMAT DATE

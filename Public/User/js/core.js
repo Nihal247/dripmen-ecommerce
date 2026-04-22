@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "./config.js";
 // ==========================================
 // LOCAL STORAGE HELPERS
 // ==========================================
@@ -486,7 +487,7 @@ export function showCartConfirmModal(item) {
 // CART API FUNCTIONS
 // ==========================================
 
-const API = "http://127.0.0.1:4000";
+const API = API_BASE_URL;
 
 export async function getCartFromAPI() {
   const token = localStorage.getItem("token");

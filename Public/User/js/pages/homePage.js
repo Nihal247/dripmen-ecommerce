@@ -1,9 +1,10 @@
+import { API_BASE_URL } from "../config.js";
 // ==========================================
 // PAGE: HOME
 // Loads products from API into homepage sections
 // ==========================================
 
-const API_BASE = "http://127.0.0.1:4000";
+const API_BASE = API_BASE_URL;
 
 // ==========================================
 // RENDER CARD — matches exact CSS classes in style.css

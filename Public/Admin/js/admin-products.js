@@ -1,6 +1,6 @@
 import { validateProductForm } from "./product-validation.js";
 
-const API_BASE = "http://127.0.0.1:4000";
+const API_BASE = window.API_BASE_URL;
 const token = localStorage.getItem("adminToken");
 
 let selectedFiles = []; // Track newly selected images

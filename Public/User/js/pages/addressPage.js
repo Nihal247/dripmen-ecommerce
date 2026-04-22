@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config.js";
 // ==========================================
 // IMPORT CORE FUNCTIONS
 // ==========================================
@@ -10,7 +11,7 @@ import {
 
 import { isValidEmail, isValidPhone, isValidName, isValidZip, isValidStreet, isValidCity } from "../utils/validators.js";
 
-const API = "http://127.0.0.1:4000/api/address";
+const API = `${API_BASE_URL}/api/address`;
 
 // ==========================================
 // PAGE: ADDRESS BOOK

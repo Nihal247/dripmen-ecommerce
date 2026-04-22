@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // Dashboard Stats & Recent Orders
     // ==========================================
-    const API = "http://127.0.0.1:4000";
+    const API = window.API_BASE_URL;
     const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
 
     let revenueChart = null;

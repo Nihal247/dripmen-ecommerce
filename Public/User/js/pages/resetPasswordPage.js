@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config.js";
 import { initPasswordToggles } from "../utils/helpers.js";
 
 export function initResetPasswordPage() {
@@ -18,7 +19,7 @@ export function initResetPasswordPage() {
 
     try {
 
-      const res = await fetch("http://127.0.0.1:4000/api/auth/reset-password", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

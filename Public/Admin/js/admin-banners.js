@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:4000/api/banners";
+const API = `${window.API_BASE_URL}/api/banners`;
 
 function getToken() {
   return localStorage.getItem("adminToken");

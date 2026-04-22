@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config.js";
 // ==========================================
 // IMPORTS
 // ==========================================
@@ -11,6 +12,12 @@ import { initPasswordToggles } from "../utils/helpers.js";
 export function initSignupPage() {
   // Wire up eye toggles on password fields
   initPasswordToggles();
+
+  // Set dynamic Google Auth URL
+  const googleBtn = document.getElementById("google-signup-btn");
+  if (googleBtn) {
+      googleBtn.href = `${API_BASE_URL}/api/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+  }
 
   const signupForm = document.getElementById("signup-form");
   const otpForm = document.getElementById("signup-otp-form");
@@ -101,7 +108,7 @@ export function initSignupPage() {
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:4000/api/auth/signup", {
+        const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -157,7 +164,7 @@ export function initSignupPage() {
         }
 
         const response = await fetch(
-          "http://127.0.0.1:4000/api/auth/verify-signup-otp",
+          `${API_BASE_URL}/api/auth/verify-signup-otp`,
           {
             method: "POST",
             headers: {

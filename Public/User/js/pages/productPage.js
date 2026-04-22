@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config.js";
 import {
   showToast,
   checkAuth,
@@ -7,7 +8,7 @@ import {
   initializeWishlistState
 } from "../core.js";
 
-const API_BASE = "http://127.0.0.1:4000";
+const API_BASE = API_BASE_URL;
 
 const COLOR_MAP = {
   black:"bg-black", white:"bg-white", blue:"bg-blue", green:"bg-green",

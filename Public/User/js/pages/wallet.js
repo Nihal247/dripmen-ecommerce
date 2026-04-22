@@ -1,4 +1,5 @@
-const API_BASE = "http://127.0.0.1:4000";
+import { API_BASE_URL } from "../config.js";
+const API_BASE = API_BASE_URL;
 const token = localStorage.getItem("token");
 
 // ==============================

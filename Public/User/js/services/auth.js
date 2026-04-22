@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config.js";
 // ==========================================
 import { openModal, closeAllModals, showToast } from "../core.js";
 import { initPasswordToggles } from "../utils/helpers.js";
@@ -75,7 +76,7 @@ export function initAuthSystem() {
                     </div>
 
                     <div class="social-auth-buttons">
-                        <a href="http://127.0.0.1:4000/api/auth/google?origin=${encodeURIComponent(window.location.origin)}" class="btn btn-google full-width">
+                        <a href="${API_BASE_URL}/api/auth/google?origin=${encodeURIComponent(window.location.origin)}" class="btn btn-google full-width">
                             <i class="ph ph-google-logo"></i>
                             Continue with Google
                         </a>
@@ -127,7 +128,7 @@ export function initAuthSystem() {
                         </div>
 
                         <div class="social-auth-buttons">
-                            <a href="http://127.0.0.1:4000/api/auth/google?origin=${encodeURIComponent(window.location.origin)}" class="btn btn-google full-width">
+                            <a href="${API_BASE_URL}/api/auth/google?origin=${encodeURIComponent(window.location.origin)}" class="btn btn-google full-width">
                                 <i class="ph ph-google-logo"></i>
                                 Continue with Google
                             </a>
@@ -199,7 +200,7 @@ export function initAuthSystem() {
         }
 
         try {
-            const res  = await fetch("http://127.0.0.1:4000/api/auth/me", {
+            const res  = await fetch(`${API_BASE_URL}/api/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -321,7 +322,7 @@ export function initAuthSystem() {
                 const password = document.getElementById("modal-login-password").value;
 
                 try {
-                    const response = await fetch("http://127.0.0.1:4000/api/auth/login", {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, password })
@@ -383,7 +384,7 @@ export function initAuthSystem() {
                 }
 
                 try {
-                    const response = await fetch("http://127.0.0.1:4000/api/auth/signup", {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email }),
@@ -422,7 +423,7 @@ export function initAuthSystem() {
                         return;
                     }
 
-                    const response = await fetch("http://127.0.0.1:4000/api/auth/verify-signup-otp", {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/verify-signup-otp`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ ...storedData, otp }),
