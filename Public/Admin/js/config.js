@@ -1,1 +1,1 @@
-window.API_BASE_URL = "http://127.0.0.1:4000"; // Change this to your live backend URL (e.g. https://dripmen-api.onrender.com)
+export const API_BASE_URL = "https://dripmen-api.onrender.com";
