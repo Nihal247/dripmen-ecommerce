@@ -571,9 +571,10 @@ function initCartButtons() {
 
   // ✅ Add to Cart — calls backend API
   const handleAddToCart = async () => {
-    if (!checkAuth("Please login to add to cart")) return;
     const item = getSelection();
     if (!item) return;
+
+    if (!checkAuth("Please login to add to cart")) return;
 
     const data = await addToCartAPI(item.id, item.quantity, item.size, item.color);
     if (data?.success) {
@@ -592,9 +593,10 @@ function initCartButtons() {
 
   // ✅ Buy Now — isolates item for checkout
   const handleBuyNow = async () => {
-    if (!checkAuth("Please login to continue")) return;
     const item = getSelection();
     if (!item) return;
+
+    if (!checkAuth("Please login to continue")) return;
 
     // 🚀 Isolation: Store in special 'buy_now' key for checkoutPage.js
     localStorage.setItem("dripmen_buy_now_item", JSON.stringify({

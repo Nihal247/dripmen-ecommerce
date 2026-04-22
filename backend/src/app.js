@@ -27,8 +27,30 @@ app.use(passport.initialize());
 
 // ==============================
 
-// enable CORS (important for frontend)
-app.use(cors());
+// enable CORS with specific origins (important for security)
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5500",
+  "http://127.0.0.1:5500"
+];
+
+const isLocalhostDynamicPort = (origin) => {
+  return /^http:\/\/(localhost|127\.0\.0\.1):550[0-9]$/.test(origin);
+};
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || isLocalhostDynamicPort(origin)) {
+      callback(null, true);
+    } else {
+      console.error("CORS Error: Origin not allowed ->", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 // parse JSON body
 app.use(express.json());

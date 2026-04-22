@@ -237,6 +237,7 @@ export function initAuthSystem() {
                 // Token invalid — clear and show login on click
                 localStorage.removeItem("token");
                 localStorage.removeItem("dripmen_token");
+                localStorage.removeItem("dripmen_user");
 
                 if (res.status === 403) {
                     showToast(data.message || "Your account has been suspended", "error");
@@ -455,6 +456,7 @@ export function initAuthSystem() {
             e.preventDefault();
             localStorage.removeItem("token");
             localStorage.removeItem('dripmen_token');
+            localStorage.removeItem('dripmen_user');
             if (dropdown) dropdown.style.display = "none";
             showToast("Signed out successfully");
             checkAuth();

@@ -108,10 +108,64 @@ export const getCart = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const cart = await Cart.findOne({ user: userId }).populate("items.product");
+    let cart = await Cart.findOne({ user: userId }).populate("items.product");
 
     if (!cart) {
       return res.status(200).json({ items: [] });
+    }
+
+    let cartModified = false;
+    const validItems = [];
+
+    for (let item of cart.items) {
+      // If product no longer exists, skip it
+      if (!item.product) {
+        cartModified = true;
+        continue;
+      }
+
+      const product = item.product;
+      const sizeObj = product.sizes ? product.sizes.find(s => s.size === item.size) : null;
+      const availableStock = sizeObj ? sizeObj.stock : product.stock || 0;
+
+      // If completely out of stock, remove from cart automatically
+      if (availableStock === 0) {
+        cartModified = true;
+        continue;
+      }
+
+      // Adjust quantity if it exceeds available stock
+      if (item.quantity > availableStock) {
+        item.quantity = availableStock;
+        cartModified = true;
+      }
+
+      // Enforce max limit per item
+      if (item.quantity > MAX_LIMIT_PER_ITEM) {
+        item.quantity = MAX_LIMIT_PER_ITEM;
+        cartModified = true;
+      }
+
+      validItems.push(item);
+    }
+
+    if (cartModified || validItems.length !== cart.items.length) {
+      await Cart.updateOne(
+        { user: userId },
+        {
+          $set: {
+            items: validItems.map(i => ({
+              product: i.product._id,
+              quantity: i.quantity,
+              size: i.size,
+              color: i.color,
+              _id: i._id
+            }))
+          }
+        }
+      );
+      // Re-fetch populated cart to return accurate data
+      cart = await Cart.findOne({ user: userId }).populate("items.product");
     }
 
     res.status(200).json(cart);

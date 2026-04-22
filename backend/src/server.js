@@ -4,8 +4,11 @@ dotenv.config();
 import app from "./app.js";
 import connectDB from "./config/db.js";
 
+// Global Error Boundary for Uncaught Exceptions
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err.message);
+  console.error("🔥 Uncaught Exception! Shutting down...");
+  console.error(err.name, err.message);
+  console.error(err.stack);
   process.exit(1);
 });
 
@@ -19,8 +22,11 @@ const server = app.listen(PORT, () => {
 });
 
 
+// Global Error Boundary for Unhandled Promise Rejections
 process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection:", err.message);
+  console.error("🔥 Unhandled Rejection! Shutting down...");
+  console.error(err.name, err.message);
+  console.error(err.stack);
   server.close(() => {
     process.exit(1);
   });

@@ -407,14 +407,16 @@ export async function handleGridAddToCart(btn) {
 // ==========================================
 
 export function checkAuth(message = "Please login first") {
-  const isLoggedIn =
-    localStorage.getItem("dripmen_token") === "true" ||
-    !!localStorage.getItem("token") ||
-    !!localStorage.getItem("dripmen_user");
+  const isLoggedIn = !!localStorage.getItem("token");
 
   if (!isLoggedIn) {
     showToast(message, "error");
-    setTimeout(() => { window.location.href = "login.html"; }, 1200);
+    const authModal = document.getElementById("auth-modal");
+    if (authModal) {
+      openModal(authModal);
+    } else {
+      setTimeout(() => { window.location.href = "login.html"; }, 1200);
+    }
     return false;
   }
   return true;

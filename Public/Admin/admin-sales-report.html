@@ -47,18 +47,27 @@
             <div class="products-toolbar" style="flex-wrap: wrap; gap: 1rem; height: auto;">
                 <div class="filters" style="flex-wrap: wrap; align-items: flex-end; width: 100%;">
                     <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Preset Range</label>
+                        <select id="dateRangePreset" class="filter-select" style="height: 42px;">
+                            <option value="Custom">Custom Dates</option>
+                            <option value="Today">Today</option>
+                            <option value="Last7Days">Last 7 Days</option>
+                            <option value="Last30Days" selected>Last 30 Days</option>
+                            <option value="ThisYear">This Year</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Start Date</label>
-                        <input type="date" id="startDate" class="form-input" style="height: 42px; padding: 0 1rem;">
+                        <input type="date" id="startDate" class="form-input" style="height: 42px; padding: 0 1rem;" disabled>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">End Date</label>
-                        <input type="date" id="endDate" class="form-input" style="height: 42px; padding: 0 1rem;">
+                        <input type="date" id="endDate" class="form-input" style="height: 42px; padding: 0 1rem;" disabled>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                         <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Report Type</label>
+                         <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Group By</label>
                         <select id="reportType" class="filter-select" style="height: 42px;">
                             <option value="Daily">Daily</option>
-                            <option value="Weekly">Weekly</option>
                             <option value="Monthly">Monthly</option>
                             <option value="Yearly">Yearly</option>
                         </select>

@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     const reportTypeSelect = document.getElementById('reportType');
+    const dateRangePreset = document.getElementById('dateRangePreset');
     const generateBtn = document.getElementById('generateReport');
     
     const totalSalesEl = document.getElementById('totalSales');
@@ -19,13 +20,56 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentReportData = [];
     let currentSummary = null;
 
-    // 1. Set Default Dates (Current Month)
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
-    
-    startDateInput.value = firstDay;
-    endDateInput.value = lastDay;
+    // 1. Handle Date Range Presets
+    function setDateRange() {
+        const preset = dateRangePreset.value;
+        const now = new Date();
+        let start, end;
+        
+        startDateInput.disabled = true;
+        endDateInput.disabled = true;
+
+        if (preset === 'Custom') {
+            startDateInput.disabled = false;
+            endDateInput.disabled = false;
+            return; // Keep existing values or allow manual entry
+        } else if (preset === 'Today') {
+            start = new Date();
+            end = new Date();
+        } else if (preset === 'Last7Days') {
+            start = new Date();
+            start.setDate(now.getDate() - 7);
+            end = new Date();
+        } else if (preset === 'Last30Days') {
+            start = new Date();
+            start.setDate(now.getDate() - 30);
+            end = new Date();
+        } else if (preset === 'ThisYear') {
+            start = new Date(now.getFullYear(), 0, 1);
+            end = new Date();
+        }
+
+        if (start && end) {
+            // Adjust to local timezone format (YYYY-MM-DD)
+            startDateInput.value = new Date(start.getTime() - (start.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            endDateInput.value = new Date(end.getTime() - (end.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+        }
+    }
+
+    dateRangePreset.addEventListener('change', () => {
+        setDateRange();
+        // Automatically fetch report if not custom
+        if (dateRangePreset.value !== 'Custom') {
+            fetchSalesReport();
+        }
+    });
+
+    reportTypeSelect.addEventListener('change', () => {
+        fetchSalesReport();
+    });
+
+    // Initialize default range
+    setDateRange();
 
     // 2. Fetch Data
     async function fetchSalesReport() {
