@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "dev": "nodemon --legacy-watch --watch src --ext js,json src/server.js"
+  "dev": "nodemon --legacy-watch --watch src --ext js,json src/server.js",
+  "start": "node src/server.js"
 },
   "keywords": [],
   "author": "",
