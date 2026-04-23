@@ -1,1 +1,1 @@
-export const API_BASE_URL = "https://dripmen-api.onrender.com";
+window.API_BASE_URL = "https://dripmen-api.onrender.com";

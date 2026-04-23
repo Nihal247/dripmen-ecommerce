@@ -38,9 +38,13 @@ const isLocalhostDynamicPort = (origin) => {
   return /^http:\/\/(localhost|127\.0\.0\.1):550[0-9]$/.test(origin);
 };
 
+const isNetlifyOrigin = (origin) => {
+  return /\.netlify\.app$/.test(origin);
+};
+
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || isLocalhostDynamicPort(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || isLocalhostDynamicPort(origin) || isNetlifyOrigin(origin)) {
       callback(null, true);
     } else {
       console.error("CORS Error: Origin not allowed ->", origin);
