@@ -5,7 +5,8 @@ import {
   addToCart,
   addToCartAPI,
   showCartConfirmModal,
-  initializeWishlistState
+  initializeWishlistState,
+  optimizeImage
 } from "../core.js";
 
 const API_BASE = API_BASE_URL;
@@ -272,7 +273,7 @@ function populatePage(p) {
   }
 
   const mainImg = document.getElementById("main-product-image");
-  if (mainImg && p.images?.[0]) mainImg.src = p.images[0];
+  if (mainImg && p.images?.[0]) mainImg.src = optimizeImage(p.images[0], 800);
 
   const thumbList = document.querySelector(".thumbnail-list");
   if (thumbList && p.images?.length) {
@@ -281,8 +282,8 @@ function populatePage(p) {
       : p.images;
     thumbList.style.display = "";
     thumbList.innerHTML = thumbImages.map((img, i) => `
-      <button class="thumb-btn ${i === 0 ? "active" : ""}" data-image="${img}">
-        <img src="${img}" alt="${p.name} view ${i + 1}" />
+      <button class="thumb-btn ${i === 0 ? "active" : ""}" data-image="${optimizeImage(img, 800)}">
+        <img src="${optimizeImage(img, 150)}" alt="${p.name} view ${i + 1}" loading="lazy" />
       </button>`).join("");
   }
 
@@ -430,7 +431,7 @@ async function loadRecommended(currentProductId, categoryName) {
 // RENDER CARD
 // ==========================================
 function renderCard(p) {
-  const image        = p.images?.[0] || "images/placeholder.png";
+  const image        = optimizeImage(p.images?.[0] || "images/placeholder.png", 500);
   const displayPrice = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
   let discountBadge  = "";
   if (p.salePrice && p.salePrice < p.price) {
@@ -447,7 +448,7 @@ function renderCard(p) {
       data-price="${displayPrice}" data-image="${image}"
       data-sizes="${encodeURIComponent(JSON.stringify(p.sizes || []))}">
       <div class="product-image-container">
-        <img src="${image}" alt="${p.name}" class="product-image" />
+        <img src="${image}" alt="${p.name}" class="product-image" loading="lazy" />
         <button class="wishlist-btn" aria-label="Add to wishlist">
           <i class="ph ph-heart"></i>
         </button>
@@ -580,24 +581,34 @@ function initCartButtons() {
   };
 
   // ✅ Add to Cart — calls backend API
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (e) => {
+    const btn = e.currentTarget;
     const item = getSelection();
     if (!item) return;
 
     if (!checkAuth("Please login to add to cart")) return;
 
-    const data = await addToCartAPI(item.id, item.quantity, item.size, item.color);
-    if (data?.success) {
-      const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
-      document.querySelectorAll(
-        ".cart-count, .header-cart-badge, .cart-badge"
-      ).forEach(badge => {
-        badge.textContent   = count;
-        badge.style.display = count > 0 ? "flex" : "none";
-      });
-      showCartConfirmModal(item);
-    } else {
-      showToast(data?.message || "Failed to add to cart", "error");
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = `<i class="ph ph-circle-notch spinning"></i> Adding...`;
+    btn.disabled = true;
+
+    try {
+      const data = await addToCartAPI(item.id, item.quantity, item.size, item.color);
+      if (data?.success) {
+        const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+        document.querySelectorAll(
+          ".cart-count, .header-cart-badge, .cart-badge"
+        ).forEach(badge => {
+          badge.textContent   = count;
+          badge.style.display = count > 0 ? "flex" : "none";
+        });
+        showCartConfirmModal(item);
+      } else {
+        showToast(data?.message || "Failed to add to cart", "error");
+      }
+    } finally {
+      btn.innerHTML = originalHTML;
+      btn.disabled = false;
     }
   };
 

@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config.js";
+import { optimizeImage } from "../core.js";
 // ==========================================
 // PAGE: HOME
 // Loads products from API into homepage sections
@@ -10,7 +11,7 @@ const API_BASE = API_BASE_URL;
 // RENDER CARD — matches exact CSS classes in style.css
 // ==========================================
 function renderCard(p) {
-  const image        = p.images?.[0] || "images/placeholder.png";
+  const image        = optimizeImage(p.images?.[0] || "images/placeholder.png", 500);
   const displayPrice = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
   const isOutOfStock = p.status === "out_of_stock" || p.stock === 0;
 
@@ -52,7 +53,7 @@ function renderCard(p) {
       data-rating="4.5/5"
       data-sizes="${encodeURIComponent(JSON.stringify(p.sizes || []))}">
       <div class="product-image-container">
-        <img src="${image}" alt="${p.name}" class="product-image" />
+        <img src="${image}" alt="${p.name}" class="product-image" loading="lazy" />
         <button class="wishlist-btn" aria-label="Add to wishlist">
           <i class="ph ph-heart"></i>
         </button>
@@ -128,7 +129,7 @@ async function loadBanners() {
     if (data.success && data.banners && data.banners.length > 0) {
       container.innerHTML = data.banners.map(b => `
           <a href="${b.link || 'products.html'}" class="hero-banner-link track-banner-click" data-id="${b._id}" style="position:relative; display:block;">
-            <img src="${b.image}" alt="${b.title || 'Banner'}" class="hero-banner-img" />
+            <img src="${optimizeImage(b.image, 1200)}" alt="${b.title || 'Banner'}" class="hero-banner-img" />
           </a>
       `).join("") + "<style>#hero-banner-container::-webkit-scrollbar { display: none; } .hero-banner-link img { width: 100%; height: auto; object-fit: cover; }</style>";
 

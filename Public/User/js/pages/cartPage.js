@@ -31,6 +31,9 @@ export function initCartPage() {
   async function renderCart() {
     const token = localStorage.getItem("token");
     const cart  = token ? await getCartFromAPI() : getCart();
+    
+    // Store cart globally for faster optimistic checks
+    if (token) window.lastFetchedCart = cart;
 
     if (cart.length === 0) {
       document.getElementById("empty-cart-state").style.display = "block";
@@ -454,14 +457,15 @@ export function initCartPage() {
       const itemId = qtyBtn.dataset.id;
       const delta  = parseInt(qtyBtn.dataset.delta);
       const token  = localStorage.getItem("token");
-      const input  = qtyBtn.closest(".qty-stepper").querySelector(".qty-input");
+      const stepper = qtyBtn.closest(".qty-stepper");
+      const input   = stepper.querySelector(".qty-input");
       const currentQty = parseInt(input.value);
       const newQty = currentQty + delta;
 
       if (newQty < 1) return;
 
-      const cart   = token ? await getCartFromAPI() : getCart();
-      const item   = token ? cart.find(i => i._id === itemId) : cart[qtyBtn.dataset.index];
+      const cart   = token ? (window.lastFetchedCart || await getCartFromAPI()) : getCart();
+      const item   = token ? cart.find(i => (i._id || i.id) === itemId) : cart[qtyBtn.dataset.index];
       const product = item.product || item;
       const stock   = product.stock || 0;
 
@@ -476,20 +480,39 @@ export function initCartPage() {
         }
       }
 
+      // --- OPTIMISTIC UI UPDATE ---
+      input.value = newQty;
+      const itemCard = qtyBtn.closest(".cart-item");
+      const lineTotalEl = itemCard.querySelector(".line-total strong");
+      const originalPrice = product.price || 0;
+      const salePrice = product.salePrice || null;
+      const price = salePrice || originalPrice;
+      if (lineTotalEl) lineTotalEl.textContent = `₹${price * newQty}`;
+      
+      // Update summary based on optimistic change (simplified)
+      const currentSubtotal = parseFloat(document.getElementById("summary-subtotal")?.textContent.replace("₹", "") || 0);
+      const subtotalEl = document.getElementById("summary-subtotal");
+      if (subtotalEl) subtotalEl.textContent = `₹${currentSubtotal + (price * delta)}`;
+
       if (token && itemId) {
         const res = await updateCartItemAPI(itemId, newQty);
-        if (!res?.success && res?.message) {
-          showToast(res.message, "error");
-          return;
+        if (res?.success) {
+          // Store for next optimistic check
+          window.lastFetchedCart = res.cart.items;
+          // Refresh full summary with real data
+          updateSummary(res.cart.items);
+          updateHeaderCounts();
+        } else {
+          showToast(res?.message || "Failed to update", "error");
+          renderCart(); // Revert on failure
         }
       } else {
         const localCart = getCart();
         localCart[qtyBtn.dataset.index].quantity += delta;
         saveCart(localCart);
+        renderCart();
+        updateHeaderCounts();
       }
-
-      renderCart();
-      updateHeaderCounts();
     }
   });
 

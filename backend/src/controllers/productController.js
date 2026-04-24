@@ -150,6 +150,7 @@ export const getProducts = async (req, res) => {
 
     const products = await Product.find(filter)
       .populate("categoryId", "name")
+      .select("name price salePrice images status stock section categoryId createdAt")
       .sort(sortOption)
       .skip(skip)
       .limit(Number(limit));

@@ -67,6 +67,15 @@ section: {
 
 }, { timestamps: true });
 
+// Add Indexes for Performance
+productSchema.index({ name: "text" }); // For search
+productSchema.index({ categoryId: 1 });
+productSchema.index({ status: 1 });
+productSchema.index({ section: 1 });
+productSchema.index({ createdAt: -1 }); // For sorting
+productSchema.index({ price: 1 }); // For price filtering
+
+
 const Product = mongoose.model("Product", productSchema);
 
 export default Product;

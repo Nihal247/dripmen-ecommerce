@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config.js";
+import { optimizeImage } from "../core.js";
 const API_BASE = API_BASE_URL;
 
 // ==========================================
@@ -90,7 +91,7 @@ export function initProductFilters() {
         }
 
         grid.innerHTML = products.map(p => {
-            const image        = p.images?.[0] || "images/placeholder.png";
+            const image        = optimizeImage(p.images?.[0] || "images/placeholder.png", 500);
             const categoryName = p.categoryId?.name || "General";
             const displayPrice = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
             const isOutOfStock = p.status === "out_of_stock" || p.stock === 0;

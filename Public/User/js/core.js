@@ -20,6 +20,17 @@ export function saveWishlist(wishlist) {
 }
 
 // ==========================================
+// IMAGE OPTIMIZATION
+// ==========================================
+export function optimizeImage(url, width = 600) {
+  if (!url || !url.includes("cloudinary.com")) return url;
+  // Inject Cloudinary auto-format, auto-quality and resizing
+  // Also ensures we don't double inject
+  if (url.includes("/f_auto,q_auto")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width},c_limit/`);
+}
+
+// ==========================================
 // UI HELPERS
 // ==========================================
 
@@ -219,12 +230,17 @@ export async function toggleWishlist(btn) {
     }
     showToast("Removed from wishlist");
     
+    btn.classList.add("loading");
+    btn.disabled = true;
+    
     try {
       await removeFromWishlistAPI(product.id);
       updateHeaderCounts();
     } catch (err) {
       console.error("Removal failed", err);
-      // Revert if failed? Or just leave it. Usually better to stay quiet unless it's critical.
+    } finally {
+      btn.classList.remove("loading");
+      btn.disabled = false;
     }
     return;
   }
@@ -393,19 +409,29 @@ export async function handleGridAddToCart(btn) {
     return;
   }
 
+  // Loading state
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = `<i class="ph ph-circle-notch spinning"></i>`;
+  btn.disabled = true;
+
   // no size modal — call backend API directly
-  const data = await addToCartAPI(product.id, 1);
-  if (data?.success) {
-    const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
-    document.querySelectorAll(
-      ".cart-count, .header-cart-badge, .cart-badge"
-    ).forEach(badge => {
-      badge.textContent   = count;
-      badge.style.display = count > 0 ? "flex" : "none";
-    });
-    showCartConfirmModal(product);
-  } else if (data?.message) {
-    showToast(data.message, "error");
+  try {
+    const data = await addToCartAPI(product.id, 1);
+    if (data?.success) {
+      const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+      document.querySelectorAll(
+        ".cart-count, .header-cart-badge, .cart-badge"
+      ).forEach(badge => {
+        badge.textContent   = count;
+        badge.style.display = count > 0 ? "flex" : "none";
+      });
+      showCartConfirmModal(product);
+    } else if (data?.message) {
+      showToast(data.message, "error");
+    }
+  } finally {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
   }
 }
 
