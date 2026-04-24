@@ -70,7 +70,12 @@ router.get(
         frontendUrl = `${state}?token=${token}`;
       } else {
         const cleanOrigin = state.endsWith('/') ? state.slice(0, -1) : state;
-        frontendUrl = `${cleanOrigin}/Public/User/index.html?token=${token}`;
+        // Fallback for older cached frontend JS
+        if (cleanOrigin.includes('netlify.app')) {
+          frontendUrl = `${cleanOrigin}/index.html?token=${token}`;
+        } else {
+          frontendUrl = `${cleanOrigin}/Public/User/index.html?token=${token}`;
+        }
       }
       
       res.redirect(frontendUrl);
