@@ -46,29 +46,33 @@ router.get(
   "/google/callback",
   (req, res, next) => {
     passport.authenticate("google", { session: false }, (err, user, info) => {
-      // Get the origin back from the state parameter
-      const origin = req.query.state || process.env.FRONTEND_URL || "http://127.0.0.1:5500";
+      // Get the origin or target URL back from the state parameter
+      const state = req.query.state || process.env.FRONTEND_URL || "http://127.0.0.1:5500";
       
-      // Ensure origin doesn't end with a slash for consistency
-      const cleanOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
-
       if (err) {
         console.error("Google Auth Error:", err);
-        return res.redirect(`${cleanOrigin}/Public/User/login.html?error=auth_failed`);
+        return res.redirect(`${state}/Public/User/login.html?error=auth_failed`);
       }
       if (!user) {
         console.error("Google Auth failed: No user returned.", info);
-        return res.redirect(`${cleanOrigin}/Public/User/login.html?error=user_not_found`);
+        return res.redirect(`${state}/Public/User/login.html?error=user_not_found`);
       }
 
       if (user.isBlocked) {
         console.error("Google Auth failed: User is blocked.");
-        return res.redirect(`${cleanOrigin}/Public/User/login.html?error=account_suspended`);
+        return res.redirect(`${state}/Public/User/login.html?error=account_suspended`);
       }
 
       const token = generateToken(user._id, user.isAdmin || false);
       
-      const frontendUrl = `${cleanOrigin}/Public/User/index.html?token=${token}`;
+      let frontendUrl;
+      if (state.includes('.html')) {
+        frontendUrl = `${state}?token=${token}`;
+      } else {
+        const cleanOrigin = state.endsWith('/') ? state.slice(0, -1) : state;
+        frontendUrl = `${cleanOrigin}/Public/User/index.html?token=${token}`;
+      }
+      
       res.redirect(frontendUrl);
     })(req, res, next);
   }

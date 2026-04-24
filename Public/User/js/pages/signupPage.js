@@ -16,7 +16,9 @@ export function initSignupPage() {
   // Set dynamic Google Auth URL
   const googleBtn = document.getElementById("google-signup-btn");
   if (googleBtn) {
-      googleBtn.href = `${API_BASE_URL}/api/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+      // Construct target index.html URL relative to current page
+      const targetUrl = new URL("index.html", window.location.href).href;
+      googleBtn.href = `${API_BASE_URL}/api/auth/google?origin=${encodeURIComponent(targetUrl)}`;
   }
 
   const signupForm = document.getElementById("signup-form");
