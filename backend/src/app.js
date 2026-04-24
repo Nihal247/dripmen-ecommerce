@@ -18,6 +18,8 @@ import passport from "./config/passportConfig.js";
 
 const app = express();
 
+// Trust proxy for secure cookies and correct protocol resolution behind load balancers/proxies (e.g., Render)
+app.set("trust proxy", 1);
 
 
 

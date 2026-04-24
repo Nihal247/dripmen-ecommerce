@@ -29,7 +29,7 @@ router.get(
   (req, res, next) => {
     // Capture the origin from query param or referer to redirect back properly
     const origin = req.query.origin || req.headers.referer || process.env.FRONTEND_URL || "http://127.0.0.1:5500";
-    console.log("[DEBUG] Initiating Google Auth with Redirect URI:", process.env.GOOGLE_CALLBACK_URL, "Target Origin:", origin);
+    console.log("[DEBUG] Initiating Google Auth, Target Origin:", origin);
     
     // Pass the origin in the 'state' parameter
     passport.authenticate("google", { 
