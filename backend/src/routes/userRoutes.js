@@ -72,7 +72,7 @@ router.get(
         const cleanOrigin = state.endsWith('/') ? state.slice(0, -1) : state;
         // Fallback for older cached frontend JS
         if (cleanOrigin.includes('netlify.app')) {
-          frontendUrl = `${cleanOrigin}/index.html?token=${token}`;
+          frontendUrl = `${cleanOrigin}/User/index.html?token=${token}`;
         } else {
           frontendUrl = `${cleanOrigin}/Public/User/index.html?token=${token}`;
         }
