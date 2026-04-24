@@ -34,11 +34,13 @@ export function initProductFilters() {
 
     // --- Fetch Products ---
     async function fetchProducts() {
-        grid.innerHTML = `
-            <div style="grid-column:1/-1; text-align:center; padding:3rem; color:#888;">
-                <div class="loading-spinner"></div>
-                <p style="margin-top:1rem;">Finding the best drip for you...</p>
-            </div>`;
+        grid.innerHTML = Array(state.itemsPerPage).fill(0).map(() => `
+            <div class="skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-price"></div>
+            </div>
+        `).join("");
 
         const params = new URLSearchParams();
         if (state.category !== "all") params.append("category", state.category);

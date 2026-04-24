@@ -75,6 +75,15 @@ async function loadSection(gridId, section, limit) {
   const grid = document.getElementById(gridId);
   if (!grid) return;
 
+  // Show Skeleton
+  grid.innerHTML = Array(limit).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-price"></div>
+    </div>
+  `).join("");
+
   try {
     const res  = await fetch(`${API_BASE}/api/products?section=${section}&limit=${limit}`);
     const data = await res.json();
@@ -108,6 +117,9 @@ async function loadSection(gridId, section, limit) {
 async function loadBanners() {
   const container = document.getElementById("hero-banner-container");
   if (!container) return;
+
+  // Show Skeleton
+  container.innerHTML = `<div class="skeleton skeleton-banner"></div>`;
 
   try {
     const res = await fetch(`${API_BASE}/api/banners`);

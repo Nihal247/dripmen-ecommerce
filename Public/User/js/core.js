@@ -60,12 +60,17 @@ export async function updateHeaderCounts() {
   const token = localStorage.getItem("token");
   if (token) {
     try {
+      // Use Promise.all to fetch both in parallel
       const [cartItems, wishlistItems] = await Promise.all([
         getCartFromAPI(),
         getWishlistFromAPI()
       ]);
+      
       cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
       wishlistCount = wishlistItems.length;
+
+      // Cache wishlist items globally to avoid redundant fetches
+      window.cachedWishlist = wishlistItems;
     } catch (err) {
       console.warn("Failed to fetch header counts from API");
     }
@@ -164,7 +169,8 @@ export async function initializeWishlistState() {
   const token = localStorage.getItem("token");
 
   if (token) {
-    const items = await getWishlistFromAPI();
+    // Use cached wishlist if available (populated by updateHeaderCounts)
+    const items = window.cachedWishlist || await getWishlistFromAPI();
     items.forEach(item => {
       const id = item.product?._id || item.product;
       if (id) wishlistIds.add(id);

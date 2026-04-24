@@ -402,6 +402,15 @@ async function loadRecommended(currentProductId, categoryName) {
       }
     }
 
+    // Show Skeletons
+    grid.innerHTML = Array(4).fill(0).map(() => `
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-image"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-price"></div>
+      </div>
+    `).join("");
+
     products = products.slice(0, 4);
 
     if (products.length === 0) {
