@@ -44,9 +44,13 @@ const isNetlifyOrigin = (origin) => {
   return /\.netlify\.app$/.test(origin);
 };
 
+const isVercelOrigin = (origin) => {
+  return /\.vercel\.app$/.test(origin);
+};
+
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || isLocalhostDynamicPort(origin) || isNetlifyOrigin(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || isLocalhostDynamicPort(origin) || isNetlifyOrigin(origin) || isVercelOrigin(origin)) {
       callback(null, true);
     } else {
       console.error("CORS Error: Origin not allowed ->", origin);

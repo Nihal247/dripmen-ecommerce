@@ -51,16 +51,16 @@ router.get(
       
       if (err) {
         console.error("Google Auth Error:", err);
-        return res.redirect(`${state}/Public/User/login.html?error=auth_failed`);
+        return res.redirect(`${state}/login.html?error=auth_failed`);
       }
       if (!user) {
         console.error("Google Auth failed: No user returned.", info);
-        return res.redirect(`${state}/Public/User/login.html?error=user_not_found`);
+        return res.redirect(`${state}/login.html?error=user_not_found`);
       }
 
       if (user.isBlocked) {
         console.error("Google Auth failed: User is blocked.");
-        return res.redirect(`${state}/Public/User/login.html?error=account_suspended`);
+        return res.redirect(`${state}/login.html?error=account_suspended`);
       }
 
       const token = generateToken(user._id, user.isAdmin || false);
@@ -70,12 +70,8 @@ router.get(
         frontendUrl = `${state}?token=${token}`;
       } else {
         const cleanOrigin = state.endsWith('/') ? state.slice(0, -1) : state;
-        // Fallback for older cached frontend JS
-        if (cleanOrigin.includes('netlify.app')) {
-          frontendUrl = `${cleanOrigin}/User/index.html?token=${token}`;
-        } else {
-          frontendUrl = `${cleanOrigin}/Public/User/index.html?token=${token}`;
-        }
+        // Point to root index.html
+        frontendUrl = `${cleanOrigin}/index.html?token=${token}`;
       }
       
       res.redirect(frontendUrl);
