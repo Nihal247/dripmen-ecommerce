@@ -396,7 +396,7 @@ export const getHomepageData = async (req, res) => {
   try {
     const data = await publicCache.getOrSet("homepage_data", async () => {
       // 1. Fetch Banners
-      const banners = await Banner.find({ status: "active" }).sort({ createdAt: -1 });
+      const banners = await Banner.find({ isActive: true }).sort({ createdAt: -1 });
 
       // 2. Fetch New Arrivals
       const newArrivals = await Product.find({
