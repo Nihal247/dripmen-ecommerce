@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Product from "../models/Product.js";
 import Category from "../models/categoryModel.js";
 import Banner from "../models/bannerModel.js";
@@ -107,35 +108,30 @@ export const getProducts = async (req, res) => {
   try {
     const { category, minPrice, maxPrice, color, size, sort, section, search, page = 1, limit = 9 } = req.query;
 
+    const pNum = Math.max(1, parseInt(page) || 1);
+    const pLimit = Math.max(1, parseInt(limit) || 9);
+    const skip = (pNum - 1) * pLimit;
+
     let filter = {
       status: { $in: ["active", "out_of_stock"] }
     };
 
-    // Filter by name (search)
-    if (search) {
-      filter.name = { $regex: search, $options: "i" };
-    }
-
-    // Filter by homepage section
+    if (search) filter.name = { $regex: search, $options: "i" };
+    
     if (section) {
-      // Case-insensitive match, allows "new_arrivals" to match "New Arrivals"
       const safeSection = section.replace(/_/g, ".*");
       filter.section = { $regex: new RegExp(safeSection, "i") };
     }
 
     if (category && category !== "all") {
-      // Case-insensitive match for Category Name OR Slug
       const cat = await Category.findOne({
         $or: [
           { name: { $regex: new RegExp("^" + category + "$", "i") } },
           { slug: { $regex: new RegExp("^" + category + "$", "i") } }
         ]
       });
-      if (cat) {
-        filter.categoryId = cat._id;
-      } else {
-        filter.categoryId = "000000000000000000000000"; // Force empty result if category is invalid
-      }
+      if (cat) filter.categoryId = cat._id;
+      else filter.categoryId = new mongoose.Types.ObjectId("000000000000000000000000");
     }
 
     if (minPrice || maxPrice) {
@@ -154,25 +150,60 @@ export const getProducts = async (req, res) => {
     else if (sort === "top-selling") sortOption = { sales: -1, _id: 1 };
     else sortOption = { createdAt: -1, _id: 1 };
 
-    const skip = (Number(page) - 1) * Number(limit);
-    const total = await Product.countDocuments(filter);
+    // Use Aggregation to ensure count and data are perfectly synced
+    const pipeline = [
+      { $match: filter },
+      {
+        $facet: {
+          totalData: [{ $count: "count" }],
+          results: [
+            { $sort: sortOption },
+            { $skip: skip },
+            { $limit: pLimit },
+            {
+              $lookup: {
+                from: "categories",
+                localField: "categoryId",
+                foreignField: "_id",
+                as: "categoryId"
+              }
+            },
+            { $unwind: { path: "$categoryId", preserveNullAndEmptyArrays: true } },
+            {
+              $project: {
+                name: 1,
+                price: 1,
+                salePrice: 1,
+                images: 1,
+                status: 1,
+                stock: 1,
+                section: 1,
+                "categoryId.name": 1,
+                "categoryId._id": 1,
+                createdAt: 1,
+                sales: 1,
+                sizes: 1
+              }
+            }
+          ]
+        }
+      }
+    ];
 
-    const products = await Product.find(filter)
-      .populate("categoryId", "name")
-      .select("name price salePrice images status stock section categoryId createdAt")
-      .sort(sortOption)
-      .skip(skip)
-      .limit(Number(limit));
+    const [aggregationResult] = await Product.aggregate(pipeline);
+    const total = aggregationResult.totalData[0]?.count || 0;
+    const products = aggregationResult.results;
 
     res.status(200).json({
       success: true,
-      count: products.length,
       total,
-      totalPages: Math.ceil(total / Number(limit)),
-      currentPage: Number(page),
+      totalPages: Math.ceil(total / pLimit),
+      currentPage: pNum,
+      limit: pLimit,
       products,
     });
   } catch (error) {
+    console.error("getProducts Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
