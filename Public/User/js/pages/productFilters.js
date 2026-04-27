@@ -30,7 +30,7 @@ export function initProductFilters() {
         search: urlParams.get("search") || "",
         sort: urlParams.get("sort") || "newest",
         currentPage: Number(urlParams.get("page")) || 1,
-        itemsPerPage: 9,
+        itemsPerPage: 12,
         totalPages: 1,
         total: 0,
     };

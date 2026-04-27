@@ -106,10 +106,10 @@ export const getAdminProducts = async (req, res) => {
 // ==============================
 export const getProducts = async (req, res) => {
   try {
-    const { category, minPrice, maxPrice, color, size, sort, section, search, page = 1, limit = 9 } = req.query;
+    const { category, minPrice, maxPrice, color, size, sort, section, search, page = 1, limit = 12 } = req.query;
 
     const pNum = Math.max(1, parseInt(page) || 1);
-    const pLimit = Math.max(1, parseInt(limit) || 9);
+    const pLimit = Math.max(1, parseInt(limit) || 12);
     const skip = (pNum - 1) * pLimit;
 
     let filter = {
