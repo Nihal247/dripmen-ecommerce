@@ -74,18 +74,23 @@ export const applyCoupon = async (req, res) => {
     const { code, cartTotal } = req.body; // cartTotal here is the subtotal (after product-level discounts)
     const userId = req.user.id;
 
-    const coupon = await Coupon.findOne({
-      code: code.toUpperCase(),
-      isActive: true,
-      $or: [
-        { startDate: { $exists: false } },
-        { startDate: { $lte: new Date() } }
-      ],
-      expiryDate: { $gt: new Date() }
-    });
+    const coupon = await Coupon.findOne({ code: code.toUpperCase() });
+    const now = new Date();
 
     if (!coupon) {
-      return res.status(404).json({ success: false, message: "Invalid or expired coupon" });
+      return res.status(400).json({ success: false, message: "Invalid coupon code" });
+    }
+
+    if (!coupon.isActive) {
+      return res.status(400).json({ success: false, message: "This coupon is currently inactive" });
+    }
+
+    if (coupon.startDate && now < new Date(coupon.startDate)) {
+      return res.status(400).json({ success: false, message: "This coupon is not yet valid" });
+    }
+
+    if (now > new Date(coupon.expiryDate)) {
+      return res.status(400).json({ success: false, message: "This coupon has expired" });
     }
 
     // 1. Check if user already used this coupon (if one-time)

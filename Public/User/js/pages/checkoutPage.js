@@ -9,7 +9,8 @@ import {
   updateHeaderCounts,
   showToast,
   openModal,
-  getAvailableCouponsAPI
+  getAvailableCouponsAPI,
+  applyCouponAPI
 } from "../core.js";
 
 import { isValidEmail, isValidPhone, isValidName, isValidZip, isValidStreet, isValidCity } from "../utils/validators.js";
@@ -358,16 +359,7 @@ export function initCheckoutPage() {
         return sum + (paidPrice * (item.quantity || 1));
       }, 0);
 
-      const res = await fetch(`${API}/api/coupons/apply`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ code, cartTotal: subtotal })
-      });
-
-      const data = await res.json();
+      const data = await applyCouponAPI(code, subtotal);
 
       if (data.success) {
         appliedCoupon = { 
