@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DripMen | Black Tshirt</title>
+  <title>DripMen | Loading...</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -42,132 +42,43 @@
         <span class="separator"><i class="ph ph-caret-right"></i></span>
         <a href="products.html">Products</a>
         <span class="separator"><i class="ph ph-caret-right"></i></span>
-        <span class="current">T-shirts</span>
+        <span class="current" id="breadcrumb-product-name">Loading...</span>
       </nav>
     </div>
 
-    <section class="single-product-section" data-id="black-tshirt" data-name="Black Tshirt" data-price="145"
-      data-image="images/black-tshirt.png" data-rating="4.5/5">
+    <section class="single-product-section" id="product-container">
       <div class="product-layout-grid">
         <!-- Gallery Left -->
         <div class="product-gallery">
           <div class="thumbnail-list">
-            <button class="thumb-btn active" data-image="images/black-tshirt.png">
-              <img src="images/black-tshirt.png" alt="Black Tshirt Front view" />
-            </button>
-            <button class="thumb-btn" data-image="images/black-tshirts.png">
-              <img src="images/black-tshirt.png" alt="Black Tshirt Back view" />
-            </button>
-            <button class="thumb-btn" data-image="images/black-sweatshirts.png">
-              <img src="images/black-tshirt.png" alt="Black Tshirt Detail view" />
-            </button>
+             <div class="skeleton thumb-skeleton" style="width:80px; height:100px; border-radius:8px;"></div>
+             <div class="skeleton thumb-skeleton" style="width:80px; height:100px; border-radius:8px;"></div>
+             <div class="skeleton thumb-skeleton" style="width:80px; height:100px; border-radius:8px;"></div>
           </div>
 
-          <div class="main-image-container" id="main-image-container">
-            <img src="images/black-tshirt.png" alt="Black Tshirt Main" class="main-image" id="main-product-image" />
-            <button class="wishlist-btn wishlist-main" aria-label="Add to wishlist">
-              <i class="ph ph-heart"></i>
-            </button>
+          <div class="main-image-container">
+            <div class="skeleton" style="width:100%; aspect-ratio:1/1; border-radius:16px;"></div>
           </div>
         </div>
 
         <!-- Product Info Right -->
         <div class="product-info-details">
-          <h1 class="product-title-main">Black Tshirt</h1>
+          <div class="skeleton" style="width:70%; height:42px; margin-bottom:1rem;"></div>
+          
+          <div class="skeleton" style="width:40%; height:20px; margin-bottom:1.5rem;"></div>
 
-          <div class="product-rating-box">
-            <div class="stars">
-              <i class="ph-fill ph-star"></i>
-              <i class="ph-fill ph-star"></i>
-              <i class="ph-fill ph-star"></i>
-              <i class="ph-fill ph-star"></i>
-              <i class="ph-fill ph-star-half"></i>
-            </div>
-            <span class="rating-value">4.5/5</span>
-            <span class="review-count">(128 reviews)</span>
-          </div>
+          <div class="skeleton" style="width:30%; height:36px; margin-bottom:1.5rem;"></div>
 
-          <div class="product-price-box">
-            <span class="current-price-main">₹145</span>
-            <span class="original-price-main">₹165</span>
-            <span class="discount-badge-main">-12%</span>
-          </div>
-
-          <div class="stock-status in-stock">
-            <span class="status-dot"></span> In Stock — Only 12 left
-          </div>
-
-          <p class="product-desc-short">
-            This graphic t-shirt which is perfect for any occasion. Crafted
-            from a soft and breathable fabric, it offers superior comfort and
-            style.
-          </p>
+          <div class="skeleton" style="width:100%; height:80px; margin-bottom:2rem;"></div>
 
           <hr class="product-divider" />
 
-          <div class="color-selector-section">
-            <p class="selector-label">Select Colors</p>
-            <div class="color-options-row">
-              <button class="color-swatch-circle bg-black active" aria-label="Black" data-color="Black">
-                <i class="ph ph-check"></i>
-              </button>
-              <button class="color-swatch-circle bg-green" aria-label="Green" data-color="Green">
-                <i class="ph ph-check" style="display: none"></i>
-              </button>
-              <button class="color-swatch-circle bg-blue" aria-label="Blue" data-color="Blue">
-                <i class="ph ph-check" style="display: none"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="size-selector-section">
-            <div class="size-header-row">
-              <p class="selector-label">Choose Size</p>
-            </div>
-            <div class="size-options-row">
-              <button class="size-pill-btn">S</button>
-              <button class="size-pill-btn">M</button>
-              <button class="size-pill-btn active">L</button>
-              <button class="size-pill-btn disabled" disabled aria-label="Out of stock">
-                XL
-              </button>
-            </div>
-          </div>
+          <div class="skeleton" style="width:50%; height:60px; margin-bottom:1.5rem;"></div>
+          <div class="skeleton" style="width:60%; height:60px; margin-bottom:2rem;"></div>
 
           <div class="product-actions-row">
-            <div class="quantity-stepper">
-              <button class="qty-btn-large qty-minus-main">
-                <i class="ph ph-minus"></i>
-              </button>
-              <input type="number" class="qty-input-main" value="1" min="1" max="12" readonly />
-              <button class="qty-btn-large qty-plus-main">
-                <i class="ph ph-plus"></i>
-              </button>
-            </div>
-
-            <div class="action-buttons-wrapper">
-              <button class="btn btn-primary add-to-cart-main-btn add-to-cart-btn" id="add-to-cart-btn">
-                Add to Cart
-              </button>
-              <button class="btn btn-primary buy-now-main-btn" id="buy-now-btn">
-                Buy Now
-              </button>
-            </div>
-          </div>
-
-          <div class="trust-info-box">
-            <div class="trust-row">
-              <i class="ph ph-truck"></i>
-              <span>Free delivery above ₹100</span>
-            </div>
-            <div class="trust-row">
-              <i class="ph ph-arrow-counter-clockwise"></i>
-              <span>Easy 7-day returns</span>
-            </div>
-            <div class="trust-row">
-              <i class="ph ph-lock-key"></i>
-              <span>Secure payment</span>
-            </div>
+            <div class="skeleton" style="width:120px; height:50px; border-radius:8px;"></div>
+            <div class="skeleton" style="flex:1; height:50px; border-radius:50px;"></div>
           </div>
         </div>
       </div>
@@ -182,13 +93,7 @@
       </div>
       <div class="tabs-content">
         <div class="tab-pane active" id="tab-desc">
-          <p>
-            Elevate your everyday style with our premium Black Tshirt. Crafted
-            from 100% organic heavy-weight cotton, this tee features a relaxed
-            fit with dropped shoulders for a modern silhouette. The fabric has
-            been pre-shrunk and garment-dyed for a vintage look and super-soft
-            feel that only gets better with time.
-          </p>
+          <div class="skeleton" style="width:100%; height:100px;"></div>
         </div>
         <div class="tab-pane" id="tab-info">
           <ul class="info-list">

@@ -221,108 +221,154 @@ async function loadProductFromAPI(id) {
 // POPULATE PAGE
 // ==========================================
 function populatePage(p) {
-  const container    = document.querySelector(".single-product-section");
-  const displayPrice = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
+  const container = document.querySelector(".single-product-section");
+  if (!container) return;
 
+  const displayPrice = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
+  
+  // Store metadata for cart actions
   container.dataset.id    = p._id;
   container.dataset.name  = p.name;
   container.dataset.price = displayPrice;
   container.dataset.image = p.images?.[0] || "";
   container.dataset.stock = p.stock || "0";
-  // Store sizes data for dynamic stock checks
   container.dataset.sizes = JSON.stringify(p.sizes || []);
 
   document.title = `DripMen | ${p.name}`;
-  const bc = document.querySelector(".breadcrumb .current");
+  
+  // Update Breadcrumb
+  const bc = document.getElementById("breadcrumb-product-name");
   if (bc) bc.textContent = p.name;
-  const titleEl = document.querySelector(".product-title-main");
-  if (titleEl) titleEl.textContent = p.name;
 
-  const curEl = document.querySelector(".current-price-main");
-  const orgEl = document.querySelector(".original-price-main");
-  const badEl = document.querySelector(".discount-badge-main");
-  if (curEl) curEl.textContent = `₹${displayPrice}`;
-  if (p.salePrice && p.salePrice < p.price) {
-    const pct = Math.round(((p.price - p.salePrice) / p.price) * 100);
-    if (orgEl) { orgEl.textContent = `₹${p.price}`; orgEl.style.display = ""; }
-    if (badEl) { badEl.textContent = `-${pct}%`;    badEl.style.display = ""; }
-  } else {
-    if (orgEl) orgEl.style.display = "none";
-    if (badEl) badEl.style.display = "none";
-  }
+  // Render Full Content
+  const image = optimizeImage(p.images?.[0] || "images/placeholder.png", 800);
+  
+  const discountHTML = p.salePrice && p.salePrice < p.price 
+    ? `<span class="original-price-main">₹${p.price}</span>
+       <span class="discount-badge-main">-${Math.round(((p.price - p.salePrice) / p.price) * 100)}%</span>`
+    : "";
 
-  const stockEl = document.querySelector(".stock-status");
-  if (stockEl) {
-    if (p.status === "out_of_stock" || p.stock <= 0) {
-      stockEl.className = "stock-status out-of-stock";
-      stockEl.innerHTML = `<span class="status-dot"></span> Out of Stock`;
-    } else if (p.stock <= 5) {
-      stockEl.className = "stock-status low-stock";
-      stockEl.innerHTML = `<span class="status-dot"></span> Only ${p.stock} left!`;
-    } else {
-      stockEl.className = "stock-status in-stock";
-      stockEl.innerHTML = `<span class="status-dot"></span> In Stock`;
-    }
-  }
+  container.innerHTML = `
+    <div class="product-layout-grid">
+      <!-- Gallery Left -->
+      <div class="product-gallery">
+        <div class="thumbnail-list">
+          ${(p.images?.length ? p.images : [p.images?.[0], p.images?.[0], p.images?.[0]]).map((img, i) => `
+            <button class="thumb-btn ${i === 0 ? "active" : ""}" data-image="${optimizeImage(img, 800)}">
+              <img src="${optimizeImage(img, 150)}" alt="${p.name} view ${i + 1}" loading="lazy" />
+            </button>
+          `).join("")}
+        </div>
 
-  if (p.description) {
-    const descEl    = document.querySelector(".product-desc-short");
-    const tabDescEl = document.querySelector("#tab-desc p");
-    if (descEl)    descEl.textContent    = p.description;
-    if (tabDescEl) tabDescEl.textContent = p.description;
-  }
+        <div class="main-image-container" id="main-image-container">
+          <img src="${image}" alt="${p.name}" class="main-image" id="main-product-image" />
+          <button class="wishlist-btn wishlist-main" aria-label="Add to wishlist">
+            <i class="ph ph-heart"></i>
+          </button>
+        </div>
+      </div>
 
-  const mainImg = document.getElementById("main-product-image");
-  if (mainImg && p.images?.[0]) mainImg.src = optimizeImage(p.images[0], 800);
+      <!-- Product Info Right -->
+      <div class="product-info-details">
+        <h1 class="product-title-main">${p.name}</h1>
 
-  const thumbList = document.querySelector(".thumbnail-list");
-  if (thumbList && p.images?.length) {
-    const thumbImages = p.images.length === 1
-      ? [p.images[0], p.images[0], p.images[0]]
-      : p.images;
-    thumbList.style.display = "";
-    thumbList.innerHTML = thumbImages.map((img, i) => `
-      <button class="thumb-btn ${i === 0 ? "active" : ""}" data-image="${optimizeImage(img, 800)}">
-        <img src="${optimizeImage(img, 150)}" alt="${p.name} view ${i + 1}" loading="lazy" />
-      </button>`).join("");
-  }
+        <div class="product-rating-box">
+          <div class="stars">
+            <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+            <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+            <i class="ph-fill ph-star-half"></i>
+          </div>
+          <span class="rating-value">4.5/5</span>
+          <span class="review-count">(128 reviews)</span>
+        </div>
 
-  const colorRow = document.querySelector(".color-options-row");
-  if (colorRow && p.colors?.length) {
-    colorRow.innerHTML = p.colors.map((color, i) => {
-      const key      = color.toLowerCase().trim();
-      const cssClass = COLOR_MAP[key] || "";
-      const style    = cssClass ? "" : `style="background-color:${color};"`;
-      return `
-        <button class="color-swatch-circle ${cssClass} ${i === 0 ? "active" : ""}"
-          aria-label="${color}" data-color="${color}" ${style}>
-          <i class="ph ph-check" ${i !== 0 ? 'style="display:none"' : ""}></i>
-        </button>`;
-    }).join("");
-    initColorSelection();
-  }
+        <div class="product-price-box">
+          <span class="current-price-main">₹${displayPrice}</span>
+          ${discountHTML}
+        </div>
 
-  const sizeRow = document.querySelector(".size-options-row");
-  if (sizeRow && p.sizes?.length) {
-    sizeRow.innerHTML = p.sizes.map((s, i) => {
-      const isOutOfStock = s.stock <= 0;
-      return `
-        <button class="size-pill-btn ${i === 0 && !isOutOfStock ? "active" : ""} ${isOutOfStock ? "out-of-stock" : ""}" 
-          data-size="${s.size}" 
-          data-stock="${s.stock}"
-          ${isOutOfStock ? "disabled" : ""}>
-          ${s.size}
-        </button>`;
-    }).join("");
-    initSizeSelection();
-    
-    // Set initial stock message if a size is active
-    const activeSize = sizeRow.querySelector(".size-pill-btn.active");
-    if (activeSize) updateStockStatus(activeSize.dataset.size, activeSize.dataset.stock);
-  }
+        <div class="stock-status"></div>
 
+        <p class="product-desc-short">${p.description || ""}</p>
+
+        <hr class="product-divider" />
+
+        <div class="color-selector-section">
+          <p class="selector-label">Select Colors</p>
+          <div class="color-options-row">
+            ${(p.colors || ["Black"]).map((color, i) => {
+              const key = color.toLowerCase().trim();
+              const cssClass = COLOR_MAP[key] || "";
+              const style = cssClass ? "" : `style="background-color:${color};"`;
+              return `
+                <button class="color-swatch-circle ${cssClass} ${i === 0 ? "active" : ""}"
+                  aria-label="${color}" data-color="${color}" ${style}>
+                  <i class="ph ph-check" ${i !== 0 ? 'style="display:none"' : ""}></i>
+                </button>`;
+            }).join("")}
+          </div>
+        </div>
+
+        <div class="size-selector-section">
+          <p class="selector-label">Choose Size</p>
+          <div class="size-options-row">
+            ${(p.sizes || []).map((s, i) => {
+              const isOutOfStock = s.stock <= 0;
+              return `
+                <button class="size-pill-btn ${i === 0 && !isOutOfStock ? "active" : ""} ${isOutOfStock ? "out-of-stock" : ""}" 
+                  data-size="${s.size}" data-stock="${s.stock}" ${isOutOfStock ? "disabled" : ""}>
+                  ${s.size}
+                </button>`;
+            }).join("")}
+          </div>
+        </div>
+
+        <div class="product-actions-row">
+          <div class="quantity-stepper">
+            <button class="qty-btn-large qty-minus-main"><i class="ph ph-minus"></i></button>
+            <input type="number" class="qty-input-main" value="1" min="1" max="10" readonly />
+            <button class="qty-btn-large qty-plus-main"><i class="ph ph-plus"></i></button>
+          </div>
+
+          <div class="action-buttons-wrapper">
+            <button class="btn btn-primary add-to-cart-main-btn add-to-cart-btn" id="add-to-cart-btn">Add to Cart</button>
+            <button class="btn btn-primary buy-now-main-btn" id="buy-now-btn">Buy Now</button>
+          </div>
+        </div>
+
+        <div class="trust-info-box">
+          <div class="trust-row"><i class="ph ph-truck"></i><span>Free delivery above ₹100</span></div>
+          <div class="trust-row"><i class="ph ph-arrow-counter-clockwise"></i><span>Easy 7-day returns</span></div>
+          <div class="trust-row"><i class="ph ph-lock-key"></i><span>Secure payment</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Update Description Tab
+  const tabDescEl = document.querySelector("#tab-desc");
+  if (tabDescEl) tabDescEl.innerHTML = `<p>${p.description || ""}</p>`;
+
+  // Update Sticky Bar
   const stickyPrice = document.querySelector(".sticky-price");
   if (stickyPrice) stickyPrice.textContent = `₹${displayPrice}`;
+
+  // Re-initialize listeners and initial states
+  initGallery();
+  initColorSelection();
+  initSizeSelection();
+  initCartButtons();
+  
+  // Set initial stock status based on selected size
+  const activeSize = container.querySelector(".size-pill-btn.active");
+  if (activeSize) {
+    updateStockStatus(activeSize.dataset.size, activeSize.dataset.stock);
+  } else {
+    updateStockStatus("N/A", p.stock || 0);
+  }
+
+  // Sync wishlist icon
+  initializeWishlistState();
 }
 
 function updateStockStatus(size, stock) {
