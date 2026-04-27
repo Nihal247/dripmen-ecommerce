@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /Admin/
+Disallow: /account.html
+Disallow: /orders.html
+Disallow: /wishlist.html
+Disallow: /cart.html
+Disallow: /checkout.html
+
+Sitemap: https://dripmen.netlify.app/sitemap.xml
