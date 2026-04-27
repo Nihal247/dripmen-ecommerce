@@ -21,7 +21,8 @@ import {
   openModal,
   closeAllModals,
   showCartConfirmModal,
-  getAvailableCouponsAPI
+  getAvailableCouponsAPI,
+  prefetchProduct
 } from "./core.js";
 
 import { renderLayout } from "./layout.js";
@@ -242,6 +243,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const id = productCard.dataset.id;
       window.location.href = id ? `product.html?id=${id}` : "product.html";
       return;
+    }
+  });
+
+  // ----------------------------------------
+  // 6b. PREFETCH ON HOVER
+  // ----------------------------------------
+  document.body.addEventListener("mouseover", (e) => {
+    const productCard = e.target.closest(".product-card");
+    if (productCard) {
+      const id = productCard.dataset.id;
+      if (id) prefetchProduct(id);
     }
   });
 

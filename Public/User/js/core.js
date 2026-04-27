@@ -691,3 +691,22 @@ export async function applyCouponAPI(code, cartTotal) {
     return { success: false, message: "Failed to apply coupon" };
   }
 }
+// ==========================================
+// PRE-FETCHING & LOCAL CACHE
+// ==========================================
+window.productDataCache = new Map();
+
+export async function prefetchProduct(id) {
+  if (!id || window.productDataCache.has(id)) return;
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
+    const data = await res.json();
+    if (data.success) {
+      window.productDataCache.set(id, data.product);
+      console.log(`[Prefetch] Cached product: ${id}`);
+    }
+  } catch (err) {
+    console.warn("Prefetch failed", err);
+  }
+}

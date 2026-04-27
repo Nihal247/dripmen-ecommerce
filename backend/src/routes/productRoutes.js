@@ -7,7 +7,8 @@ import {
   updateProduct,
   deleteProduct,
   updateProductStatus,
-  getPriceRange
+  getPriceRange,
+  getHomepageData
 } from "../controllers/productController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -39,6 +40,9 @@ router.delete("/:id", protect, adminOnly, deleteProduct);
 // ==============================
 // PUBLIC ROUTES
 // ==============================
+
+// get homepage consolidated data
+router.get("/homepage", getHomepageData);
 
 // get products for users
 router.get("/", getProducts);

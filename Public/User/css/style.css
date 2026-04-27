@@ -110,6 +110,8 @@
     margin: 24px auto 24px;
     /* perfect spacing */
     padding: 0 24px;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
 }
 
 .breadcrumb {
@@ -513,6 +515,8 @@
 .products-section {
     margin-top: 4rem;
     margin-bottom: 2rem;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 400px;
 }
 
 .product-grid {
@@ -795,6 +799,8 @@
     background-color: var(--secondary-color);
     padding: 0;
     margin: 4rem auto;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 600px;
 }
 
 .category-container {

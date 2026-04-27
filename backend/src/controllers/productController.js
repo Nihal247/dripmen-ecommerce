@@ -1,6 +1,8 @@
 import Product from "../models/Product.js";
 import Category from "../models/categoryModel.js";
+import Banner from "../models/bannerModel.js";
 import cloudinary from "../config/cloudinary.js";
+import { publicCache } from "../utils/cache.js";
 
 // ==============================
 // ✅ CREATE PRODUCT (Admin only)
@@ -135,8 +137,8 @@ export const getProducts = async (req, res) => {
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
-    if (color) filter.colors = { $in: [color] };
-    if (size) filter.sizes = { $in: [size] };
+    if (color && color !== "all") filter.colors = color;
+    if (size && size !== "all") filter["sizes.size"] = size;
 
     let sortOption = {};
     if (sort === "price-low") sortOption = { price: 1 };
@@ -384,5 +386,60 @@ export const updateProductStatus = async (req, res) => {
       success: false,
       message: error.message
     });
+  }
+};
+// ==============================
+// ✅ GET HOMEPAGE DATA (Public)
+// Aggregates Banners + Sections into ONE response
+// ==============================
+export const getHomepageData = async (req, res) => {
+  try {
+    const data = await publicCache.getOrSet("homepage_data", async () => {
+      // 1. Fetch Banners
+      const banners = await Banner.find({ status: "active" }).sort({ createdAt: -1 });
+
+      // 2. Fetch New Arrivals
+      const newArrivals = await Product.find({
+        status: { $in: ["active", "out_of_stock"] },
+        section: "new_arrivals"
+      })
+      .select("name price salePrice images status stock section createdAt")
+      .sort({ createdAt: -1 })
+      .limit(4);
+
+      // 3. Fetch Top Selling
+      const topSelling = await Product.find({
+        status: { $in: ["active", "out_of_stock"] },
+        section: "top_selling"
+      })
+      .select("name price salePrice images status stock section createdAt")
+      .sort({ sales: -1 })
+      .limit(4);
+
+      // 4. Fetch Explore
+      const explore = await Product.find({
+        status: { $in: ["active", "out_of_stock"] },
+        section: "explore"
+      })
+      .select("name price salePrice images status stock section createdAt")
+      .sort({ createdAt: -1 })
+      .limit(8);
+
+      return {
+        banners,
+        sections: {
+          new_arrivals: newArrivals,
+          top_selling: topSelling,
+          explore: explore
+        }
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      ...data
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

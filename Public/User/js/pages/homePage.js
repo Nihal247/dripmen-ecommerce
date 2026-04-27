@@ -70,133 +70,136 @@ function renderCard(p) {
 }
 
 // ==========================================
-// LOAD ONE SECTION FROM API
+// RENDER ALL DATA FROM ONE CONSOLIDATED API
 // ==========================================
-async function loadSection(gridId, section, limit) {
-  const grid = document.getElementById(gridId);
-  if (!grid) return;
+export async function initHomePage() {
+  const container = document.getElementById("hero-banner-container");
+  const grids = {
+    "new-arrivals-grid": document.getElementById("new-arrivals-grid"),
+    "top-selling-grid":  document.getElementById("top-selling-grid"),
+    "explore-grid":      document.getElementById("explore-grid")
+  };
 
-  // Show Skeleton
-  grid.innerHTML = Array(limit).fill(0).map(() => `
-    <div class="skeleton-card">
-      <div class="skeleton skeleton-image"></div>
-      <div class="skeleton skeleton-text"></div>
-      <div class="skeleton skeleton-price"></div>
-    </div>
-  `).join("");
+  // 1. Show ALL skeletons at once
+  if (container) container.innerHTML = `<div class="skeleton skeleton-banner"></div>`;
+  
+  if (grids["new-arrivals-grid"]) {
+    grids["new-arrivals-grid"].innerHTML = Array(4).fill(0).map(() => `
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-image"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-price"></div>
+      </div>`).join("");
+  }
+  if (grids["top-selling-grid"]) {
+    grids["top-selling-grid"].innerHTML = Array(4).fill(0).map(() => `
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-image"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-price"></div>
+      </div>`).join("");
+  }
+  if (grids["explore-grid"]) {
+    grids["explore-grid"].innerHTML = Array(8).fill(0).map(() => `
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-image"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-price"></div>
+      </div>`).join("");
+  }
 
   try {
-    const res  = await fetch(`${API_BASE}/api/products?section=${section}&limit=${limit}`);
+    // 2. Fetch EVERYTHING in one go
+    const res = await fetch(`${API_BASE}/api/products/homepage`);
     const data = await res.json();
 
-    if (!data.success || !data.products || data.products.length === 0) {
-      grid.innerHTML = ""; // hide section if no products
-      return;
+    if (!data.success) throw new Error(data.message);
+
+    // 3. Render Banners
+    if (container && data.banners?.length > 0) {
+      renderBanners(container, data.banners);
     }
 
-    grid.innerHTML = data.products.map(renderCard).join("");
-
-    // Restore wishlist hearts from localStorage
+    // 4. Render Sections
     const wishlist = JSON.parse(localStorage.getItem("dripmen_wishlist") || "[]");
-    grid.querySelectorAll(".product-card").forEach(card => {
-      if (wishlist.find(w => w.id === card.dataset.id)) {
-        const icon = card.querySelector(".wishlist-btn i");
-        if (icon) icon.classList.add("ph-fill");
-      }
+    
+    if (grids["new-arrivals-grid"] && data.sections?.new_arrivals) {
+      grids["new-arrivals-grid"].innerHTML = data.sections.new_arrivals.map(renderCard).join("");
+    }
+    if (grids["top-selling-grid"] && data.sections?.top_selling) {
+      grids["top-selling-grid"].innerHTML = data.sections.top_selling.map(renderCard).join("");
+    }
+    if (grids["explore-grid"] && data.sections?.explore) {
+      grids["explore-grid"].innerHTML = data.sections.explore.map(renderCard).join("");
+    }
+
+    // 5. Sync Wishlist Hearts
+    Object.values(grids).forEach(grid => {
+      if (!grid) return;
+      grid.querySelectorAll(".product-card").forEach(card => {
+        if (wishlist.find(w => w.id === card.dataset.id)) {
+          const icon = card.querySelector(".wishlist-btn i");
+          if (icon) icon.classList.add("ph-fill");
+        }
+      });
     });
 
   } catch (err) {
-    // Server down — silently keep section empty, don't break page
-    console.warn(`[homePage] Could not load ${gridId}:`, err.message);
-    grid.innerHTML = "";
+    console.error("[homePage] Failed to load consolidated homepage data:", err);
+    // Cleanup skeletons on error
+    if (container) container.innerHTML = "";
+    Object.values(grids).forEach(g => { if(g) g.innerHTML = ""; });
   }
 }
 
-// ==========================================
-// LOAD BANNERS FROM API
-// ==========================================
-async function loadBanners() {
-  const container = document.getElementById("hero-banner-container");
-  if (!container) return;
+function renderBanners(container, banners) {
+  container.innerHTML = banners.map(b => `
+      <a href="${b.link || 'products.html'}" class="hero-banner-link track-banner-click" data-id="${b._id}" style="position:relative; display:block;">
+        <img src="${optimizeImage(b.image, 1200)}" alt="${b.title || 'Banner'}" class="hero-banner-img" />
+      </a>
+  `).join("") + "<style>#hero-banner-container::-webkit-scrollbar { display: none; } .hero-banner-link img { width: 100%; height: auto; object-fit: cover; }</style>";
 
-  // Show Skeleton
-  container.innerHTML = `<div class="skeleton skeleton-banner"></div>`;
+  // Click & View Tracking
+  container.querySelectorAll('.track-banner-click').forEach(link => {
+    link.addEventListener('click', () => {
+      const bannerId = link.dataset.id;
+      if (bannerId) fetch(`${API_BASE}/api/banners/${bannerId}/click`, { method: "POST" }).catch(console.error);
+    });
+  });
 
-  try {
-    const res = await fetch(`${API_BASE}/api/banners`);
-    const data = await res.json();
-
-    if (data.success && data.banners && data.banners.length > 0) {
-      container.innerHTML = data.banners.map(b => `
-          <a href="${b.link || 'products.html'}" class="hero-banner-link track-banner-click" data-id="${b._id}" style="position:relative; display:block;">
-            <img src="${optimizeImage(b.image, 1200)}" alt="${b.title || 'Banner'}" class="hero-banner-img" />
-          </a>
-      `).join("") + "<style>#hero-banner-container::-webkit-scrollbar { display: none; } .hero-banner-link img { width: 100%; height: auto; object-fit: cover; }</style>";
-
-      // Click Tracking
-      container.querySelectorAll('.track-banner-click').forEach(link => {
-        link.addEventListener('click', function(e) {
-          const bannerId = this.dataset.id;
-          if (bannerId) {
-            // Non-blocking fire and forget
-            fetch(`${API_BASE}/api/banners/${bannerId}/click`, { method: "POST" }).catch(console.error);
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const bannerId = entry.target.dataset.id;
+          if (bannerId && !entry.target.dataset.viewed) {
+            entry.target.dataset.viewed = "true";
+            fetch(`${API_BASE}/api/banners/${bannerId}/view`, { method: "POST" }).catch(console.error);
           }
-        });
+        }
       });
-
-      // View Tracking via IntersectionObserver
-      if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              const bannerId = entry.target.dataset.id;
-              if (bannerId && !entry.target.dataset.viewed) {
-                entry.target.dataset.viewed = "true";
-                fetch(`${API_BASE}/api/banners/${bannerId}/view`, { method: "POST" }).catch(console.error);
-              }
-            }
-          });
-        }, { threshold: 0.5 });
-        
-        container.querySelectorAll('.track-banner-click').forEach(link => {
-          observer.observe(link);
-        });
-      }
-
-      if (data.banners.length > 1) {
-        container.style.display = 'flex';
-        container.style.overflowX = 'auto';
-        container.style.scrollSnapType = 'x mandatory';
-        container.style.scrollBehavior = 'smooth';
-        container.style.scrollbarWidth = 'none'; // Firefox
-        
-        const links = container.querySelectorAll('.hero-banner-link');
-        links.forEach(link => {
-          link.style.flex = '0 0 100%';
-          link.style.scrollSnapAlign = 'start';
-        });
-
-        // Optional auto-scroll
-        let currentBannerIndex = 0;
-        setInterval(() => {
-          if(!container.matches(':hover')){
-             currentBannerIndex = (currentBannerIndex + 1) % data.banners.length;
-             container.scrollTo(currentBannerIndex * container.offsetWidth, 0);
-          }
-        }, 5000);
-      }
-    }
-  } catch (err) {
-    console.warn("[homePage] Could not load banners:", err.message);
+    }, { threshold: 0.5 });
+    container.querySelectorAll('.track-banner-click').forEach(link => observer.observe(link));
   }
-}
 
-// ==========================================
-// INIT — called by main.js
-// ==========================================
-export function initHomePage() {
-  loadBanners();
-  loadSection("new-arrivals-grid", "new_arrivals", 4);
-  loadSection("top-selling-grid",  "top_selling",  4);
-  loadSection("explore-grid",      "explore",      8);
+  if (banners.length > 1) {
+    container.style.display = 'flex';
+    container.style.overflowX = 'auto';
+    container.style.scrollSnapType = 'x mandatory';
+    container.style.scrollBehavior = 'smooth';
+    container.style.scrollbarWidth = 'none';
+    
+    container.querySelectorAll('.hero-banner-link').forEach(link => {
+      link.style.flex = '0 0 100%';
+      link.style.scrollSnapAlign = 'start';
+    });
+
+    let currentBannerIndex = 0;
+    setInterval(() => {
+      if(!container.matches(':hover')){
+         currentBannerIndex = (currentBannerIndex + 1) % banners.length;
+         container.scrollTo(currentBannerIndex * container.offsetWidth, 0);
+      }
+    }, 5000);
+  }
 }
