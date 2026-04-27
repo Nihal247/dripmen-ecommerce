@@ -40,6 +40,27 @@ export function initProductFilters() {
         searchInput.value = state.search;
     }
 
+    function syncFiltersUI() {
+        // Sync color buttons
+        document.querySelectorAll(".filter-color-btn").forEach(btn => {
+            if (btn.dataset.color === state.color) {
+                btn.classList.add("active");
+                const check = btn.querySelector(".ph-check");
+                if (check) check.style.display = "block";
+            } else {
+                btn.classList.remove("active");
+                const check = btn.querySelector(".ph-check");
+                if (check) check.style.display = "none";
+            }
+        });
+
+        // Sync size buttons
+        document.querySelectorAll(".filter-size-btn").forEach(btn => {
+            if (btn.dataset.size === state.size) btn.classList.add("active");
+            else btn.classList.remove("active");
+        });
+    }
+
     // --- Fetch Products ---
     async function fetchProducts() {
         grid.innerHTML = Array(state.itemsPerPage).fill(0).map(() => `
@@ -202,13 +223,21 @@ export function initProductFilters() {
                 </li>`;
 
             data.categories.forEach(cat => {
+                const isActive = state.category.toLowerCase() === cat.name.toLowerCase();
                 categoryList.innerHTML += `
                     <li>
-                        <a href="#" class="filter-category-btn" data-category="${cat.name}">
+                        <a href="#" class="filter-category-btn ${isActive ? 'active' : ''}" data-category="${cat.name}">
                             ${cat.name} <i class="ph ph-caret-right"></i>
                         </a>
                     </li>`;
             });
+            
+            // Sync "All" button
+            const allBtn = categoryList.querySelector('[data-category="all"]');
+            if (allBtn) {
+              if (state.category === "all") allBtn.classList.add("active");
+              else allBtn.classList.remove("active");
+            }
 
             bindCategoryEvents();
         } catch (err) {
@@ -452,6 +481,7 @@ export function initProductFilters() {
     }
 
     // --- Boot ---
+    syncFiltersUI();
     loadPriceRange();
     loadCategoryFilters();
     fetchProducts(); // Initial load
