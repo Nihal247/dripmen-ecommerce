@@ -6,12 +6,18 @@ const token = localStorage.getItem("adminToken");
 let selectedFiles = []; // Track newly selected images
 let existingImagesToKeep = []; // Track existing images in edit mode
 
+let adminState = {
+  currentPage: 1,
+  limit: 10,
+  totalPages: 1
+};
+
 // ==============================
 // LOAD PRODUCTS
 // ==============================
 async function loadProducts(search = "", category = "", status = "") {
   try {
-    let url = `${API_BASE}/api/products/admin/all?`;
+    let url = `${API_BASE}/api/products/admin/all?page=${adminState.currentPage}&limit=${adminState.limit}&`;
     if (search) url += `search=${encodeURIComponent(search)}&`;
     if (category) url += `category=${category}&`;
     if (status) url += `status=${status}&`;
@@ -25,8 +31,12 @@ async function loadProducts(search = "", category = "", status = "") {
 
     if (!data.products || data.products.length === 0) {
       tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#888;">No products found.</td></tr>`;
+      renderPagination(0);
       return;
     }
+
+    adminState.totalPages = data.totalPages || 1;
+    renderPagination(data.total);
 
     data.products.forEach((p) => {
       const categoryName = p.categoryId?.name || "Uncategorized";
@@ -67,6 +77,44 @@ async function loadProducts(search = "", category = "", status = "") {
     console.error("Load products error:", err);
   }
 }
+
+function renderPagination(totalItems) {
+  const container = document.getElementById("admin-pagination");
+  if (!container) return;
+
+  if (adminState.totalPages <= 1) {
+    container.innerHTML = "";
+    return;
+  }
+
+  let html = `
+    <button class="pagination-btn" ${adminState.currentPage === 1 ? 'disabled' : ''} onclick="changePage(${adminState.currentPage - 1})" 
+      style="padding:6px 12px; border:1px solid #eee; border-radius:6px; background:#fff; cursor:pointer;">Prev</button>
+  `;
+
+  for (let i = 1; i <= adminState.totalPages; i++) {
+    html += `
+      <button class="pagination-btn" onclick="changePage(${i})" 
+        style="padding:6px 12px; border:1px solid ${i === adminState.currentPage ? '#111' : '#eee'}; border-radius:6px; background:${i === adminState.currentPage ? '#111' : '#fff'}; color:${i === adminState.currentPage ? '#fff' : '#111'}; cursor:pointer;">${i}</button>
+    `;
+  }
+
+  html += `
+    <button class="pagination-btn" ${adminState.currentPage === adminState.totalPages ? 'disabled' : ''} onclick="changePage(${adminState.currentPage + 1})"
+      style="padding:6px 12px; border:1px solid #eee; border-radius:6px; background:#fff; cursor:pointer;">Next</button>
+  `;
+
+  container.innerHTML = html;
+}
+
+window.changePage = function(page) {
+  adminState.currentPage = page;
+  loadProducts(
+    document.getElementById("productSearch").value,
+    document.querySelector(".filter-select:nth-of-type(1)").value,
+    document.querySelector(".filter-select:nth-of-type(2)").value
+  );
+};
 
 // ==============================
 // MODAL CONTROLS
@@ -364,6 +412,20 @@ async function deleteProduct(id) {
 
 // Initialization
 document.querySelector(".add-product-btn").addEventListener("click", openAddModal);
+
+// Search and Filters
+document.getElementById("productSearch").addEventListener("input", (e) => {
+  adminState.currentPage = 1;
+  loadProducts(e.target.value, document.querySelector(".filter-select:nth-of-type(1)").value, document.querySelector(".filter-select:nth-of-type(2)").value);
+});
+
+document.querySelectorAll(".filter-select").forEach(select => {
+  select.addEventListener("change", () => {
+    adminState.currentPage = 1;
+    loadProducts(document.getElementById("productSearch").value, document.querySelector(".filter-select:nth-of-type(1)").value, document.querySelector(".filter-select:nth-of-type(2)").value);
+  });
+});
+
 window.saveProduct = saveProduct;
 window.openEditModal = openEditModal;
 window.deleteProduct = deleteProduct;

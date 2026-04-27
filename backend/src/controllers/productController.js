@@ -72,20 +72,27 @@ export const createProduct = async (req, res) => {
 // ==============================
 export const getAdminProducts = async (req, res) => {
   try {
-    const { search, category, status } = req.query;
+    const { search, category, status, page = 1, limit = 10 } = req.query;
 
     let filter = {};
     if (search) filter.name = { $regex: search, $options: "i" };
     if (category) filter.categoryId = category;
     if (status) filter.status = status;
 
+    const skip = (Number(page) - 1) * Number(limit);
+    const total = await Product.countDocuments(filter);
+
     const products = await Product.find(filter)
       .populate("categoryId", "name")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1, _id: 1 })
+      .skip(skip)
+      .limit(Number(limit));
 
     res.status(200).json({
       success: true,
-      count: products.length,
+      total,
+      totalPages: Math.ceil(total / Number(limit)),
+      currentPage: Number(page),
       products,
     });
   } catch (error) {
@@ -141,11 +148,11 @@ export const getProducts = async (req, res) => {
     if (size && size !== "all") filter["sizes.size"] = size;
 
     let sortOption = {};
-    if (sort === "price-low") sortOption = { price: 1 };
-    else if (sort === "price-high") sortOption = { price: -1 };
-    else if (sort === "newest") sortOption = { createdAt: -1 };
-    else if (sort === "top-selling") sortOption = { sales: -1 };
-    else sortOption = { createdAt: -1 };
+    if (sort === "price-low") sortOption = { price: 1, _id: 1 };
+    else if (sort === "price-high") sortOption = { price: -1, _id: 1 };
+    else if (sort === "newest") sortOption = { createdAt: -1, _id: 1 };
+    else if (sort === "top-selling") sortOption = { sales: -1, _id: 1 };
+    else sortOption = { createdAt: -1, _id: 1 };
 
     const skip = (Number(page) - 1) * Number(limit);
     const total = await Product.countDocuments(filter);
