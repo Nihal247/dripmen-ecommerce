@@ -19,19 +19,26 @@ export function initProductFilters() {
 
     if (!grid) return;
 
+    const urlParams = new URLSearchParams(window.location.search);
+
     let state = {
-        category: "all",
-        minPrice: 0,
-        maxPrice: 2000,
-        color: "all",
-        size: "all",
-        search: "",
-        sort: "newest",
-        currentPage: 1,
+        category: urlParams.get("category") || "all",
+        minPrice: Number(urlParams.get("minPrice")) || 0,
+        maxPrice: Number(urlParams.get("maxPrice")) || 2000,
+        color: urlParams.get("color") || "all",
+        size: urlParams.get("size") || "all",
+        search: urlParams.get("search") || "",
+        sort: urlParams.get("sort") || "newest",
+        currentPage: Number(urlParams.get("page")) || 1,
         itemsPerPage: 9,
         totalPages: 1,
         total: 0,
     };
+
+    // Pre-fill search input
+    if (searchInput && state.search) {
+        searchInput.value = state.search;
+    }
 
     // --- Fetch Products ---
     async function fetchProducts() {
@@ -215,13 +222,23 @@ export function initProductFilters() {
         const res = await fetch(`${API_BASE}/api/products/price-range`);
         const data = await res.json();
         if (data.success) {
-          if (minRange) { minRange.min = data.min; minRange.max = data.max; minRange.value = data.min; }
-          if (maxRange) { maxRange.min = data.min; maxRange.max = data.max; maxRange.value = data.max; }
-          if (minVal) minVal.textContent = `₹${data.min}`;
-          if (maxVal) maxVal.textContent = `₹${data.max}`;
-          state.minPrice = data.min;
-          state.maxPrice = data.max;
-          handlePriceChange(); // update slider track
+          const absMin = data.min;
+          const absMax = data.max;
+
+          if (minRange) { minRange.min = absMin; minRange.max = absMax; }
+          if (maxRange) { maxRange.min = absMin; maxRange.max = absMax; }
+          
+          // Only update state if not already set by URL
+          if (!urlParams.get("minPrice")) state.minPrice = absMin;
+          if (!urlParams.get("maxPrice")) state.maxPrice = absMax;
+
+          if (minRange) minRange.value = state.minPrice;
+          if (maxRange) maxRange.value = state.maxPrice;
+
+          if (minVal) minVal.textContent = `₹${state.minPrice}`;
+          if (maxVal) maxVal.textContent = `₹${state.maxPrice}`;
+
+          handlePriceChange(false); // update slider track visually without refetching
         }
       } catch (err) {
         console.warn("Could not load price range", err);
@@ -242,7 +259,7 @@ export function initProductFilters() {
         });
     }
 
-    function handlePriceChange() {
+    function handlePriceChange(shouldFetch = true) {
         let min = parseInt(minRange.value);
         let max = parseInt(maxRange.value);
         if (min > max) [min, max] = [max, min];
@@ -252,15 +269,17 @@ export function initProductFilters() {
 
         if (sliderTrack) {
             const range = minRange.max - minRange.min;
-            const percent1 = ((min - minRange.min) / range) * 100;
-            const percent2 = ((max - minRange.min) / range) * 100;
-            sliderTrack.style.background = `linear-gradient(to right, #eee ${percent1}%, #000 ${percent1}%, #000 ${percent2}%, #eee ${percent2}%)`;
+            if (range > 0) {
+              const percent1 = ((min - minRange.min) / range) * 100;
+              const percent2 = ((max - minRange.min) / range) * 100;
+              sliderTrack.style.background = `linear-gradient(to right, #eee ${percent1}%, #000 ${percent1}%, #000 ${percent2}%, #eee ${percent2}%)`;
+            }
         }
 
         state.minPrice = min;
         state.maxPrice = max;
         state.currentPage = 1;
-        fetchProducts();
+        if (shouldFetch) fetchProducts();
     }
 
     // Debounce price changes for smoother sliding

@@ -262,7 +262,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ----------------------------------------
   document.querySelectorAll(".search-container input").forEach(input => {
     input.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") window.location.href = "products.html";
+      if (e.key === "Enter") {
+        const query = input.value.trim();
+        window.location.href = `products.html${query ? '?search=' + encodeURIComponent(query) : ''}`;
+      }
     });
   });
 
