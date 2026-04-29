@@ -3657,43 +3657,113 @@
 /* =========================================================================
    Mobile Order Details / Invoice
    ========================================================================= */
+
+/* Table wrapper — enables horizontal scroll on mobile */
+.invoice-items-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 768px) {
     .order-details-page {
-        padding: 1.5rem 0 3rem;
+        padding: 1rem 0 3rem;
     }
 
     .invoice-container {
-        padding: 1.5rem;
+        padding: 1.25rem 1rem;
+        border-radius: 12px;
     }
 
+    /* Header: stack title above button */
     .invoice-header {
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1rem;
         align-items: flex-start;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.25rem;
     }
 
+    .invoice-title {
+        font-size: 1.4rem;
+    }
+
+    .invoice-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Shipping & Payment: full width single column */
     .invoice-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
     }
 
+    /* Table: allow horizontal scroll instead of squishing */
     .invoice-table {
-        font-size: 0.9rem;
+        font-size: 0.82rem;
+        min-width: 520px; /* prevents squish — scroll kicks in instead */
     }
 
     .invoice-table th,
     .invoice-table td {
-        padding: 0.75rem 0.25rem;
+        padding: 0.65rem 0.5rem;
+        white-space: nowrap;
     }
 
+    /* Product name cell: allow it to wrap */
+    .invoice-table td:first-child {
+        white-space: normal;
+        min-width: 160px;
+    }
+
+    /* Product image smaller on mobile */
+    .invoice-table td:first-child img {
+        width: 38px !important;
+        height: 38px !important;
+        flex-shrink: 0;
+    }
+
+    /* Summary section: full width */
     .invoice-summary {
         max-width: none;
         margin-left: 0;
+        margin-top: 1.5rem;
+    }
+
+    /* Cancel / Return buttons: full width on mobile */
+    .invoice-table .btn-sm {
+        width: 100%;
+        text-align: center;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.78rem;
+    }
+
+    /* Status tags — no overflow */
+    .status-tag {
+        white-space: nowrap;
+        font-size: 0.72rem;
+        padding: 3px 8px;
     }
 }
+
+/* Extra small screens (< 400px) */
+@media (max-width: 400px) {
+    .invoice-container {
+        padding: 1rem 0.75rem;
+    }
+
+    .invoice-title {
+        font-size: 1.2rem;
+    }
+
+    .invoice-table {
+        min-width: 480px;
+        font-size: 0.78rem;
+    }
+}
+
 
 /* =========================================================================
    Contact Page
