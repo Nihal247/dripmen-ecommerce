@@ -321,7 +321,13 @@ export function initAuthSystem() {
                 const email    = document.getElementById("modal-login-email").value;
                 const password = document.getElementById("modal-login-password").value;
 
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+
                 try {
+                    submitBtn.innerHTML = `<i class="ph ph-circle-notch spinning"></i> Logging in...`;
+                    submitBtn.disabled = true;
+
                     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -345,6 +351,9 @@ export function initAuthSystem() {
                 } catch (error) {
                     console.error(error);
                     showToast("Network error. Try again.", "error");
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 }
             });
         }
@@ -428,7 +437,13 @@ export function initAuthSystem() {
                 e.preventDefault();
                 const otp = document.getElementById('modal-signup-otp').value;
 
+                const submitBtn = otpForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+
                 try {
+                    submitBtn.innerHTML = `<i class="ph ph-circle-notch spinning"></i> Verifying...`;
+                    submitBtn.disabled = true;
+
                     const storedData = JSON.parse(sessionStorage.getItem("signupData"));
                     if (!storedData) {
                         showToast("Session expired. Please signup again.", "error");
@@ -458,6 +473,9 @@ export function initAuthSystem() {
                 } catch (error) {
                     console.error(error);
                     showToast("Network error during OTP verification.", "error");
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 }
             });
         }

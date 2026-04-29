@@ -159,7 +159,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      if (window.wishlistAction) {
+      const confirmBtn = target.closest("#confirm-size-btn");
+      const originalHTML = confirmBtn.innerHTML;
+      confirmBtn.innerHTML = `<i class="ph ph-circle-notch spinning"></i>`;
+      confirmBtn.disabled = true;
+
+      try {
+        if (window.wishlistAction) {
         // 💖 WISHLIST ACTION
         const data = await addToWishlistAPI(window.currentSelection.id, size);
         if (data?.success) {
@@ -191,6 +197,10 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           showToast(data?.message || "Failed to add to cart", "error");
         }
+      }
+      } finally {
+        confirmBtn.innerHTML = originalHTML;
+        confirmBtn.disabled = false;
       }
       return;
     }

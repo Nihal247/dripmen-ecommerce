@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -20,6 +22,20 @@ const app = express();
 
 // Trust proxy for secure cookies and correct protocol resolution behind load balancers/proxies (e.g., Render)
 app.set("trust proxy", 1);
+
+// Security Headers
+app.use(helmet({ crossOriginResourcePolicy: false }));
+
+// Global Rate Limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { success: false, message: "Too many requests from this IP, please try again after 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+// Apply global limiter to all API routes
+app.use("/api", globalLimiter);
 
 
 
