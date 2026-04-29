@@ -11,17 +11,18 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 
 // ==============================
-// ✅ REUSABLE EMAIL TRANSPORTER
+// ✅ MODULE-LEVEL TRANSPORTER (reused across all requests — no reconnect overhead)
 // ==============================
-function createTransporter() {
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-}
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  pool: true,         // keep SMTP connection alive
+  maxConnections: 5,  // allow up to 5 concurrent sends
+  rateLimit: true     // respect Gmail rate limits
+});
 
 // ==============================
 // ✅ REGEX VALIDATORS
@@ -54,40 +55,38 @@ export const sendSignupOtp = async (req, res) => {
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
+    // 1. Save OTP to DB
     await OTP.create({
       email: trimmedEmail,
       otp,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    console.log("Signup OTP:", otp); // keep for debugging
-
-    // ✅ Send OTP email
-    try {
-      const transporter = createTransporter();
-      await transporter.sendMail({
-        from: `"DripMen" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: "Your DripMen Verification Code",
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f9f9f9;border-radius:12px;">
-            <h2 style="color:#111;margin-bottom:8px;">DRIPMEN</h2>
-            <p style="color:#555;font-size:15px;margin-bottom:24px;">Thanks for signing up! Use the code below to verify your email address.</p>
-            <div style="background:#111;color:#fff;font-size:40px;font-weight:700;letter-spacing:14px;text-align:center;padding:24px;border-radius:8px;">
-              ${otp}
-            </div>
-            <p style="color:#888;font-size:13px;margin-top:24px;">This code expires in <strong>5 minutes</strong>. Do not share it with anyone.</p>
-            <p style="color:#bbb;font-size:12px;margin-top:8px;">If you didn't request this, you can safely ignore this email.</p>
-          </div>
-        `
-      });
-      console.log("OTP email sent to:", email);
-    } catch (emailErr) {
-      console.error("OTP email send failed:", emailErr.message);
-      // OTP is saved in DB — user can still verify even if email fails
-    }
-
+    // 2. ✅ Respond IMMEDIATELY — user doesn't wait for email to send
     res.status(200).json({ status: "success", message: "OTP sent successfully" });
+
+    // 3. Send email in the BACKGROUND (fire-and-forget — no await)
+    transporter.sendMail({
+      from: `"DripMen" <${process.env.EMAIL_USER}>`,
+      to: trimmedEmail,
+      subject: "Your DripMen Verification Code",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f9f9f9;border-radius:12px;">
+          <h2 style="color:#111;margin-bottom:8px;">DRIPMEN</h2>
+          <p style="color:#555;font-size:15px;margin-bottom:24px;">Thanks for signing up! Use the code below to verify your email address.</p>
+          <div style="background:#111;color:#fff;font-size:40px;font-weight:700;letter-spacing:14px;text-align:center;padding:24px;border-radius:8px;">
+            ${otp}
+          </div>
+          <p style="color:#888;font-size:13px;margin-top:24px;">This code expires in <strong>5 minutes</strong>. Do not share it with anyone.</p>
+          <p style="color:#bbb;font-size:12px;margin-top:8px;">If you didn't request this, you can safely ignore this email.</p>
+        </div>
+      `
+    }).then(() => {
+      console.log("OTP email sent to:", trimmedEmail);
+    }).catch(err => {
+      console.error("OTP email send failed (non-blocking):", err.message);
+      // OTP is already in DB — user can still verify manually from server logs
+    });
 
   } catch (error) {
     console.error("SEND OTP ERROR:", error);
@@ -207,15 +206,17 @@ export const forgotPassword = async (req, res) => {
 
     const resetToken = crypto.randomBytes(32).toString("hex");
 
+    // Save token to user
     user.resetPasswordToken  = crypto.createHash("sha256").update(resetToken).digest("hex");
     user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
-
     await user.save();
 
-const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
 
-    const transporter = createTransporter();
-    await transporter.sendMail({
+    // ✅ Respond immediately, send email in background
+    res.json({ status: "success", message: "Reset link sent to email" });
+
+    transporter.sendMail({
       from: `"DripMen" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Password Reset - DripMen",
@@ -231,9 +232,9 @@ const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetT
           <p style="color:#bbb;font-size:12px;margin-top:8px;">If you didn't request this, you can safely ignore this email.</p>
         </div>
       `
+    }).catch(err => {
+      console.error("Password reset email failed (non-blocking):", err.message);
     });
-
-    res.json({ status: "success", message: "Reset link sent to email" });
 
   } catch (error) {
     res.status(500).json({ status: "error", message: error.message });
