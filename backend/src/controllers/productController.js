@@ -441,7 +441,7 @@ export const getHomepageData = async (req, res) => {
         status: { $in: ["active", "out_of_stock"] },
         section: "new_arrivals"
       })
-      .select("name price salePrice images status stock section createdAt")
+      .select("name price salePrice images status stock section sizes createdAt")
       .sort({ createdAt: -1 })
       .limit(4);
 
@@ -450,7 +450,7 @@ export const getHomepageData = async (req, res) => {
         status: { $in: ["active", "out_of_stock"] },
         section: "top_selling"
       })
-      .select("name price salePrice images status stock section createdAt")
+      .select("name price salePrice images status stock section sizes createdAt")
       .sort({ sales: -1 })
       .limit(4);
 
@@ -459,7 +459,7 @@ export const getHomepageData = async (req, res) => {
         status: { $in: ["active", "out_of_stock"] },
         section: "explore"
       })
-      .select("name price salePrice images status stock section createdAt")
+      .select("name price salePrice images status stock section sizes createdAt")
       .sort({ createdAt: -1 })
       .limit(8);
 
