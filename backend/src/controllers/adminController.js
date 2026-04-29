@@ -299,12 +299,12 @@ export const getAllTransactions = async (req, res) => {
       {
         $lookup: {
           from: "users",
-          localField: "user",
+          localField: "userId",   // ✅ FIXED: walletSchema uses 'userId' not 'user'
           foreignField: "_id",
           as: "userDetails"
         }
       },
-      { $unwind: "$userDetails" },
+      { $unwind: { path: "$userDetails", preserveNullAndEmpty: true } },
       {
         $project: {
           _id: 0,
@@ -312,18 +312,90 @@ export const getAllTransactions = async (req, res) => {
           amount: "$transactions.amount",
           type: "$transactions.type",
           description: "$transactions.description",
-          date: "$transactions.date",
-          userName: "$userDetails.name",
-          userEmail: "$userDetails.email"
+          date: "$transactions.date",              // ✅ FIXED: use 'date' field (matches schema)
+          userName: { $ifNull: ["$userDetails.name", "Unknown User"] },
+          userEmail: { $ifNull: ["$userDetails.email", ""] }
         }
       },
-      { $sort: { date: -1 } }
+      { $sort: { date: -1 } }                       // ✅ FIXED: sort by 'date' field
     ]);
 
     res.status(200).json({
       success: true,
       count: transactions.length,
       transactions
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ✅ GET ALL WALLETS (for admin wallet management page)
+export const getAllWallets = async (req, res) => {
+  try {
+    const wallets = await Wallet.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails"
+        }
+      },
+      { $unwind: { path: "$userDetails", preserveNullAndEmpty: true } },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          balance: 1,
+          transactionCount: { $size: "$transactions" },
+          lastTransaction: { $arrayElemAt: ["$transactions", -1] },
+          userName: { $ifNull: ["$userDetails.name", "Unknown User"] },
+          userEmail: { $ifNull: ["$userDetails.email", ""] },
+          updatedAt: 1
+        }
+      },
+      { $sort: { balance: -1 } }
+    ]);
+
+    const totalBalance = wallets.reduce((sum, w) => sum + (w.balance || 0), 0);
+
+    res.status(200).json({
+      success: true,
+      count: wallets.length,
+      totalBalance: Math.round(totalBalance * 100) / 100,
+      wallets
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ✅ ADMIN RESET MONTHLY DATA
+// Allows admin to archive and reset sales counters for a fresh month start.
+// This resets Product.sales counters ONLY — it does NOT delete orders (for audit integrity).
+export const resetMonthlyData = async (req, res) => {
+  try {
+    const { confirmReset } = req.body;
+
+    // Extra safety gate — must explicitly pass the confirmation
+    if (confirmReset !== "RESET_CONFIRMED") {
+      return res.status(400).json({
+        success: false,
+        message: "Reset not confirmed. Send { confirmReset: 'RESET_CONFIRMED' } to proceed."
+      });
+    }
+
+    // 1. Reset all product sales counters
+    await Product.updateMany({}, { $set: { sales: 0 } });
+
+    // 2. Expire all active coupons (optional - uncomment if needed)
+    // await Coupon.updateMany({ isActive: true }, { $set: { isActive: false } });
+
+    res.status(200).json({
+      success: true,
+      message: "Monthly reset complete. All product sales counters have been reset to 0.",
+      resetAt: new Date().toISOString()
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

@@ -92,7 +92,7 @@ export const verifyPayment = async (req, res) => {
       amount:      parseFloat(amount),
       type:        "credit",
       description: "Wallet Add Money (Razorpay)",
-      createdAt:   new Date()
+      date:        new Date()
     });
 
     await wallet.save();
@@ -116,7 +116,7 @@ export const deductMoneyFromWallet = async (userId, amount, description, orderId
         type:        "debit",
         description: description,
         orderId:     orderId,
-        createdAt:   new Date()
+        date:        new Date()
     });
     await wallet.save();
 };
@@ -132,7 +132,7 @@ export const addMoneyToWallet = async (userId, amount, description, orderId = nu
         type:        "credit",
         description: description,
         orderId:     orderId,
-        createdAt:   new Date()
+        date:        new Date()
     });
     await wallet.save();
 };

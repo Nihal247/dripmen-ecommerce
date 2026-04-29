@@ -88,9 +88,10 @@ export const placeOrder = async (req, res) => {
         status:   "processing"
       });
 
-      // ✅ REDUCE STOCK
+      // ✅ REDUCE STOCK & INCREMENT SALES
       if (sizeObj) sizeObj.stock -= item.quantity;
       product.stock -= item.quantity;
+      product.sales = (product.sales || 0) + item.quantity; // ✅ Track sales for Best Sellers
       await product.save();
     }
 
@@ -790,12 +791,8 @@ export const cancelOrder = async (req, res) => {
     // 4. Update Order Status
     order.orderStatus = "cancelled";
     order.notes = (order.notes || "") + ` | Order fully cancelled by user at ${new Date().toLocaleString()}`;
-    
-    // Clear financial values for cancelled order record
-    order.subtotal = 0;
-    order.deliveryCharge = 0;
-    order.discount = 0;
-    order.total = 0;
+    // NOTE: Financial fields (subtotal, total, etc.) are preserved for audit trail.
+    // The paymentStatus='refunded' tells you what happened to the money.
 
     await order.save();
 

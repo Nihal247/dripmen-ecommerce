@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let revenueChart = null;
 
-    async function fetchDashboardStats() {
+    async function fetchDashboardStats(period = "week") {
         const statOrders   = document.getElementById("stat-orders");
         const statRevenue  = document.getElementById("stat-revenue");
         const statUsers    = document.getElementById("stat-users");
@@ -145,6 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const sellersList  = document.querySelector(".best-sellers-list");
 
         if (!statOrders) return; // Not on dashboard home
+
+        // Determine date range for chart based on period
+        const now = new Date();
+        let startDate = new Date();
+        if (period === "month") startDate.setMonth(now.getMonth() - 1);
+        else if (period === "year") startDate.setFullYear(now.getFullYear() - 1);
+        else startDate.setDate(now.getDate() - 7); // week default
 
         try {
             const res = await fetch(`${API}/api/admin/stats`, {
@@ -169,23 +176,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         const date = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const status = order.orderStatus || "Processing";
                         const customer = order.user?.name || "Guest";
-                        const productImg = order.items?.[0]?.image || "https://via.placeholder.com/40";
+                        const productImg = order.items?.[0]?.image || "";
                         const productName = order.items?.[0]?.name || "Product";
+                        const imgTag = productImg 
+                            ? `<img src="${productImg}" style="width:32px; height:32px; border-radius:4px; object-fit:cover;" onerror="this.style.display='none'">`
+                            : `<div style="width:32px;height:32px;border-radius:4px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;"><i class="ph ph-t-shirt" style="font-size:1rem;color:#9ca3af;"></i></div>`;
                         
                         return `
                             <tr>
                                 <td>#${order._id.slice(-6).toUpperCase()}</td>
                                 <td>
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <img src="${productImg}" style="width:32px; height:32px; border-radius:4px; object-fit:cover;">
+                                        ${imgTag}
                                         <span>${productName}</span>
                                     </div>
                                 </td>
                                 <td>${date}</td>
                                 <td>${customer}</td>
-                                <td>₹${order.total}</td>
+                                <td>₹${(order.total || 0).toLocaleString()}</td>
                                 <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
-                                <td><button class="btn-text">Detail</button></td>
+                                <td><a href="admin-order-details.html?id=${order._id}" class="btn-text">Detail</a></td>
                             </tr>
                         `;
                     }).join("");
@@ -193,21 +203,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 3. Render Best Sellers
                 if (sellersList && bestSellers) {
-                    sellersList.innerHTML = bestSellers.map(product => `
-                        <div class="seller-item" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f3f4f6;">
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <img src="${product.images?.[0] || 'https://via.placeholder.com/50'}" style="width:48px; height:48px; border-radius:8px; object-fit:cover;">
-                                <div>
-                                    <h4 style="font-size:0.9rem; font-weight:600; margin:0;">${product.name}</h4>
-                                    <span style="font-size:0.8rem; color:#6b7280;">₹${product.price}</span>
+                    if (bestSellers.length === 0) {
+                        sellersList.innerHTML = `<p style="text-align:center; color:#9ca3af; padding: 2rem;">No sales data yet</p>`;
+                    } else {
+                        sellersList.innerHTML = bestSellers.map(product => `
+                            <div class="seller-item" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f3f4f6;">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <img src="${product.images?.[0] || ''}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; background:#f3f4f6;" onerror="this.style.display='none'">
+                                    <div>
+                                        <h4 style="font-size:0.9rem; font-weight:600; margin:0;">${product.name}</h4>
+                                        <span style="font-size:0.8rem; color:#6b7280;">₹${(product.price || 0).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div style="font-weight:700; color:var(--text-main);">${product.sales || 0}</div>
+                                    <div style="font-size:0.75rem; color:#9ca3af;">Sold</div>
                                 </div>
                             </div>
-                            <div style="text-align:right;">
-                                <div style="font-weight:700; color:var(--text-main);">${product.sales || 0}</div>
-                                <div style="font-size:0.75rem; color:#9ca3af;">Sales</div>
-                            </div>
-                        </div>
-                    `).join("");
+                        `).join("");
+                    }
                 }
 
                 // 4. Initialize/Update Revenue Chart
@@ -284,6 +298,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.location.pathname.includes("admin.html") || window.location.pathname.endsWith("/Admin/") || window.location.pathname.endsWith("admin")) {
         fetchDashboardStats();
+
+        // Wire up the Revenue Chart period selector
+        const chartSelect = document.querySelector('.chart-select');
+        if (chartSelect) {
+            chartSelect.addEventListener('change', () => {
+                const val = chartSelect.value;
+                let period = "week";
+                if (val === "This Month") period = "month";
+                else if (val === "This Year") period = "year";
+                fetchDashboardStats(period);
+            });
+        }
+
+        // Wire up "View All" button
+        const viewAllBtn = document.querySelector('.recent-orders-section .btn-text');
+        if (viewAllBtn && viewAllBtn.textContent.trim() === 'View All') {
+            viewAllBtn.addEventListener('click', () => {
+                window.location.href = 'admin-orders.html';
+            });
+        }
     }
 
     // ==========================================
@@ -372,5 +406,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tokenForInit) {
         updateAdminNotifications();
         setInterval(updateAdminNotifications, 5000);
+    }
+
+    // ==========================================
+    // Fresh Month Reset Button
+    // ==========================================
+    const resetBtn = document.getElementById("reset-monthly-btn");
+    if (resetBtn) {
+        resetBtn.addEventListener("click", async () => {
+            const first = confirm("⚠️ Reset Monthly Sales?\n\nThis will reset ALL product sales counters to 0.\n\nOrders will NOT be deleted — your financial history is safe.\n\nClick OK to continue.");
+            if (!first) return;
+
+            const second = confirm("Final confirmation: Are you sure? This cannot be undone.");
+            if (!second) return;
+
+            resetBtn.disabled = true;
+            resetBtn.textContent = "Resetting...";
+
+            try {
+                const currentToken = localStorage.getItem("adminToken") || localStorage.getItem("token");
+                const res = await fetch(`${API}/api/admin/reset-monthly`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${currentToken}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ confirmReset: "RESET_CONFIRMED" })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("✅ " + data.message);
+                    fetchDashboardStats(); // Refresh dashboard
+                } else {
+                    alert("❌ " + (data.message || "Reset failed"));
+                }
+            } catch (err) {
+                alert("❌ Network error during reset");
+            } finally {
+                resetBtn.disabled = false;
+                resetBtn.innerHTML = '<i class="ph ph-arrow-counter-clockwise"></i> Reset Monthly Sales';
+            }
+        });
     }
 });

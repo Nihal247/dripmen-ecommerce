@@ -35,7 +35,7 @@
                 <a href="admin-sales-report.html" class="nav-item"><i class="ph ph-chart-bar"></i> Sales Report</a>
             </nav>
             <div class="sidebar-footer">
-                <a href="index.html" class="nav-item"><i class="ph ph-sign-out"></i> Logout</a>
+                <a href="admin-login.html" class="nav-item logout-link"><i class="ph ph-sign-out"></i> Logout</a>
             </div>
         </aside>
 
@@ -143,7 +143,7 @@
             <div class="recent-orders-section">
                 <div class="card-header">
                     <h3>Recent Orders</h3>
-                    <button class="btn-text">View All</button>
+                    <a href="admin-orders.html" class="btn-text">View All</a>
                 </div>
                 <div class="table-responsive">
                     <table class="admin-table">
@@ -162,6 +162,22 @@
                             <!-- Rows injected via JS -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Admin Tools -->
+            <div class="recent-orders-section" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h3 style="color:#dc2626;"><i class="ph ph-warning-circle" style="margin-right:6px;"></i>Admin Tools</h3>
+                </div>
+                <div style="padding: 1.5rem; display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
+                    <div>
+                        <h4 style="margin:0 0 0.25rem; font-size:0.95rem;">Fresh Month Reset</h4>
+                        <p style="margin:0; font-size:0.8rem; color:#6b7280;">Resets all product sales counters to 0. Orders are NOT deleted (audit trail preserved).</p>
+                    </div>
+                    <button id="reset-monthly-btn" class="btn btn-outline" style="border-color:#dc2626; color:#dc2626; flex-shrink:0;">
+                        <i class="ph ph-arrow-counter-clockwise"></i> Reset Monthly Sales
+                    </button>
                 </div>
             </div>
         </main>

@@ -5,8 +5,8 @@ const transactionSchema = new mongoose.Schema({
   type: { type: String, enum: ["credit", "debit"], required: true },
   description: { type: String, required: true },
   orderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
-  createdAt: { type: Date, default: Date.now }
-});
+  date: { type: Date, default: Date.now }
+}, { _id: true });
 
 const walletSchema = new mongoose.Schema({
   userId: {

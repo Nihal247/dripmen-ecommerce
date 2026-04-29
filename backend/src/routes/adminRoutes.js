@@ -8,7 +8,9 @@ import {
   getDashboardStats,
   getSalesReport,
   getNotifications,
-  getAllTransactions
+  getAllTransactions,
+  getAllWallets,
+  resetMonthlyData
 } from "../controllers/adminController.js";
 
 import { protect }   from "../middleware/authMiddleware.js";
@@ -31,8 +33,12 @@ router.get("/stats",              protect, adminOnly, getDashboardStats);
 router.get("/sales-report",       protect, adminOnly, getSalesReport);
 router.get("/notifications",      protect, adminOnly, getNotifications);
 router.get("/transactions",       protect, adminOnly, getAllTransactions);
+router.get("/wallets",            protect, adminOnly, getAllWallets);
 
-// user management
+// Admin Tools
+router.post("/reset-monthly",     protect, adminOnly, resetMonthlyData);
+
+// User management
 router.get("/users",              protect, adminOnly, getAllUsers);
 router.get("/users/:id/details",  protect, adminOnly, getUserDetails);
 router.put("/users/:id/block",    protect, adminOnly, toggleBlockUser);

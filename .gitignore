@@ -1,5 +1,35 @@
 
+# OS files
 .DS_Store
+Thumbs.db
+
+# Editor config
 .vscode/
+.idea/
+
+# Dependencies
 node_modules/
+
+# Environment secrets — NEVER commit these
 .env
+.env.local
+.env.production
+backend/.env
+
+# Database dumps
+dump/
+*.dump
+
+# Logs
+*.log
+logs/
+
+# Test scripts
+test-*.js
+
+# One-time utility scripts
+*.py
+
+# Build output
+dist/
+build/
