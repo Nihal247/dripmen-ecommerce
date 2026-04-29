@@ -397,15 +397,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         } catch (err) {
-            console.error("Admin Notification Poll Error:", err);
+            // Network errors here are expected during Render cold starts — not a bug
+            console.warn("Admin Notification Poll: backend unreachable (cold start?)", err.message);
         }
     }
 
-    // Initialize and start polling cycle (5s)
+    // Initialize and start polling cycle
+    // 30s interval (was 5s) — reduces server load and cold-start spam
     const tokenForInit = localStorage.getItem("adminToken") || localStorage.getItem("token");
     if (tokenForInit) {
-        updateAdminNotifications();
-        setInterval(updateAdminNotifications, 5000);
+        // Initial call with a small delay to let page settle
+        setTimeout(updateAdminNotifications, 2000);
+        setInterval(updateAdminNotifications, 30000); // every 30 seconds
     }
 
     // ==========================================

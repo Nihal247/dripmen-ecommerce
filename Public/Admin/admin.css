@@ -1096,3 +1096,194 @@ input:checked + .slider:before {
     0% { transform: scale(0); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
 }
+
+/* =========================================================================
+   Table Responsive Wrapper — ALL admin table pages
+   The table scrolls horizontally on mobile instead of squishing
+   ========================================================================= */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Ensure admin tables never collapse below a readable width */
+.table-responsive .admin-table {
+    min-width: 600px;
+}
+
+/* Stats grid: 3-col on tablet */
+@media (max-width: 1100px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* =========================================================================
+   Mobile Admin — 768px and below
+   ========================================================================= */
+@media (max-width: 768px) {
+
+    /* Stats: 2 per row on tablet */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    /* Charts: stack to single column */
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-card {
+        height: 320px;
+    }
+
+    /* Card header: wrap content */
+    .card-header {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .card-header h3 {
+        font-size: 1rem;
+    }
+
+    /* Page title smaller */
+    .page-title {
+        font-size: 1.35rem;
+    }
+
+    /* Recent orders section: no padding overflow */
+    .recent-orders-section {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    /* Products toolbar: stack */
+    .products-toolbar {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .toolbar-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .add-product-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    /* Form grids: single column */
+    .admin-form-card .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    /* Logout link text visible */
+    .logout-link {
+        justify-content: flex-start;
+    }
+}
+
+/* =========================================================================
+   Mobile Admin — 480px and below (phones)
+   ========================================================================= */
+@media (max-width: 480px) {
+
+    .admin-main {
+        padding: 0.75rem;
+    }
+
+    /* Stats: single column on small phones */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+    }
+
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    /* Table: allow ultra-compact on small phones */
+    .table-responsive .admin-table {
+        min-width: 520px;
+        font-size: 0.82rem;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 0.65rem 0.6rem;
+    }
+
+    /* Status badges: compact */
+    .status-badge {
+        font-size: 0.72rem;
+        padding: 3px 8px;
+        white-space: nowrap;
+    }
+
+    /* Action buttons: compact */
+    .action-btn {
+        font-size: 1.1rem;
+    }
+
+    /* Page title */
+    .page-title {
+        font-size: 1.2rem;
+    }
+
+    /* Recent orders section */
+    .recent-orders-section {
+        padding: 0.75rem;
+    }
+
+    /* Card grid: single column */
+    .admin-grid-cards {
+        grid-template-columns: 1fr;
+    }
+
+    /* Chart height reduced */
+    .chart-card {
+        height: 260px;
+    }
+
+    /* Filters wrap */
+    .filters {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .filter-select, .filters .btn {
+        flex: 1;
+        min-width: 100px;
+        font-size: 0.82rem;
+    }
+
+    /* Modal: full screen on small phones */
+    .modal-overlay .modal,
+    .modal-overlay > div > div {
+        width: 95vw !important;
+        padding: 1.25rem !important;
+        margin: 0 auto;
+    }
+}

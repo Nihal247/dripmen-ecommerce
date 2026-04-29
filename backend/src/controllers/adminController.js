@@ -304,7 +304,7 @@ export const getAllTransactions = async (req, res) => {
           as: "userDetails"
         }
       },
-      { $unwind: { path: "$userDetails", preserveNullAndEmpty: true } },
+      { $unwind: { path: "$userDetails", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           _id: 0,
@@ -342,7 +342,7 @@ export const getAllWallets = async (req, res) => {
           as: "userDetails"
         }
       },
-      { $unwind: { path: "$userDetails", preserveNullAndEmpty: true } },
+      { $unwind: { path: "$userDetails", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           _id: 1,
