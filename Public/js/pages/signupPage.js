@@ -110,6 +110,11 @@ export function initSignupPage() {
       }
 
       try {
+        const submitBtn = signupForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `<i class="ph ph-circle-notch spinning"></i> Sending OTP...`;
+        submitBtn.disabled = true;
+
         const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
           method: "POST",
           headers: {
@@ -119,6 +124,9 @@ export function initSignupPage() {
         });
 
         const data = await response.json();
+
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
 
         if (!response.ok) {
           showToast(data.message || "Signup failed", "error");
@@ -138,6 +146,11 @@ export function initSignupPage() {
 
       } catch (error) {
         console.error(error);
+        const submitBtn = signupForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = 'Sign Up';
+            submitBtn.disabled = false;
+        }
         showToast("Network error. Please try again.", "error");
       }
     });

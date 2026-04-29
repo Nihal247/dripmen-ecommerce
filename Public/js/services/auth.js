@@ -355,12 +355,12 @@ export function initAuthSystem() {
             signupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                const name        = document.getElementById('modal-signup-name').value;
-                const email       = document.getElementById('modal-signup-email').value;
+                const name        = document.getElementById('modal-signup-name').value.trim();
+                const email       = document.getElementById('modal-signup-email').value.trim();
                 const password    = document.getElementById('modal-signup-password').value;
                 const confirmPass = document.getElementById('modal-signup-confirm-password').value;
 
-                const nameRegex = /^[A-Za-z\s'\-]{2,50}$/;
+                const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
                 
@@ -383,7 +383,13 @@ export function initAuthSystem() {
                     return;
                 }
 
+                const submitBtn = signupForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                
                 try {
+                    submitBtn.innerHTML = `<i class="ph ph-circle-notch spinning"></i> Sending OTP...`;
+                    submitBtn.disabled = true;
+
                     const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -391,6 +397,9 @@ export function initAuthSystem() {
                     });
 
                     const data = await response.json();
+
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
 
                     if (!response.ok) {
                         showToast(data.message || "Signup failed", "error");
@@ -404,6 +413,9 @@ export function initAuthSystem() {
 
                 } catch (error) {
                     console.error(error);
+                    const submitBtn = signupForm.querySelector('button[type="submit"]');
+                    submitBtn.innerHTML = 'Sign Up';
+                    submitBtn.disabled = false;
                     showToast("Network error. Please try again.", "error");
                 }
             });
