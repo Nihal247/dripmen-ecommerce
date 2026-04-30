@@ -26,25 +26,6 @@ app.set("trust proxy", 1);
 // Security Headers
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
-// Global Rate Limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: { success: false, message: "Too many requests from this IP, please try again after 15 minutes." },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-// Apply global limiter to all API routes
-app.use("/api", globalLimiter);
-
-
-
-app.use(passport.initialize());
-
-
-
-// ==============================
-
 // enable CORS with specific origins (important for security)
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -77,6 +58,27 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+// Global Rate Limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // limit each IP to 500 requests per windowMs
+  message: { success: false, message: "Too many requests from this IP, please try again after 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+// Apply global limiter to all API routes
+app.use("/api", globalLimiter);
+
+
+
+app.use(passport.initialize());
+
+
+
+// ==============================
+
+
 
 // parse JSON body
 app.use(express.json());
