@@ -7,4 +7,4 @@ Disallow: /wishlist.html
 Disallow: /cart.html
 Disallow: /checkout.html
 
-Sitemap: https://dripmen.netlify.app/sitemap.xml
+Sitemap: https://dripmen.online/sitemap.xml
