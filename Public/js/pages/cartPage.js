@@ -466,6 +466,7 @@ export function initCartPage() {
 
       const cart   = token ? (window.lastFetchedCart || await getCartFromAPI()) : getCart();
       const item   = token ? cart.find(i => (i._id || i.id) === itemId) : cart[qtyBtn.dataset.index];
+      if (!item) { renderCart(); return; } // Guard: item not found in cache, re-render
       const product = item.product || item;
       const stock   = product.stock || 0;
 
@@ -488,19 +489,20 @@ export function initCartPage() {
       const salePrice = product.salePrice || null;
       const price = salePrice || originalPrice;
       if (lineTotalEl) lineTotalEl.textContent = `₹${price * newQty}`;
-      
-      // Update summary based on optimistic change (simplified)
-      const currentSubtotal = parseFloat(document.getElementById("summary-subtotal")?.textContent.replace("₹", "") || 0);
-      const subtotalEl = document.getElementById("summary-subtotal");
-      if (subtotalEl) subtotalEl.textContent = `₹${currentSubtotal + (price * delta)}`;
+
+      // ✅ Fix: Update +/- button disabled states immediately so the minus button
+      // is no longer stuck disabled when qty was previously 1
+      const minusBtn = stepper.querySelector("[data-delta='-1']");
+      const plusBtn  = stepper.querySelector("[data-delta='1']");
+      if (minusBtn) minusBtn.disabled = newQty <= 1;
+      if (plusBtn)  plusBtn.disabled  = newQty >= MAX_LIMIT_PER_ITEM || newQty >= stock;
 
       if (token && itemId) {
         const res = await updateCartItemAPI(itemId, newQty);
         if (res?.success) {
-          // Store for next optimistic check
+          // ✅ Full re-render keeps all button states + summary perfectly in sync
           window.lastFetchedCart = res.cart.items;
-          // Refresh full summary with real data
-          updateSummary(res.cart.items);
+          await renderCart();
           updateHeaderCounts();
         } else {
           showToast(res?.message || "Failed to update", "error");

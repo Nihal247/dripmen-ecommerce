@@ -98,8 +98,10 @@ export function initAddressPage() {
   }
 
   if (form) {
+    let isSubmitting = false; // ✅ Guard against double-submission
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (isSubmitting) return; // Prevent duplicate API calls
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -132,6 +134,9 @@ export function initAddressPage() {
       const url = editId ? `${API}/${editId}` : API;
       const method = editId ? "PUT" : "POST";
 
+      const submitBtn = form.querySelector('button[type="submit"]');
+      isSubmitting = true;
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Saving..."; }
       try {
         const res = await fetch(url, {
           method,
@@ -153,6 +158,9 @@ export function initAddressPage() {
         }
       } catch (err) {
         showToast("Network error", "error");
+      } finally {
+        isSubmitting = false;
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Save Address"; }
       }
     });
   }

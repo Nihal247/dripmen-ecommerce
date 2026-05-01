@@ -25,20 +25,20 @@ export async function initProductPage() {
 
   const productId = new URLSearchParams(window.location.search).get("id");
 
+  // initGallery, initCartButtons are called inside populatePage() after DOM is ready
+  // Only call initTabs here (it targets static HTML elements)
+  initTabs();
+
   if (productId) {
     const product = await loadProductFromAPI(productId);
     if (product) {
       const categoryName = product.categoryId?.name || "";
       loadRecommended(productId, categoryName);
-      loadReviews(productId); // NEW: Load real reviews
-      checkReviewEligibility(productId); // NEW: Check if user can review
+      loadReviews(productId);
+      checkReviewEligibility(productId);
       initializeWishlistState();
     }
   }
-
-  initGallery();
-  initTabs();
-  initCartButtons();
 }
 
 // ==========================================
@@ -232,7 +232,7 @@ function populatePage(p) {
   container.dataset.price = displayPrice;
   container.dataset.image = p.images?.[0] || "";
   container.dataset.stock = p.stock || "0";
-  container.dataset.sizes = JSON.stringify(p.sizes || []);
+  container.dataset.sizes = encodeURIComponent(JSON.stringify(p.sizes || [])); // URL-encode to match getProductDataFromElement
 
   document.title = `DripMen | ${p.name}`;
   
