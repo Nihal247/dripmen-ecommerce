@@ -45,9 +45,13 @@ const isVercelOrigin = (origin) => {
   return /\.vercel\.app$/.test(origin);
 };
 
+const isCustomDomain = (origin) => {
+  return /dripmen\.online$/.test(origin);
+};
+
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || isLocalhostDynamicPort(origin) || isNetlifyOrigin(origin) || isVercelOrigin(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || isLocalhostDynamicPort(origin) || isNetlifyOrigin(origin) || isVercelOrigin(origin) || isCustomDomain(origin)) {
       callback(null, true);
     } else {
       console.error("CORS Error: Origin not allowed ->", origin);
