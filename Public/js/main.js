@@ -165,7 +165,24 @@ document.addEventListener("DOMContentLoaded", () => {
       confirmBtn.disabled = true;
 
       try {
-        if (window.wishlistAction) {
+        if (window.wishlistToCartAction) {
+        // 🛒 WISHLIST → CART ACTION (item had N/A size, user now picked a real size)
+        const { productId, wishlistSize } = window.wishlistToCartAction;
+        const data = await addToCartAPI(productId, 1, size, color);
+        if (data?.success) {
+          // Remove the old N/A-sized item from the wishlist
+          await removeFromWishlistAPI(productId, wishlistSize);
+          updateHeaderCounts();
+          showToast(`Moved to cart (Size: ${size}) 🛒`);
+          closeAllModals();
+          // Re-render wishlist if on wishlist page
+          window.dispatchEvent(new Event("wishlist-updated"));
+        } else {
+          showToast(data?.message || "Failed to move to cart", "error");
+        }
+        window.wishlistToCartAction = null;
+        window.currentSelection = null;
+      } else if (window.wishlistAction) {
         // 💖 WISHLIST ACTION
         const data = await addToWishlistAPI(window.currentSelection.id, size);
         if (data?.success) {

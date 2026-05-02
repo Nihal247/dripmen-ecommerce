@@ -12,7 +12,9 @@ import {
   clearWishlistAPI,
   checkAuth,
   showToast,
-  updateHeaderCounts
+  updateHeaderCounts,
+  openModal,
+  closeAllModals
 } from "../core.js";
 
 const API = API_BASE_URL;
@@ -169,34 +171,79 @@ export function initWishlistPage() {
       if (!checkAuth("Please login to add to cart")) return;
 
       const productId = addBtn.dataset.id;
-      const token     = localStorage.getItem("token");
+      const card      = addBtn.closest(".product-card");
+      const savedSize = card?.dataset.size || "N/A";
 
+      // ✅ If the stored wishlist size is "N/A" but the product has real sizes,
+      // prompt the user to pick a size before moving to cart.
+      let availableSizes = [];
+      try {
+        const rawSizes = card?.dataset.sizes ? JSON.parse(decodeURIComponent(card.dataset.sizes)) : [];
+        availableSizes = rawSizes.filter(s => s.stock > 0);
+      } catch (e) { /* ignore parse error */ }
+
+      if (savedSize === "N/A" && availableSizes.length > 0) {
+        // Open the size selection modal
+        const sizeModal = document.getElementById("size-selection-modal");
+        if (sizeModal) {
+          // Store context so main.js confirm-size-btn handler knows this is a wishlist-to-cart move
+          window.currentSelection = {
+            id:    productId,
+            name:  card.dataset.name  || "",
+            price: parseFloat(card.dataset.price) || 0,
+            image: card.dataset.image || "",
+            sizes: availableSizes
+          };
+          window.wishlistToCartAction = { productId, wishlistSize: "N/A" };
+          window.wishlistAction = false; // not adding to wishlist
+
+          // Populate modal fields
+          const imgEl      = document.getElementById("size-modal-img");
+          const nameEl     = document.getElementById("size-modal-name");
+          const priceEl    = document.getElementById("size-modal-price");
+          const confirmBtn = document.getElementById("confirm-size-btn");
+          if (imgEl)      imgEl.src           = card.dataset.image || "";
+          if (nameEl)     nameEl.textContent  = card.dataset.name  || "";
+          if (priceEl)    priceEl.textContent = `₹${card.dataset.price || 0}`;
+          if (confirmBtn) confirmBtn.textContent = "Move to Cart";
+
+          const sizeContainer = sizeModal.querySelector(".size-options-grid");
+          if (sizeContainer) {
+            sizeContainer.innerHTML = "";
+            availableSizes.forEach((s, idx) => {
+              const btn = document.createElement("button");
+              btn.className   = `size-btn ${idx === 0 ? "active" : ""}`;
+              btn.dataset.size = s.size;
+              btn.textContent  = s.size;
+              sizeContainer.appendChild(btn);
+            });
+          }
+
+          openModal(sizeModal);
+        } else {
+          showToast("Please visit the product page to select a size", "error");
+        }
+        return;
+      }
+
+      // savedSize is a real size (or product has no sizes) — move directly
       addBtn.textContent = "Moving...";
       addBtn.disabled    = true;
 
-      // Since checkAuth passed, token & productId MUST exist for a professional flow
-        // check if item has a size
-        const card      = addBtn.closest(".product-card");
-        const savedSize = card?.dataset.size || "N/A";
-        
-        const data = await addToCartAPI(productId, 1, savedSize);
-        if (data?.success) {
-          // 🚀 Remove specific item from wishlist after moving
-          await removeFromWishlistAPI(productId, savedSize); 
-          
-          const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
-          updateCartBadge(count);
-          
-          const items = await getWishlistFromAPI();
-          render(items);
-          updateWishlistBadge(items.length);
-          
-          showToast(`Moved to cart (Size: ${savedSize}) 🛒`);
-        } else {
-          showToast(data?.message || "Failed to move to cart", "error");
-          addBtn.textContent = "Add to Cart";
-          addBtn.disabled    = false;
-        }
+      const data = await addToCartAPI(productId, 1, savedSize);
+      if (data?.success) {
+        await removeFromWishlistAPI(productId, savedSize);
+        const count = data.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+        updateCartBadge(count);
+        const items = await getWishlistFromAPI();
+        render(items);
+        updateWishlistBadge(items.length);
+        showToast(`Moved to cart (Size: ${savedSize}) 🛒`);
+      } else {
+        showToast(data?.message || "Failed to move to cart", "error");
+        addBtn.textContent = "Add to Cart";
+        addBtn.disabled    = false;
+      }
       return;
     }
   });
@@ -221,7 +268,7 @@ export function initWishlistPage() {
 
         for (const item of items) {
           const productId = item.product?._id || item.id;
-          if (productId) await addToCartAPI(productId, 1);
+          if (productId) await addToCartAPI(productId, 1, item.size || "N/A"); // ✅ pass stored size
         }
 
         // update cart badge
