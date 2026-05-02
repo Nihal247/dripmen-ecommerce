@@ -51,7 +51,7 @@ export function initSignupPage() {
       const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
       
       // Standard email regex (strict domains)
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|in|org|net|edu|gov|co\.in)$/i;
+      const emailRegex = /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@(?![0-9]+\.)[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/i;
       
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 

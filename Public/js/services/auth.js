@@ -318,8 +318,14 @@ export function initAuthSystem() {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                const email    = document.getElementById("modal-login-email").value;
+                const email    = document.getElementById("modal-login-email").value.trim();
                 const password = document.getElementById("modal-login-password").value;
+
+                const emailRegex = /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@(?![0-9]+\.)[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/i;
+                if (!emailRegex.test(email)) {
+                    showToast("Please enter a valid email format", "error");
+                    return;
+                }
 
                 const submitBtn = loginForm.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -370,7 +376,7 @@ export function initAuthSystem() {
                 const confirmPass = document.getElementById('modal-signup-confirm-password').value;
 
                 const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const emailRegex = /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@(?![0-9]+\.)[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/i;
                 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
                 
                 if (!nameRegex.test(name)) {

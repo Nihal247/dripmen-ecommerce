@@ -70,12 +70,16 @@ export async function initAccountPage() {
     // ==============================
     // VALIDATION
     // ==============================
-    if (!name) {
-      showToast("Name cannot be empty", "error");
+    const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
+    const emailRegex = /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@(?![0-9]+\.)[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/i;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+    if (!name || !nameRegex.test(name)) {
+      showToast("Name must contain only letters and single spaces (2-50 chars)", "error");
       return;
     }
 
-    if (!email || !email.includes("@")) {
+    if (!email || !emailRegex.test(email)) {
       showToast("Enter a valid email", "error");
       return;
     }
@@ -134,8 +138,8 @@ export async function initAccountPage() {
         return;
       }
 
-      if (newPass.length < 6) {
-        showToast("Password must be at least 6 characters", "error");
+      if (!passwordRegex.test(newPass)) {
+        showToast("Password must be at least 6 characters and include an uppercase letter, lowercase letter, number, and special character", "error");
         resetButton(saveBtn);
         return;
       }

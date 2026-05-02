@@ -49,8 +49,14 @@ export function initLoginPage() {
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const email = document.getElementById("email").value;
+        const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
+
+        const emailRegex = /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@(?![0-9]+\.)[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/i;
+        if (!emailRegex.test(email)) {
+            showToast("Please enter a valid email format", "error");
+            return;
+        }
 
         try {
             const res = await fetch(`${API_BASE_URL}/api/auth/login`, {

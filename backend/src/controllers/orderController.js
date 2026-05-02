@@ -28,6 +28,26 @@ export const placeOrder = async (req, res) => {
       return res.status(400).json({ message: "Address is required" });
     }
 
+    const nameRegex = /^[A-Za-z]{2,50}(?:\s[A-Za-z]{1,50})*$/;
+    const phoneRegex = /^\+?[\d\s-]{10,15}$/;
+    const zipRegex = /^[A-Za-z0-9\s-]{3,10}$/;
+
+    if (!address.fullName || !nameRegex.test(address.fullName)) {
+      return res.status(400).json({ message: "Valid name is required" });
+    }
+    if (!address.phone || !phoneRegex.test(address.phone)) {
+      return res.status(400).json({ message: "Valid phone number is required" });
+    }
+    if (!address.street || address.street.trim().length < 3) {
+      return res.status(400).json({ message: "Valid street is required" });
+    }
+    if (!address.city || address.city.trim().length < 2) {
+      return res.status(400).json({ message: "Valid city is required" });
+    }
+    if (!address.zip || !zipRegex.test(address.zip)) {
+      return res.status(400).json({ message: "Valid ZIP/Postal code is required" });
+    }
+
     // 🛒 FETCH ITEMS (Priority: Custom Items > Cart)
     let finalItems = [];
 
