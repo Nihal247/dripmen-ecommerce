@@ -1,1 +1,1 @@
-window.API_BASE_URL = "https://dripmen-api.onrender.com";
+window.API_BASE_URL = "https://api.dripmen.online";
