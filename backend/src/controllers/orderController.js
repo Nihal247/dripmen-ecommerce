@@ -303,6 +303,8 @@ export const cancelOrderItem = async (req, res) => {
 
     // 1. New Subtotal (active items only)
     const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
+    const newTotalMRP = activeItems.reduce((sum, i) => sum + (i.mrp * i.quantity), 0);
+    const newProductDiscount = activeItems.reduce((sum, i) => sum + ((i.mrp - i.price) * i.quantity), 0);
     const newSubtotal = activeItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
     
     // 2. Coupon Re-validation
@@ -311,7 +313,7 @@ export const cancelOrderItem = async (req, res) => {
     if (order.couponCode) {
       const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
       if (coupon) {
-        if (newSubtotal < coupon.minPurchase || !coupon.isActive) {
+        if (newSubtotal < coupon.minPurchase) {
           newDiscount = 0;
           order.couponCode = "";
           couponRemoved = true;
@@ -382,6 +384,8 @@ export const cancelOrderItem = async (req, res) => {
     }
 
     // 8. Update Order Model with new totals
+    order.totalMRP = newTotalMRP;
+    order.productDiscount = newProductDiscount;
     order.subtotal = newSubtotal;
     order.discount = newDiscount;
     order.deliveryCharge = newDeliveryCharge;
@@ -495,13 +499,15 @@ export const adminUpdateOrderItemStatus = async (req, res) => {
         item.status = "cancelled";
 
         const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
+        const newTotalMRP = activeItems.reduce((sum, i) => sum + (i.mrp * i.quantity), 0);
+        const newProductDiscount = activeItems.reduce((sum, i) => sum + ((i.mrp - i.price) * i.quantity), 0);
         const newSubtotal = activeItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
 
         let newDiscount = 0;
         if (order.couponCode) {
             const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
             if (coupon) {
-                if (newSubtotal < coupon.minPurchase || !coupon.isActive) {
+                if (newSubtotal < coupon.minPurchase) {
                     newDiscount = 0;
                     order.couponCode = "";
                     couponRemoved = true;
@@ -550,6 +556,8 @@ export const adminUpdateOrderItemStatus = async (req, res) => {
             await product.save();
         }
 
+        order.totalMRP = newTotalMRP;
+        order.productDiscount = newProductDiscount;
         order.subtotal = newSubtotal;
         order.discount = newDiscount;
         order.deliveryCharge = newDeliveryCharge;
@@ -631,6 +639,8 @@ export const approveReturnItem = async (req, res) => {
 
     // 1. New Subtotal (active items only)
     const activeItems = order.items.filter(i => i.status !== "cancelled" && i.status !== "returned");
+    const newTotalMRP = activeItems.reduce((sum, i) => sum + (i.mrp * i.quantity), 0);
+    const newProductDiscount = activeItems.reduce((sum, i) => sum + ((i.mrp - i.price) * i.quantity), 0);
     const newSubtotal = activeItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
     
     // 2. Coupon Re-validation
@@ -638,7 +648,7 @@ export const approveReturnItem = async (req, res) => {
     if (order.couponCode) {
       const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
       if (coupon) {
-        if (newSubtotal < coupon.minPurchase || !coupon.isActive) {
+        if (newSubtotal < coupon.minPurchase) {
           newDiscount = 0;
           order.couponCode = "";
           order.notes = (order.notes || "") + ` | Coupon removed: subtotal ₹${newSubtotal} < min ₹${coupon.minPurchase}`;
@@ -700,6 +710,8 @@ export const approveReturnItem = async (req, res) => {
     // 8. Update Order Model with new totals
     item.returnStatus = "approved";
     item.status = "returned";
+    order.totalMRP = newTotalMRP;
+    order.productDiscount = newProductDiscount;
     order.subtotal = newSubtotal;
     order.discount = newDiscount;
     order.deliveryCharge = newDeliveryCharge;
